@@ -1,1 +1,18 @@
-Pyxis project.
+Pyxis Project:
+Realtime Data Visualization
+
+Idea:
+
+Collect and visualize realtime data from different sources. For example, USD exchange rate. Imagine that some site exports USD exchange rate as a webservice. User registers on our site, sets up datasource to that web service, specifies data structure and nature. After that our system starts automatically collecting data about USD exchange rate and puts data to the database. User is able to see that data vizualized, and share this vizualization with other users.
+
+Requirements for first approximation:
+
+    User can register on site.
+    Very simple time-based data can be collected and visualized.
+    Architecture must allow to add new data sources easily.
+
+Work flow (very high level):
+
+    Using admin-GUI user creates his “tracker”s based on data types available in our system. For the first version the only data type will be time-based data: time: number. For instance, daily temperature: “5.09.2011: +15”. Also user sets interval of data retrieval, and other options. Than user gets a link to given tracker.
+    Ok, we have set of trackers stored in the database. Another process (multithreading) gathers data for given trackers and puts them to the MongoDB.
+    GUI process (maybe not the same as admin GUI) handles visualization tasks.
