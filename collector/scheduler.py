@@ -78,6 +78,7 @@ class Scheduler:
 
 
 if __name__ == 'main':
+    ## Start.
     trackers_collection = TrackersCollection()
     trackers_collection.reload()
     scheduler = Scheduler(trackers_collection)
