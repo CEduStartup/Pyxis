@@ -4,7 +4,7 @@ import gevent
 import random
 import time
 
-from constants import TRACKER_THREAD_TIMEOUT
+from settings import TRACKER_THREAD_TIMEOUT
 
 class Tracker:
 

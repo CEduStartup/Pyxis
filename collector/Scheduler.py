@@ -1,7 +1,7 @@
 import gevent
 import time
 
-from constants import PARALLEL_THREADS_NUM, TRACKERS_REFRESH_INTERVAL
+from settings import PARALLEL_THREADS_NUM, TRACKERS_REFRESH_INTERVAL
 
 from gevent.pool import Pool
 from gevent.queue import PriorityQueue, Queue
