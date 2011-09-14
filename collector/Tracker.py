@@ -12,7 +12,7 @@ class Tracker:
     source = None
     last_modified = None
 
-    def __init__(self, tracker_id):
+    def __init__(self, tracker_id, storage):
         self.tracker_id = tracker_id
 
     def get_id(self):
