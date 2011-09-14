@@ -14,6 +14,7 @@ class Tracker:
 
     def __init__(self, tracker_id, storage):
         self.tracker_id = tracker_id
+        self.storage = storage
 
     def get_id(self):
         return self.tracker_id
