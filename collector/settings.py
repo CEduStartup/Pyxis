@@ -1,0 +1,10 @@
+##
+## Settings file.
+##
+PARALLEL_THREADS_NUM = 1000
+TRACKERS_REFRESH_INTERVAL = 5
+
+STORAGE_TYPE = 'mongodb'
+STORAGE_HOST = 'localhost'
+STORAGE_PORT = 27017
+STORAGE_DB_NAME = 'tracking'

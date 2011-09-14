@@ -43,4 +43,7 @@ class Tracker:
                 gevent.sleep(random.uniform(0, 5))
         except gevent.Timeout, timeout:
             pass
+        data = {'time': time.time(),
+                'value': randoint(1,1000)}
+        self.storage.put(self, data)
 
