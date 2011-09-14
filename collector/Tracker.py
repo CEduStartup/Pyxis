@@ -47,4 +47,6 @@ class Tracker:
                 print time.strftime('%H:%M:%S'), 'Tracker ID:', self.tracker_id
         except gevent.Timeout, timeout:
             print time.strftime('%H:%M:%S'), 'Tracker ID:', self.tracker_id, 'Timeout.'
-
+        data = {'time': time.time(),
+                'value': randoint(1,1000)}
+        self.storage.put(self, data)

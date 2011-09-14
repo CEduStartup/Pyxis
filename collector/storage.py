@@ -22,7 +22,7 @@ class Storage:
     def _connect(self):
         raise RuntimeError('Abstract method')
 
-    def store_tracker_data(tracker, data):
+    def put(tracker, data):
         raise RuntimeError('Abstract method')
 
     def start(self):
@@ -40,7 +40,7 @@ class MongoDBStorage(Storage):
         self.connection = Connection(self.host, self.port)
         self.db = self.connection[self.dbname]
 
-    def store_tracker_data(tracker, data):
+    def put(tracker, data):
         self.to_store_queue.put((tracker, data))
 
     def _write_to_db(self, tracker, data):
