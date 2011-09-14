@@ -44,7 +44,7 @@ class Scheduler:
         while True:
             time, tracker = self.tasks.get()
             if tracker.get_id() in self.to_remove:
-                to_remove.remove(tracker.get_id())
+                self.to_remove.remove(tracker.get_id())
                 continue
             cur_time = self._get_current_time()
             if cur_time < time:
@@ -54,13 +54,19 @@ class Scheduler:
             self.to_run.put(tracker)
             self.tasks.put((time + tracker.get_interval(), tracker))
 
+    def _monitor_queue(self):
+        while True:
+            print time.strftime('%H:%M:%S'), self.to_run.qsize()
+            gevent.sleep(1)
+
     def add_tracker(self, tracker):
         self.tasks.put((self._get_current_time(), tracker))
 
     def remove_tracker(self, tracker):
-        self.to_remove.add(tracker.get_id())
+        self.to_remove.add(tracker)
 
     def start(self):
+        gevent.spawn(self._monitor_queue)
         gevent.spawn(self._run_tasks)
         gevent.spawn(self._schedule_tasks)
 
