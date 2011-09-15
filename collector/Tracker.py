@@ -1,9 +1,11 @@
 from __future__ import with_statement
 
 import gevent
+import random
 import time
 
-from constants import TRACKER_THREAD_TIMEOUT
+from settings import TRACKER_THREAD_TIMEOUT
+
 
 class Tracker:
 
@@ -40,14 +42,10 @@ class Tracker:
     def grab_data(self):
         try:
             with gevent.Timeout(TRACKER_THREAD_TIMEOUT):
-                # Do something
-                x = 0
-                for i in xrange(0, self.source):
-                    x = x + i
-                    gevent.sleep(0)
-                print time.strftime('%H:%M:%S'), 'Tracker ID:', self.tracker_id
+                gevent.sleep(random.uniform(0, 5))
         except gevent.Timeout, timeout:
-            print time.strftime('%H:%M:%S'), 'Tracker ID:', self.tracker_id, 'Timeout.'
+            pass
         data = {'time': time.time(),
-                'value': randoint(1,1000)}
+                'value': random.randint(1,1000)}
         self.storage.put(self, data)
+

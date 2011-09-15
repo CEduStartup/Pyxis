@@ -1,7 +1,7 @@
 import gevent
 import time
 
-from constants import PARALLEL_THREADS_NUM, TRACKERS_REFRESH_INTERVAL
+from settings import PARALLEL_THREADS_NUM, TRACKERS_REFRESH_INTERVAL
 
 from gevent.pool import Pool
 from gevent.queue import PriorityQueue, Queue
@@ -44,7 +44,7 @@ class Scheduler:
         while True:
             time, tracker = self.tasks.get()
             if tracker.get_id() in self.to_remove:
-                to_remove.remove(tracker.get_id())
+                self.to_remove.remove(tracker.get_id())
                 continue
             cur_time = self._get_current_time()
             if cur_time < time:
@@ -54,11 +54,14 @@ class Scheduler:
             self.to_run.put(tracker)
             self.tasks.put((time + tracker.get_interval(), tracker))
 
+    def get_run_queue_size(self):
+        return self.to_run.qsize()
+
     def add_tracker(self, tracker):
         self.tasks.put((self._get_current_time(), tracker))
 
     def remove_tracker(self, tracker):
-        self.to_remove.add(tracker.get_id())
+        self.to_remove.add(tracker)
 
     def start(self):
         gevent.spawn(self._run_tasks)
