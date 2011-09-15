@@ -1,10 +1,16 @@
 from __future__ import with_statement
 
 import gevent
+from gevent import monkey
+monkey.patch_socket()
+
+import urllib2
+
 import random
 import time
 
 from settings import TRACKER_THREAD_TIMEOUT
+from config import logger
 
 class Tracker:
 
@@ -39,12 +45,32 @@ class Tracker:
         self.last_modified = last_modified
 
     def grab_data(self):
+        html = ''
         try:
             with gevent.Timeout(TRACKER_THREAD_TIMEOUT):
-                gevent.sleep(random.uniform(0, 5))
+                response = urllib2.urlopen(self.source)
+                html = response.read()
         except gevent.Timeout, timeout:
-            pass
+            logger.warn('URL read timeout - %s' % self.source)
         data = {'time': time.time(),
-                'value': randoint(1,1000)}
+                'value': html}
         self.storage.put(self, data)
 
+if __name__ == '__main__':
+    logger.info('main')
+
+    class DummyStorage:
+        def put(self, tracker, data):
+            logger.info('put - tracker: %s (%s), time: %s, data length=%d' % (
+                        tracker.get_id(), tracker.get_source(), data['time'], len(data['value'])))
+
+    storage = DummyStorage()
+
+    greenlets = []
+    for idx, url in enumerate(['http://google.com', 'http://msn.com', 'http://facebook.com',
+                               'http://developers.org.ua', 'http://habrahabr.ru']):
+        tracker = Tracker('tracker_%d' % idx, storage)
+        tracker.set_source(url)
+        greenlets.append(gevent.spawn(tracker.grab_data))
+    logger.info('doing')
+    gevent.joinall(greenlets)

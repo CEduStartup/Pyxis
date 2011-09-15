@@ -8,4 +8,7 @@ class Logger(object):
     def info(self, msg):
         return self._msg('info', msg)
 
+    def warn(self, msg):
+        return self._msg('warn', msg)
+
 logger = Logger()
