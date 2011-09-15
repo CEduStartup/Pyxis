@@ -45,6 +45,6 @@ class Tracker:
         except gevent.Timeout, timeout:
             pass
         data = {'time': time.time(),
-                'value': randoint(1,1000)}
+                'value': random.randint(1,1000)}
         self.storage.put(self, data)
 
