@@ -54,10 +54,8 @@ class Scheduler:
             self.to_run.put(tracker)
             self.tasks.put((time + tracker.get_interval(), tracker))
 
-    def _monitor_queue(self):
-        while True:
-            print time.strftime('%H:%M:%S'), self.to_run.qsize()
-            gevent.sleep(1)
+    def get_run_queue_size(self):
+        return self.to_run.qsize()
 
     def add_tracker(self, tracker):
         self.tasks.put((self._get_current_time(), tracker))
@@ -66,7 +64,6 @@ class Scheduler:
         self.to_remove.add(tracker)
 
     def start(self):
-        gevent.spawn(self._monitor_queue)
         gevent.spawn(self._run_tasks)
         gevent.spawn(self._schedule_tasks)
 
