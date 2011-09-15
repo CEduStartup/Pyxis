@@ -12,6 +12,7 @@ import time
 from settings import TRACKER_THREAD_TIMEOUT
 from config import logger
 
+
 class Tracker:
 
     tracker_id = None
