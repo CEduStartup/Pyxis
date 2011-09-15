@@ -25,12 +25,13 @@ class Storage:
     def _process_queue(self):
         while(True):
             (tracker, data) = self.to_store_queue.get()
-            self._write_to_db(data)
+            self._write_to_db(tracker, data)
+            gevent.sleep(0)
     
     def get_store_queue_size(self):
         return self.to_store_queue.qsize()
 
-    def put(tracker, data):
+    def put(self, tracker, data):
         raise RuntimeError('Abstract method')
 
     def start(self):
@@ -43,7 +44,7 @@ class MongoDBStorage(Storage):
         self.connection = Connection(self.host, self.port)
         self.db = self.connection[self.dbname]
 
-    def put(tracker, data):
+    def put(self, tracker, data):
         self.to_store_queue.put((tracker, data))
 
     def _write_to_db(self, tracker, data):
