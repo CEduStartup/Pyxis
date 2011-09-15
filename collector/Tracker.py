@@ -12,6 +12,9 @@ import time
 from settings import TRACKER_THREAD_TIMEOUT
 from config import logger
 
+JSON_TRACKER = 'json'
+XML_TRACKER  = 'xml'
+
 
 class Tracker:
 
@@ -19,6 +22,10 @@ class Tracker:
     interval = None
     source = None
     last_modified = None
+    source_type = None # JSON, XML, etc.
+    values = [
+        ('body.div[0]', 'int')
+    ]
 
     def __init__(self, tracker_id, storage):
         self.tracker_id = tracker_id
@@ -44,6 +51,8 @@ class Tracker:
 
     def set_last_modified(self, last_modified):
         self.last_modified = last_modified
+
+
 
     def grab_data(self):
         html = ''
