@@ -26,7 +26,6 @@ class Storage:
         while(True):
             (tracker, data) = self.to_store_queue.get()
             self._write_to_db(tracker, data)
-            gevent.sleep(0)
     
     def get_store_queue_size(self):
         return self.to_store_queue.qsize()

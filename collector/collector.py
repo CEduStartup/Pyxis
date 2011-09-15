@@ -19,10 +19,11 @@ scheduler.start()
 
 if '--monitor' in sys.argv:
     def monitor_qsize():
-        print time.strftime('%H:%M:%S')
-        print '\tScheduler:', scheduler.get_run_queue_size()
-        print '\tStorage:  ', storage.get_store_queue_size()
-        gevent.sleep(2)
+        while True:
+            print time.strftime('%H:%M:%S')
+            print '\tScheduler:', scheduler.get_run_queue_size()
+            print '\tStorage:  ', storage.get_store_queue_size()
+            gevent.sleep(2)
 
     gevent.spawn(monitor_qsize)
 
