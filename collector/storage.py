@@ -3,7 +3,7 @@
 ##
 import gevent
 from pymongo import Connection
-from gevent.queue import PriorityQueue, Queue
+from gevent.queue import Queue
 
 
 class Storage:
@@ -17,10 +17,18 @@ class Storage:
         self.host = host
         self.port = port
         self.dbname = dbname
-        self.to_store_queue = PriorityQueue()
+        self.to_store_queue = Queue()
 
     def _connect(self):
         raise RuntimeError('Abstract method')
+
+    def _process_queue(self):
+        while(True):
+            (tracker, data) = self.to_store_queue.get()
+            self._write_to_db(data)
+    
+    def get_store_queue_size(self):
+        return self.to_store_queue.qsize()
 
     def put(tracker, data):
         raise RuntimeError('Abstract method')
@@ -28,11 +36,6 @@ class Storage:
     def start(self):
         self._connect()
         gevent.spawn(self._process_queue)
-
-    def _process_queue(self):
-        while(True):
-            (tracker, data) = self.to_store_queue.get()
-            self._write_to_db(data)
 
 
 class MongoDBStorage(Storage):
