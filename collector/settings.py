@@ -8,4 +8,4 @@ TRACKER_THREAD_TIMEOUT = 5
 STORAGE_TYPE = 'mongodb'
 STORAGE_HOST = 'redmine'
 STORAGE_PORT = 27017
-STORAGE_DB_NAME = 'tracking'
+STORAGE_DB_NAME = 'pyxis_ykonovalyuk'
