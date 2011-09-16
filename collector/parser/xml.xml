@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE root SYSTEM "test" [ <!ENTITY tasty "eggs"> ]>
+  <root>
+    <a name="icecreem">
+      <tasty>True</tasty>
+    </a>
+    <a name="fishfat">
+      <tasty>False</tasty>
+    </a>
+  </root>
