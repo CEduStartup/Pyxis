@@ -90,4 +90,5 @@ if __name__ == '__main__':
     raw_data = '\n'.join(open('xml.xml').readlines())
     p = get_parser(datatype='xml')
     p.initialize()
+    p.parse(raw_data)
     print p.get_xpath_node('/root/a/@name', cast=str)
