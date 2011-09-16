@@ -6,6 +6,7 @@ monkey.patch_socket()
 
 import urllib2
 
+
 import random
 import time
 
@@ -15,6 +16,8 @@ from config import logger
 JSON_TRACKER = 'json'
 XML_TRACKER  = 'xml'
 
+RESPONSE_URL_ERROR = 50001
+RESPONSE_GEVENT_TIMEOUT = 50504
 
 class Tracker:
 
@@ -52,35 +55,33 @@ class Tracker:
     def set_last_modified(self, last_modified):
         self.last_modified = last_modified
 
-
-
     def grab_data(self):
-        html = ''
+        """ Takes data from resorce, parses it and put to storage. 
+            
+            HTTP and URL errors, as well as Gevent's are handled too
+        """
+        data = dict(value=None)
+        start_time = time.time()
         try:
             with gevent.Timeout(TRACKER_THREAD_TIMEOUT):
-                response = urllib2.urlopen(self.source)
+                request = urllib2.Request(self.source)
+                response = urllib2.urlopen(request)
                 html = response.read()
-        except gevent.Timeout, timeout:
-            logger.warn('URL read timeout - %s' % self.source)
-        data = {'time': time.time(),
-                'value': html}
+                data.update(dict(code=response.code,
+                                 size=len(html)))
+        except urllib2.HTTPError, e:
+            data['code'] = e.code
+            logger.warn('HTTPError for %s: %d' % (self.source, e.code))
+        except urllib2.URLError, e:
+            data['code'] = RESPONSE_URL_ERROR
+            logger.warn('URLError for %s: %s' % (self.source, e.reason))
+        except gevent.Timeout, e:
+            data['code'] = RESPONSE_GEVENT_TIMEOUT
+            logger.warn('URL Gevent timeout - %s' % self.source)
+            
+        now = time.time()
+        data.update(dict(time=now, process_time=now-start_time))
+        
         self.storage.put(self, data)
+        
 
-if __name__ == '__main__':
-    logger.info('main')
-
-    class DummyStorage:
-        def put(self, tracker, data):
-            logger.info('put - tracker: %s (%s), time: %s, data length=%d' % (
-                        tracker.get_id(), tracker.get_source(), data['time'], len(data['value'])))
-
-    storage = DummyStorage()
-
-    greenlets = []
-    for idx, url in enumerate(['http://google.com', 'http://msn.com', 'http://facebook.com',
-                               'http://developers.org.ua', 'http://habrahabr.ru']):
-        tracker = Tracker('tracker_%d' % idx, storage)
-        tracker.set_source(url)
-        greenlets.append(gevent.spawn(tracker.grab_data))
-    logger.info('doing')
-    gevent.joinall(greenlets)
