@@ -3,6 +3,7 @@ import settings
 import sys
 import time
 
+from gevent.backdoor import BackdoorServer
 from Scheduler import Scheduler
 from TrackerCollection import TrackerCollection
 from storage import storage_types
@@ -12,22 +13,23 @@ storage_class = storage_types[settings.STORAGE_TYPE]
 storage = storage_class(settings.STORAGE_HOST, settings.STORAGE_PORT,
                         settings.STORAGE_DB_NAME)
 scheduler = Scheduler()
-trackerCollection = TrackerCollection(scheduler, storage)
+tracker_collection = TrackerCollection(scheduler, storage)
 
+tracker_collection.start()
 storage.start()
 scheduler.start()
 
-if '--monitor' in sys.argv:
-    def monitor_qsize():
-        while True:
-            print time.strftime('%H:%M:%S')
-            print '\tScheduler:', scheduler.get_run_queue_size()
-            print '\tStorage:  ', storage.get_store_queue_size()
-            gevent.sleep(2)
+def handle_command_line_args():
+    HELP = '--help'
 
-    gevent.spawn(monitor_qsize)
+    if HELP in sys.argv:
+        print """\
+Options:
+--help - print this message without running app.
+"""
+        exit()
 
-# Main thread just refreshing config
-while True:
-    trackerCollection.trackerUpdater()
+handle_command_line_args()
+
+BackdoorServer((settings.BACKDOOR_HOST, settings.BACKDOOR_PORT)).serve_forever()
 
