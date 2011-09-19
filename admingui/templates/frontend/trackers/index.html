@@ -1,5 +1,19 @@
 {% extends 'frontend/layout.html' %}
 
 {% block content %}
-User trackers are here
+
+User trackers are here:
+
+<table width="100%" border="1">
+<tr>
+	<th>Tracker name</th>
+	<th>Tracker source URL</th>
+	<th>Interval</th>
+	<th>Status</th>
+	<th></th>
+</tr>
+</table>
+
+<a href="/trackers/add">Add new tracker</a>
+
 {% endblock content %}
