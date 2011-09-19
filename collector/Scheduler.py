@@ -1,7 +1,6 @@
 import gevent
+import settings
 import time
-
-from settings import PARALLEL_THREADS_NUM, TRACKERS_REFRESH_INTERVAL
 
 from gevent.pool import Pool
 from gevent.queue import PriorityQueue, Queue
@@ -22,7 +21,7 @@ class Scheduler:
         self.tasks = PriorityQueue()
         self.to_run = Queue()
         self.to_remove = set()
-        self.pool = Pool(PARALLEL_THREADS_NUM)
+        self.pool = Pool(settings.PARALLEL_THREADS_NUM)
 
     def _get_current_time(self):
         return int(time.time())
@@ -49,7 +48,7 @@ class Scheduler:
             cur_time = self._get_current_time()
             if cur_time < time:
                 self.tasks.put((time, tracker))
-                gevent.sleep(min(time - cur_time, TRACKERS_REFRESH_INTERVAL))
+                gevent.sleep(min(time - cur_time, settings.SCHEDULER_MAXIMUM_SLEEP))
                 continue
             self.to_run.put(tracker)
             self.tasks.put((time + tracker.get_interval(), tracker))
