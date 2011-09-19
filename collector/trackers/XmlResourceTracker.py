@@ -1,4 +1,7 @@
 from . import HttpResourceTracker
+from config import logger
+
+from parser import parser
 
 class XmlResourceTracker(HttpResourceTracker):
     """
@@ -8,4 +11,16 @@ class XmlResourceTracker(HttpResourceTracker):
     """
 
     def parse_data(self, data, html):
-        pass
+        def cast(l):
+            return dict((k, v) for k,v in enumerate(l))
+
+        xml_parser = parser.get_parser('xml')
+        xml_parser.initialize()
+        xml_parser.parse(html)
+        what = '//TEMPERATURE/@max'
+        found = xml_parser.xpath(what, cast=cast)
+
+        data.update(found)
+        logger.info('parse - tracker: %s (%s), data: %s, xpath: %s, found: %s'
+                    % (self.get_id(), self.get_source(), data, what, found))
+

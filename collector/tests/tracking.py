@@ -2,8 +2,8 @@ from gevent import monkey
 monkey.patch_socket()
 
 import sys, os
-sys.path.append('%s/' % os.getcwd())
-sys.path.append('%s/..' % os.getcwd())
+sys.path.insert(0, '%s/..' % os.getcwd())
+sys.path.insert(1, '%s/' % os.getcwd())
 
 from Tracker import Tracker
 from trackers import XmlResourceTracker
@@ -20,8 +20,12 @@ def run_trackers():
     storage = DummyStorage()
 
     greenlets = []
-    for idx, url in enumerate(['http://google.com', 'http://msn.com', 'http://facebook.com',
-                               'http://developers.org.ua', 'http://habrahabr.ru']):
+    for idx, url in enumerate(['http://informer.gismeteo.ru/xml/33393_1.xml',
+                               'http://informer.gismeteo.ru/xml/33345_1.xml',
+                               'http://informer.gismeteo.ru/xml/33526_1.xml',
+                               'http://informer.gismeteo.ru/xml/33651_1.xml',
+                               'http://informer.gismeteo.ru/xml/88346_1.xml',
+                               'http://informer.gismeteo.ru/xml/99870_1.xml']):
         tracker = XmlResourceTracker('tracker_%d' % idx, storage)
         tracker.set_source(url)
         greenlets.append(gevent.spawn(tracker.grab_data))
