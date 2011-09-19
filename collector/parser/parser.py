@@ -74,15 +74,16 @@ class XMLParser(BaseParser):
     def parse(self, raw_data):
         """Parse `raw_data` and return XML DOM compatible with `lxml.etree`.
         """
-        # TODO: Add error handling.
         try:
             self._etree_dom = etree.parse(StringIO.StringIO(raw_data),
                                           self._parser)
         except etree.XMLSyntaxError, e:
+            # Currently it's enought to return information only about fatal
+            # errors.
             log = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
             raise ParserSyntaxError(details=str(log))
 
-    def get_xpath_node(self, xpath_str, cast=None):
+    def xpath(self, xpath_str, cast=None):
         """Return information from XML using XPath.
 
         :Parameters:
