@@ -1,0 +1,17 @@
+<html>
+<head>
+	<title>{% block title %}Pyxis - Welcome{% endblock title %}</title>
+</head>
+<body>
+	<div id="navigation">
+		<a href="/users/signup">Signup</a> | 
+		<a href="/users/login">Login</a> |
+		<a href="/users/profile">Profile</a> |
+		<a href="/trackers">Trackers</a> | 
+		<a href="/users/logout">Logout</a>
+	</div>
+	{% block content %}
+	content
+	{% endblock content %}
+</body>
+</html>
