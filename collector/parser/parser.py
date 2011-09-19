@@ -9,7 +9,25 @@ import target
 from lxml import etree
 
 
-class baseParser(object):
+class ParserError(Exception):
+
+    """Base class for all parser errors.
+    """
+
+class ParserSyntaxError(ParserError):
+
+    """This class describes all syntax errors which can occur during data
+    parsing.
+
+    Please use `description` attribute to get error details.
+    """
+
+    def __init__(self, details=''):
+        ParserError.__init__(self),
+        self.description = details
+
+
+class BaseParser(object):
 
     """Base class for all parsers.
     """
@@ -17,7 +35,7 @@ class baseParser(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self):
-       self._parser = None
+        self._parser = None
 
     @abc.abstractmethod
     def initialize(self):
@@ -28,16 +46,23 @@ class baseParser(object):
     def parse(self, raw_data):
         """Return parsing results.
         Use this method to parse `raw_data`.
+
+        :Return:
+            - `None`
+
+        :Exceptions:
+            - `ParserSyntaxError`: in case when `raw_data` cannot be parsed
+              because of critical syntax error.
         """
 
-class XMLParser(baseParser):
+class XMLParser(BaseParser):
 
     """XML parser.
     Don't create it directly. Use `get_parser()` factory method.
     """
 
     def __init__(self):
-        baseParser.__init__(self)
+        BaseParser.__init__(self)
         self._etree_dom = None
 
     def initialize(self):
@@ -49,8 +74,13 @@ class XMLParser(baseParser):
     def parse(self, raw_data):
         """Parse `raw_data` and return XML DOM compatible with `lxml.etree`.
         """
-        self._etree_dom = etree.parse(StringIO.StringIO(raw_data), self._parser)
-        return self._etree_dom
+        # TODO: Add error handling.
+        try:
+            self._etree_dom = etree.parse(StringIO.StringIO(raw_data),
+                                          self._parser)
+        except etree.XMLSyntaxError, e:
+            log = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
+            raise ParserSyntaxError(details=str(log))
 
     def get_xpath_node(self, xpath_str, cast=None):
         """Return information from XML using XPath.
@@ -90,5 +120,9 @@ if __name__ == '__main__':
     raw_data = '\n'.join(open('xml.xml').readlines())
     p = get_parser(datatype='xml')
     p.initialize()
-    p.parse(raw_data)
+    try:
+        p.parse(raw_data)
+    except ParserError, e:
+        print 'Error Details:', getattr(e, 'description', 'No details.')
+        import sys; sys.exit(1)
     print p.get_xpath_node('/root/a/@name', cast=str)
