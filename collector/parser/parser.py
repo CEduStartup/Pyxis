@@ -6,7 +6,7 @@ import StringIO
 
 import target
 
-from lxml import etree
+from lxml import etree, html
 
 
 class ParserError(Exception):
@@ -71,12 +71,27 @@ class XMLParser(BaseParser):
         xml_target = target.geventTreeBuilder()
         self._parser = etree.XMLParser(target=xml_target)
 
+    def _parse(self, data):
+        """Low-level parse method. Do all work.
+
+        :Parameters:
+            - `data`: raw data with interface compatible to `StringIO.StringIO`
+
+        :Return:
+            - `etree.Element` object with parsed data.
+
+        :Exception:
+            - Various `lxml` parser-related exceptions. Please see lxml
+              documentation from more details.
+        """
+        return etree.parse(data, self._parser)
+
+
     def parse(self, raw_data):
         """Parse `raw_data` and return XML DOM compatible with `lxml.etree`.
         """
         try:
-            self._etree_dom = etree.parse(StringIO.StringIO(raw_data),
-                                          self._parser)
+            self._etree_dom = self._parse(StringIO.StringIO(raw_data))
         except etree.XMLSyntaxError, e:
             # Currently it's enought to return information only about fatal
             # errors.
@@ -103,9 +118,27 @@ class XMLParser(BaseParser):
         return data
 
 
+class HTMLParser(XMLParser):
+
+    """HTML parser.
+
+    Don't create it directly use `get_parser()` factory method.
+    """
+
+    def initialize(self):
+        html_target = target.geventTreeBuilder()
+        self._parser = etree.HTMLParser(target=html_target)
+
+    def _parse(self, data):
+        """Please see description of the method in parent class: `XMLParser`.
+        """
+        return html.parse(data, self._parser)
+
+
 # Maps datatype to parser class which can handle it.
 _PARSER_TYPES_MAPPING = {
     'xml': XMLParser,
+    'html': HTMLParser,
 }
 
 def get_parser(datatype='xml'):
@@ -118,12 +151,22 @@ def get_parser(datatype='xml'):
     return _PARSER_TYPES_MAPPING[datatype]()
 
 if __name__ == '__main__':
+
+    def cast_join(l):
+        return '\n'.join(l)
+
     raw_data = '\n'.join(open('xml.xml').readlines())
+    raw_data2 = '\n'.join(open('index.html').readlines())
     p = get_parser(datatype='xml')
+    p2 = get_parser(datatype='html')
     p.initialize()
+    p2.initialize()
     try:
         p.parse(raw_data)
+        p2.parse(raw_data2)
     except ParserError, e:
         print 'Error Details:', getattr(e, 'description', 'No details.')
         import sys; sys.exit(1)
-    print p.get_xpath_node('/root/a/@name', cast=str)
+    print p.xpath('/root/a/@name', cast=cast_join)
+    print p2.xpath(
+       '/html/body/div[2]/div[2]/div[3]/text()')[0]
