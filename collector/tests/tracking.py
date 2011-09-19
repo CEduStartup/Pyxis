@@ -2,9 +2,11 @@ from gevent import monkey
 monkey.patch_socket()
 
 import sys, os
+sys.path.append('%s/' % os.getcwd())
 sys.path.append('%s/..' % os.getcwd())
 
 from Tracker import Tracker
+from trackers import XmlResourceTracker
 from config import logger
 import gevent
 import urllib2
@@ -20,7 +22,7 @@ def run_trackers():
     greenlets = []
     for idx, url in enumerate(['http://google.com', 'http://msn.com', 'http://facebook.com',
                                'http://developers.org.ua', 'http://habrahabr.ru']):
-        tracker = Tracker('tracker_%d' % idx, storage)
+        tracker = XmlResourceTracker('tracker_%d' % idx, storage)
         tracker.set_source(url)
         greenlets.append(gevent.spawn(tracker.grab_data))
     logger.info('doing')
