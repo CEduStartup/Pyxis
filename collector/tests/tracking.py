@@ -5,8 +5,7 @@ import sys, os
 sys.path.insert(0, '%s/..' % os.getcwd())
 sys.path.insert(1, '%s/' % os.getcwd())
 
-from Tracker import Tracker
-from trackers import XmlResourceTracker
+from trackers import Tracker, XmlResourceTracker
 from config import logger
 import gevent
 import urllib2
