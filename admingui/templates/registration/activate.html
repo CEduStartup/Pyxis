@@ -1,0 +1,10 @@
+{% extends "frontend/layout.html" %}
+
+{% block content %}
+
+<h1>Activation</h1>
+
+Hi, {{ account }}<br />
+Your account was activated, <a href="{% url auth_login %}">Login here</a>.<br />
+
+{% endblock %}

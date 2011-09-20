@@ -1,6 +1,8 @@
-from django import forms
+from django.forms import ModelForm
+from models import Tracker
 
-class TrackerForm(forms.Form):
-    name = forms.CharField()
-    url  = forms.URLField()
-    interval = forms.IntegerField()
+class TrackerForm(ModelForm):
+    class Meta:
+        model = Tracker
+        exclude = ('user', 'values_count', 'status')
+
