@@ -1,8 +1,10 @@
+import django.forms
+
 from django.forms import ModelForm
 from models import Tracker
 
 class TrackerForm(ModelForm):
     class Meta:
         model = Tracker
-        exclude = ('user', 'values_count', 'status')
+        exclude = ('id', 'user', 'values_count', 'status')
 

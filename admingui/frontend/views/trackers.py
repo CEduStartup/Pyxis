@@ -23,6 +23,7 @@ def add(request):
 def edit(request, tracker_id):
     return form(request, get_object_or_404(Tracker, pk=tracker_id, user=request.user))
     
+@render_to('frontend/trackers/forms.html')
 def form(request, tracker):
     if request.method == 'POST':
         form = TrackerForm(request.POST, instance=tracker)
@@ -31,9 +32,8 @@ def form(request, tracker):
             return redirect('/trackers/index/')
     else:
         form = TrackerForm(instance=tracker)
-    return render_to_response('frontend/trackers/form.html', {
-        'form': form
-    })        
+    tracker_id = tracker.id
+    return locals()
 
 @login_required
 def enable(request):
