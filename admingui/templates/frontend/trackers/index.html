@@ -12,6 +12,15 @@ User trackers are here:
 	<th>Status</th>
 	<th></th>
 </tr>
+{% for tracker in trackers %}
+<tr>
+	<td>{{ tracker.name }}</td>
+	<td>{{ tracker.url }}</td>
+	<td>{{ tracker.interval }}</td>
+	<td>{{ tracker.status }}</td>
+	<td><a href="/trackers/edit/{{ tracker.id }}">Edit</a></td>
+</tr>
+{% endfor %}
 </table>
 
 <a href="/trackers/add">Add new tracker</a>
