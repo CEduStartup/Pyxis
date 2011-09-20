@@ -22,8 +22,9 @@ class geventTreeBuilder(etree.TreeBuilder):
 
     def start(self, tag, attrs):
         if self._elements_parsed == self._elements_in_round:
-            self._elements_in_round = 0
+            self._elements_parsed = 0
             gevent.sleep(0)
 
+        self._elements_parsed += 1
         return etree.TreeBuilder.start(self, tag, attrs)
 

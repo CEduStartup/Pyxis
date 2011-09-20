@@ -3,26 +3,27 @@ from __future__ import with_statement
 from gevent import monkey
 monkey.patch_socket()
 
-from abc import ABCMeta, abstractmethod
-from . import BaseTracker
+import abc
 
 import gevent
 import urllib2
 import random
 import time
 
-from settings import TRACKER_THREAD_TIMEOUT
-from config import logger
+from trackers import Tracker
 from trackers.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
 
-class HttpResourceTracker(BaseTracker):
+from settings import TRACKER_THREAD_TIMEOUT
+from config import logger
+
+class HttpResourceTracker(Tracker):
     """
     This class should be used by all trackers, based on Http Resources.
     It has abstract method `parse_data`, which parses html response data using 
     corresponding parser.
     """
 
-    @abstractmethod
+    @abc.abstractmethod
     def parse_data(self, data, html): pass
     
     def grab_data(self):
