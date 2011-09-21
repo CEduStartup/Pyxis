@@ -54,12 +54,36 @@ def process_dir(dir_name):
 
     return result
 
-path = process_dir(os.getcwd())
-
 if __name__ == '__main__':
+    help_msg = """\
+Usage:
+export PYTHONPATH=`python build_python_path.py [path_to_dir]`:$PYTHONPATH
+
+Please start this program without arguments to build PYTHONPATH for all subdirs
+of Pyxis directory (usually this is what you need). Otherwise if you need to
+build PYTHONPATH for separate directory then specify its absolute path as a
+first argument (you also can specify relative path starting from directory
+where this script is located).
+"""
+
+    if len(sys.argv) > 2:
+        print help_msg
+        sys.exit(-1)
+
+    elif len(sys.argv) == 2:
+        dir_name = sys.argv[1]
+
+        if dir_name == '-h' or dir_name == '--help':
+            print help_msg
+            sys.exit()
+
+        if not dir_name.startswith('/'):
+            dir_name = os.path.abspath(dir_name)
+    else:
+        dir_name = os.getcwd()
+
+    path = process_dir(dir_name)
     print ':'.join(path)
 
-else:
-    sys.path = path + sys.path
 
 
