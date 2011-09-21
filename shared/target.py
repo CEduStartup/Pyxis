@@ -7,7 +7,7 @@ import gevent
 from lxml import etree
 
 # How many elements will be parsed before `gevent.sleep()` fired.
-ELEMENTS_IN_ROUND = 100
+ELEMENTS_IN_ROUND = 50
 
 class geventTreeBuilder(etree.TreeBuilder):
 

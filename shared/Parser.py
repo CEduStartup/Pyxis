@@ -1,7 +1,9 @@
-"""This module contains different data parsers compatible with `gevent`.
+"""This module contains different data parsers.
 
 Don't create parser instance manually, rather use `get_parser()` factory
-method.
+method. It will decide whether you need gevent compatible parser or not base on
+your global namespace. If `gevent` is imported in it, `get_parser()` would
+return an gevent compatible instance of a parser.
 """
 
 import abc
@@ -9,11 +11,9 @@ import BeautifulSoup
 import gevent
 import StringIO
 
-import target
-
 from lxml import etree, html
-from lxml.html import soupparser
 
+from shared import target
 
 class ParserError(Exception):
 
@@ -42,10 +42,17 @@ class BaseParser(object):
     def __init__(self):
         self._parser = None
 
-    @abc.abstractmethod
     def initialize(self):
         """Create and initialize parser.
         """
+        self._create_parser()
+        self._initialize()
+
+    def _initialize(self):
+        """Responsible for custom parser initialization. You can overwrite
+        this method in child class.
+        """
+        pass
 
     @abc.abstractmethod
     def parse(self, raw_data):
@@ -59,6 +66,19 @@ class BaseParser(object):
             - `ParserSyntaxError`: in case when `raw_data` cannot be parsed
               because of critical syntax error.
         """
+
+    @abc.abstractmethod
+    def _create_parser(self):
+        """This method responsible for parser creation. You need to overwrite
+        this method in your class.
+        """
+        self._parser = None
+
+    @abc.abstractmethod
+    def _parse(self, raw_data):
+        """Inner implementation of the parser.
+        """
+
 
 class GBeautifulSoupParser(BeautifulSoup.BeautifulSoup):
 
@@ -91,17 +111,17 @@ class GBeautifulSoupParser(BeautifulSoup.BeautifulSoup):
 
 class XMLParser(BaseParser):
 
-    """XML parser compatible with `gevent`.
+    """XML parser which is not compatible with gevent.
     """
 
     def __init__(self):
         BaseParser.__init__(self)
         self._etree_dom = None
 
-    def initialize(self):
-        """Prepare parser to work.
+    def _create_parser(self):
+        """Create XML parser.
         """
-        xml_target = target.geventTreeBuilder()
+        xml_target = etree.TreeBuilder()
         self._parser = etree.XMLParser(target=xml_target)
 
     def _parse(self, data):
@@ -118,7 +138,6 @@ class XMLParser(BaseParser):
               documentation from more details.
         """
         return etree.parse(data, self._parser)
-
 
     def parse(self, raw_data):
         """Parse `raw_data` and return XML DOM compatible with `lxml.etree`.
@@ -151,41 +170,77 @@ class XMLParser(BaseParser):
         return data
 
 
+class GXMLParser(XMLParser):
+
+    """XML parser compatible with `gevent`.
+    """
+
+    def _create_parser(self):
+        """Prepare parser to work.
+        """
+        xml_target = target.geventTreeBuilder()
+        self._parser = etree.XMLParser(target=xml_target)
+
+
 class HTMLParser(XMLParser):
 
     """HTML parser.
-
-    Don't create it directly use `get_parser()` factory method.
     """
 
-    def initialize(self):
-        self._parser = GBeautifulSoupParser
+    def _create_parser(self):
+        self._parser = BeautifulSoup.BeautifulSoup
 
     def _parse(self, data):
-        """Please see description of the method in parent class: `XMLParser`.
+        """Parse the document `data` and return result (`ElementTree` object).
         """
         return html.soupparser.parse(data, beautifulsoup=self._parser)
+
+    def parse(self, data):
+        """High level parse method. Parse document, handle errors. Assign
+        parsing result (`lxml.etree.ElementTree` object) to `_etree_dom`
+        attribute.
+        """
+        # TODO: Add errors handling.
+        self._etree_dom = self._parse(StringIO.StringIO(data))
+
+
+class GHTMLParser(XMLParser):
+
+    """HTML parser.
+    """
+
+    def _create_parser(self):
+        self._parser = GBeautifulSoupParser
 
 
 # Maps datatype to parser class which can handle it.
 _PARSER_TYPES_MAPPING = {
-    'xml': XMLParser,
-    'html': HTMLParser,
+    'plain': {
+        'xml': XMLParser,
+        'html': HTMLParser,
+    },
+
+    'gevent_safe': {
+        'xml': GXMLParser,
+        'html': GHTMLParser,
+    }
 }
 
-def get_parser(datatype='xml'):
+def get_parser(datatype='xml', gevent_safe=True):
     """Return `lxml` compatible parsers.
 
     :Parameters:
         - `datatype`: string which contains datatype. Currently it's one of the
           following: 'xml', 'html', 'json'.
+        - `gevent_safe`: boolean. If `True` then this method will *always*
+          return parser instance which is compatible with gevent.
+
+    :Return:
+        - An instance of a parser compatible with the given `datatype`.
     """
-    return _PARSER_TYPES_MAPPING[datatype]()
+    threads_type = 'gevent_safe'
+    if not gevent_safe:
+        threads_type = 'plain'
 
+    return _PARSER_TYPES_MAPPING[threads_type][datatype]()
 
-if __name__ == '__main__':
-    p = get_parser('html')
-    p.initialize()
-    data = ' '.join(open('index.html').readlines())
-    p.parse(data)
-    print p._etree_dom
