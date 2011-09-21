@@ -28,3 +28,9 @@ class Tracker(models.Model):
     values_count = models.PositiveIntegerField(default=0)
     values       = models.TextField()
     status       = models.SmallIntegerField(choices=STATUSES, default=0)
+    
+    def get_status(self):
+        return dict(self.STATUSES)[self.status]
+    
+    def get_type(self):
+        return dict(self.RESOURCE_TYPES)[self.res_type]
