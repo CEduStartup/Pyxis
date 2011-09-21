@@ -1,60 +1,31 @@
 from __future__ import with_statement
 
-import gevent
 from gevent import monkey
 monkey.patch_socket()
 
+import abc
+
+import gevent
 import urllib2
-
-
 import random
 import time
+
+from trackers import Tracker
+from trackers.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
 
 from settings import TRACKER_THREAD_TIMEOUT
 from config import logger
 
-JSON_TRACKER = 'json'
-XML_TRACKER  = 'xml'
+class HttpResourceTracker(Tracker):
+    """
+    This class should be used by all trackers, based on Http Resources.
+    It has abstract method `parse_data`, which parses html response data using 
+    corresponding parser.
+    """
 
-RESPONSE_URL_ERROR = 50001
-RESPONSE_GEVENT_TIMEOUT = 50504
-
-class Tracker:
-
-    tracker_id = None
-    interval = None
-    source = None
-    last_modified = None
-    source_type = None # JSON, XML, etc.
-    values = [
-        ('body.div[0]', 'int')
-    ]
-
-    def __init__(self, tracker_id, storage):
-        self.tracker_id = tracker_id
-        self.storage = storage
-
-    def get_id(self):
-        return self.tracker_id
-
-    def get_interval(self):
-        return self.interval
-
-    def get_source(self):
-        return self.source
-
-    def get_last_modified(self):
-        return self.last_modified
-
-    def set_interval(self, interval):
-        self.interval = interval
-
-    def set_source(self, source):
-        self.source = source
-
-    def set_last_modified(self, last_modified):
-        self.last_modified = last_modified
-
+    @abc.abstractmethod
+    def parse_data(self, data, html): pass
+    
     def grab_data(self):
         """ Takes data from resorce, parses it and put to storage. 
             
@@ -82,6 +53,7 @@ class Tracker:
         now = time.time()
         data.update(dict(time=now, process_time=now-start_time))
         
-        self.storage.put(self, data)
+        if data.get('size'):
+            self.parse_data(data, html)
         
-
+        self.storage.put(self, data)
