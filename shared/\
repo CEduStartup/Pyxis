@@ -1,12 +1,17 @@
-"""This module contains different `gevent` compatible parsers for `lxml` lib
+"""This module contains different data parsers compatible with `gevent`.
+
+Don't create parser instance manually, rather use `get_parser()` factory
+method.
 """
 
 import abc
+import BeautifulSoup
 import StringIO
 
 import target
 
 from lxml import etree, html
+from lxml.html import soupparser
 
 
 class ParserError(Exception):
@@ -25,7 +30,6 @@ class ParserSyntaxError(ParserError):
     def __init__(self, details=''):
         ParserError.__init__(self),
         self.description = details
-
 
 class BaseParser(object):
 
@@ -55,10 +59,44 @@ class BaseParser(object):
               because of critical syntax error.
         """
 
+class GBeautifulSoupParser(BeautifulSoup.BeautifulSoup):
+
+    """This is a modification of `BeautifulSoup` parser which is compatible
+    with gevent.
+
+    This class has `parse_starttag()` method rewritten so it returns control to
+    gevent (by calling `gevent.sleep(0)`) when `TAGS_IN_ROUND` tags are parsed.
+    """
+
+    def __init__(self, *args, **kwargs):
+        BeautifulSoup.BeautifulSoup.__init__(self, *args, **kwargs)
+        print type(self)
+        self._tags_parsed = 0
+        print '=======>', self._tags_parsed
+
+    # How many tags will be parsed before switching control to gevent.
+    TAGS_IN_ROUND = 50
+
+    def parse_starttag(self, start_pos):
+        """Handle `starttag` event.
+        """
+##        print start_pos, self._tags_parsed
+##        # Check if we need to return control to gevent.
+##        if self._tags_parsed == self.TAGS_IN_ROUND:
+##            self._tags_parsed = 0
+##            gevent.sleep(0)
+##
+##        self._tags_parsed += 1
+        print type(self)
+##        import pdb;pdb.set_trace()
+##        self._tags_parsed += 1
+
+        return BeautifulSoup.BeautifulSoup.parse_starttag(self, start_pos)
+
+
 class XMLParser(BaseParser):
 
-    """XML parser.
-    Don't create it directly. Use `get_parser()` factory method.
+    """XML parser compatible with `gevent`.
     """
 
     def __init__(self):
@@ -126,13 +164,12 @@ class HTMLParser(XMLParser):
     """
 
     def initialize(self):
-        html_target = target.geventTreeBuilder()
-        self._parser = etree.HTMLParser(target=html_target)
+        self._parser = GBeautifulSoupParser
 
     def _parse(self, data):
         """Please see description of the method in parent class: `XMLParser`.
         """
-        return html.parse(data, self._parser)
+        return html.soupparser.parse(data, beautifulsoup=self._parser)
 
 
 # Maps datatype to parser class which can handle it.
@@ -150,23 +187,10 @@ def get_parser(datatype='xml'):
     """
     return _PARSER_TYPES_MAPPING[datatype]()
 
+
 if __name__ == '__main__':
-
-    def cast_join(l):
-        return '\n'.join(l)
-
-    raw_data = '\n'.join(open('xml.xml').readlines())
-    raw_data2 = '\n'.join(open('index.html').readlines())
-    p = get_parser(datatype='xml')
-    p2 = get_parser(datatype='html')
+    p = get_parser('html')
     p.initialize()
-    p2.initialize()
-    try:
-        p.parse(raw_data)
-        p2.parse(raw_data2)
-    except ParserError, e:
-        print 'Error Details:', getattr(e, 'description', 'No details.')
-        import sys; sys.exit(1)
-    print p.xpath('/root/a/@name', cast=cast_join)
-    print p2.xpath(
-       '/html/body/div[2]/div[2]/div[3]/text()')[0]
+    data = ' '.join(open('index.html').readlines())
+    p.parse(data)
+    print p._etree_dom
