@@ -12,6 +12,7 @@ import gevent
 import StringIO
 
 from lxml import etree, html
+from lxml.html import soupparser
 
 from shared import target
 
@@ -20,17 +21,42 @@ class ParserError(Exception):
     """Base class for all parser errors.
     """
 
+class ParserNotInitializedError(ParserError):
+
+    """Operation with not initialized parser.
+    """
+
 class ParserSyntaxError(ParserError):
 
     """This class describes all syntax errors which can occur during data
     parsing.
 
+    print p1.xpath('//TEMPERATURE/@max')
     Please use `description` attribute to get error details.
     """
 
     def __init__(self, details=''):
         ParserError.__init__(self),
         self.description = details
+
+
+def _check_initialization(method):
+    """Check if the parser is initialized.
+
+    :Return:
+        - `None`
+
+    :Exception:
+        - `ParserNotInitializedError`: in case when `._parser` attribute is
+          `None`.
+    """
+    def check(self, *args, **kwargs):
+        if self._parser is None:
+            raise ParserNotInitializedError()
+        return method(self, *args, **kwargs)
+
+    return check
+
 
 class BaseParser(object):
 
@@ -139,6 +165,7 @@ class XMLParser(BaseParser):
         """
         return etree.parse(data, self._parser)
 
+    @_check_initialization
     def parse(self, raw_data):
         """Parse `raw_data` and return XML DOM compatible with `lxml.etree`.
         """
@@ -193,7 +220,7 @@ class HTMLParser(XMLParser):
     def _parse(self, data):
         """Parse the document `data` and return result (`ElementTree` object).
         """
-        return html.soupparser.parse(data, beautifulsoup=self._parser)
+        return soupparser.parse(data, beautifulsoup=self._parser)
 
     def parse(self, data):
         """High level parse method. Parse document, handle errors. Assign
@@ -204,7 +231,7 @@ class HTMLParser(XMLParser):
         self._etree_dom = self._parse(StringIO.StringIO(data))
 
 
-class GHTMLParser(XMLParser):
+class GHTMLParser(HTMLParser):
 
     """HTML parser.
     """
