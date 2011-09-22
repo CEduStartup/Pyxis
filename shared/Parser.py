@@ -1,9 +1,7 @@
 """This module contains different data parsers.
 
 Don't create parser instance manually, rather use `get_parser()` factory
-method. It will decide whether you need gevent compatible parser or not base on
-your global namespace. If `gevent` is imported in it, `get_parser()` would
-return an gevent compatible instance of a parser.
+method.
 """
 
 import abc
@@ -11,20 +9,25 @@ import BeautifulSoup
 import gevent
 import StringIO
 
-from lxml import etree, html
+from lxml import etree
 from lxml.html import soupparser
 
-from shared import target
+
+# Determine how many tags will be parser before return control to gevent()
+ELEMENTS_IN_ROUND = 50
+
 
 class ParserError(Exception):
 
     """Base class for all parser errors.
     """
 
+
 class ParserNotInitializedError(ParserError):
 
     """Operation with not initialized parser.
     """
+
 
 class ParserSyntaxError(ParserError):
 
@@ -40,6 +43,26 @@ class ParserSyntaxError(ParserError):
         self.description = details
 
 
+class GTreeBuilder(etree.TreeBuilder):
+
+    """This class do the same work as `etree.TreeBuilder` but it's compatible
+    with gevent.
+    """
+
+    def __init__(self, max_elements=ELEMENTS_IN_ROUND):
+        etree.TreeBuilder.__init__(self)
+        self._elements_in_round = max_elements
+        self._elements_parsed = 0
+
+    def start(self, tag, attrs):
+        if self._elements_parsed == self._elements_in_round:
+            self._elements_parsed = 0
+            gevent.sleep(0)
+
+        self._elements_parsed += 1
+        return etree.TreeBuilder.start(self, tag, attrs)
+
+
 def _check_initialization(method):
     """Check if the parser is initialized.
 
@@ -51,6 +74,9 @@ def _check_initialization(method):
           `None`.
     """
     def check(self, *args, **kwargs):
+        """Inner check method. Check if the parser is initialize and if not
+        then raise execption.
+        """
         if self._parser is None:
             raise ParserNotInitializedError()
         return method(self, *args, **kwargs)
@@ -120,7 +146,7 @@ class GBeautifulSoupParser(BeautifulSoup.BeautifulSoup):
         BeautifulSoup.BeautifulSoup.__init__(self, *args, **kwargs)
 
     # How many tags will be parsed before switching control to gevent.
-    TAGS_IN_ROUND = 50
+    TAGS_IN_ROUND = ELEMENTS_IN_ROUND
 
     def parse_starttag(self, start_pos):
         """Handle `starttag` event.
@@ -205,7 +231,7 @@ class GXMLParser(XMLParser):
     def _create_parser(self):
         """Prepare parser to work.
         """
-        xml_target = target.geventTreeBuilder()
+        xml_target = target.GTreeBuilder()
         self._parser = etree.XMLParser(target=xml_target)
 
 
@@ -271,3 +297,10 @@ def get_parser(datatype='xml', gevent_safe=True):
 
     return _PARSER_TYPES_MAPPING[threads_type][datatype]()
 
+if __name__ == '__main__':
+    d = open('t/xml.xml')
+    p = get_parser('xml', gevent_safe=False)
+    p.initialize()
+    p.parse(' '.join(d.readlines()))
+    d.close()
+    print p.xpath('//TEMPERATURE/@max')
