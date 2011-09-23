@@ -1,0 +1,18 @@
+Short description of collector component.
+
+The main purpose of the collector is to gather data from different data sources
+configured by the user and put it to DB (probably MongoDB) where the graph
+component can find it.
+Additional layer between DB and the Graph component may be required to allow
+scaling of application.
+
+
+Interaction with admin WebUI
+
+TBD.
+
+
+Interaction with Graph component
+
+TBD.
+

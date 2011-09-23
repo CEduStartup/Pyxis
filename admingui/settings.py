@@ -77,7 +77,10 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+<<<<<<< HEAD
     'django.contrib.staticfiles',
+=======
+>>>>>>> 2666eb86fe03b8e41e1c7c6e79c8261a780576f4
     'frontend',
     'registration'
 )
@@ -92,6 +95,9 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'info@pyxis'
+<<<<<<< HEAD
 
 STATIC_ROOT = '%s/frontend/static' % (os.getcwd(),)
 STATIC_URL = '/static/'
+=======
+>>>>>>> 2666eb86fe03b8e41e1c7c6e79c8261a780576f4
