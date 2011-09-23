@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>{% block title %}Pyxis - Welcome{% endblock title %}</title>
+	{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+	<link rel="stylesheet" href="{{ STATIC_PREFIX }}css/bootstrap.css">
+        <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/style.css">
+        <meta charset="utf-8">
+</head>
+<body>
+<!--
+  <div class="topbar">
+    <div class="fill">
+      <div class="container">
+        <a class="brand" href="/">Pyxis</a>
+          <ul class="nav">
+            <li><a href="/users/signup">Signup</a></li>
+            <li><a href="/users/profile">Profile</a></li>
+            <li><a href="/trackers">Trackers</a></li>
+          </ul>
+          <form action="" class="pull-right">
+            <input class="input-small" type="text" placeholder="Username">
+            <input class="input-small" type="password" placeholder="Password">
+            <button class="btn" type="submit">Sign in</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="content">
+        <div class="page-header">
+          <h1>Start <small>Visualize any data</small></h1>
+        </div>
+        <div class="row">
+          <div class="span10">
+            {% block content %}
+            {% endblock content %}
+          </div>
+          <div class="span4">
+            <h3>Trackers List</h3>
+          </div>
+        </div>
+      </div>
+
+    </div>
+-->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="container-fluid">
+      <a class="brand" href="/">Pyxis</a>
+      <ul class="nav">
+        <li><a href="#">Public Trackers/Views</a></li>
+        <li><a href="#">Private Trackers/Views</a></li>
+      </ul>
+      {% if user.is_authenticated %}
+      <p class="pull-right">Logged in as <a href="#">username</a></p>
+      {% else %}
+      <p class="pull-right">&nbsp;|&nbsp;<a href="#">Register</a></p>
+      <form action="" class="pull-right">
+            <input class="input-small" type="text" placeholder="Username">
+            <input class="input-small" type="password" placeholder="Password">
+            <button class="btn" type="submit">Sign in</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container" style="width: 940px;">
+
+  <div class="content">
+    Welcome!
+  </div>
+
+  <footer>
+    <p style="text-align: left;">&copy; Pyxis 2011</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
