@@ -15,13 +15,12 @@ class TrackerEvent(BaseEvent):
 
 
 class TrackerSuccessEvent(TrackerEvent):
-    
+
     """ Invoked when tracker succesfully grabbed data.
     """
 
-    self.eid = 'TRACKER.SUCCESS'
-    
-    self.message = 'Tracker %s succesfully grabbed data.'
+    eid = 'TRACKER.SUCCESS'
+    message = 'Tracker %s succesfully grabbed data.'
 
 
 class TrackerFailureEvent(TrackerEvent):
@@ -31,13 +30,12 @@ class TrackerFailureEvent(TrackerEvent):
 
 
 class TrackerParseErrorEvent(TrackerFailureEvent):
-    
+
     """ Invoked when parser error occure during data grabbing.
     """
 
-    self.eid = 'TRACKER.FAILURE.PARSE'
-
-    self.message = ''
+    eid = 'TRACKER.FAILURE.PARSE'
+    message = ''
 
 
 class TrackerWorkflowEvent(TrackerEvent):
