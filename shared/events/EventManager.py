@@ -6,8 +6,8 @@ from gevent.queue import Queue
 
 class EventReceiver(EventManagerBase):
 
-    def __init__(self, server_host, server_port):
-        super(EventReceiver, self).__init__(server_host, server_port)
+    def __init__(self, server_host, server_port, tubes):
+        EventReceiverBase.__init__(self, server_host, server_port)
         self._listeners = {}
         self._queues = []
 
@@ -24,7 +24,6 @@ class EventReceiver(EventManagerBase):
                 if tag in self._listeners:
                     for queue in self.listeners[tag]:
                         queue.put(event)
-            gevent.sleep(0)
 
     def _get_event(self, raw_message):
         """ Creates event from raw message data.
@@ -38,11 +37,11 @@ class EventReceiver(EventManagerBase):
 
         compressed = []
         for tube in tubes:
-            for i in xrange(len(compressed)):
-                if self._is_subtube(compressed[i], tube):
-                    compressed[i] = tube
+            for key, value in enumerate(compressed):
+                if self._is_subtube(value, tube):
+                    compressed[key] = tube
                     break
-                if self._is_subtube(tube, compressed[i]):
+                if self._is_subtube(tube, value):
                     break
         return compressed
 
