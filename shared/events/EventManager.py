@@ -83,7 +83,7 @@ class EventSender(EventManagerBase):
             pass
         self._client.using(tube)
 
-    def fire_event(event):
+    def fire(event):
         """Put event into current tube.
 
         :Parameters:
