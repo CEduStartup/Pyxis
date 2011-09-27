@@ -6,4 +6,5 @@ urlpatterns = patterns('frontend.views.trackers',
     (r'^add/$', 'add'),
     (r'^edit/(\d)/$', 'edit'),
     (r'^view/(\d)/$', 'view'),
+    (r'^call/(\d)/$', 'tracker_data'),
 )
