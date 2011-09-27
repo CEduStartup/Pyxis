@@ -17,6 +17,7 @@ class EventReceiver(EventManagerBase):
         """
 
         while True:
+            # TODO: error handling
             job = self._client.reserve()
             event = pickle.loads(job.body)
             job.delete()
