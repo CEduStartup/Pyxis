@@ -3,6 +3,9 @@
 <head>
     <title>{% block title %}Pyxis - Welcome{% endblock title %}</title>
     {% load static %}{% get_static_prefix as STATIC_PREFIX %}
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/highcharts.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/modules/exporting.js"></script>
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/bootstrap.css">
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/style.css">
     <meta charset="utf-8">
