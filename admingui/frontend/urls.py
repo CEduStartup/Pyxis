@@ -1,11 +1,9 @@
 from django.conf.urls.defaults import *
-from django.views.generic.simple import redirect_to
 
-urlpatterns = patterns('',
-    (r'^$', redirect_to, {'url': 'index'}),
-    (r'^index/$', 'frontend.views.trackers.index'),
-    (r'^add/$', 'frontend.views.trackers.add'),
-    (r'^edit/(\d)/$', 'frontend.views.trackers.edit'),
-    (r'^view/(\d)/$', 'frontend.views.trackers.view'),
+urlpatterns = patterns('frontend.views.trackers',
+    (r'^$', 'index'),
+    (r'^index/$', 'index'),
+    (r'^add/$', 'add'),
+    (r'^edit/(\d)/$', 'edit'),
+    (r'^view/(\d)/$', 'view'),
 )
-
