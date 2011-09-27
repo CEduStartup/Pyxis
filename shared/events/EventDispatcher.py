@@ -3,14 +3,18 @@ from EventManager import EventReceiver
 
 class EventDispatcher(object):
 
+    """ Dispatches events to multiple consumers.
+    This class is non thread safe.
+    """
+
     def __init__(self, server_host, server_port, tag):
         self._receiver = EventReceiver(server_host, server_port, tag, self._dispatch_event)
         self._subscriptions = {}
 
     def _dispatch_event(self, event):
         for tag in event.tags:
-            for listener in self._subscriptions[tag]:
-                listener(event)
+            for subscription in self._subscriptions[tag]:
+                subscription(event)
 
     def _get_tags_compressed(self, tags):
         """ Reduces tags list to the least effective according to

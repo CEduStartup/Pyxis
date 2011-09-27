@@ -5,6 +5,14 @@ from EventDispatcher import EventDispatcher
 
 class GEventDispatcher(EventDispatcher):
 
+    """ Dispatches events to multiple consumers.
+
+    Allows to subscribe without callback. In that case subscriber should
+    intentionally receive events.
+
+    This class is thread safe.
+    """
+
     def __init__(self, server_host, server_port, tag):
         EventDispatcher.__init__(self, server_host, server_port, tag)
         self._subscribers = []
