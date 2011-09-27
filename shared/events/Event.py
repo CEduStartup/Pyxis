@@ -62,7 +62,7 @@ class BaseEvent:
         serialized.
         """
         attributes = self.__dict__.copy()
-        for attr in attributes:
+        for attr in self.__dict__:
             # Delete all attributes which cannot be serialized.
             if (attr not in self._serializeble_attrs and
                 attr not in self._msg_args):
@@ -99,6 +99,6 @@ class BaseEvent:
         """
         try:
             return pickle.dumps(self)
-        except pickel.PicklingError, e:
+        except pickle.PicklingError, e:
             raise EventSerializationError(str(e))
 
