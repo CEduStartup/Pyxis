@@ -2,6 +2,7 @@
 """
 
 import beanstalkc
+import pickle
 
 # This constant probably should be moved to settings.py
 # How long we can wait for information.
@@ -30,36 +31,6 @@ class EventManagerBase(object):
         """Return a list of tubes which currently available.
         """
         return self._client.tubes()
-
-## TODO: Move this to event receiver class.
-##
-##    def get_watching_tubes(self):
-##        """Return a list of tubes which are in watchlist.
-##        """
-##        return self._client.watching()
-##
-##    def set_watching_tubes(self, tubes):
-##        """Add tube(s) to watch list. All previous tubes will be removed.
-##
-##        :Parameters:
-##            - `tubes` string which contain a name of tube to watch for (of a
-##              list of strings).
-##        """
-##        current_tubes =set(self.get_watching_tubes())
-##
-##        if not isinstance(tubes, (list, tuple))
-##            new_tubes = set([tubes,])
-##        else:
-##            new_tubes = set(tubes)
-##
-##        to_delete = current_tubes.difference(new_tubes)
-##        to_add = new_tubes.difference(current_tubes)
-##
-##        for tube in to_delete:
-##            self._client.ignore(t)
-##
-##        for tube in to_add:
-##            self._client.watch(tube)
 
 
 class EventSender(EventManagerBase):
@@ -90,4 +61,27 @@ class EventSender(EventManagerBase):
             - `event`: an picklable object.
         """
         self._client.put(event)
+
+
+class EventReceiver(EventManagerBase):
+
+    """ Used to receive messages from a single tube.
+    This class is non thread safe.
+    """
+
+    def __init__(self, server_host, server_port, tube, callback):
+        EventReceiverBase.__init__(self, server_host, server_port, tube)
+        self._callback = callback
+
+    def dispatch(self):
+        """ Method that receive from message queue, restore and throw events to
+        subscribed callback.
+        """
+
+        while True:
+            # TODO: error handling
+            job = self._client.reserve()
+            event = pickle.loads(job.body)
+            job.delete()
+            self._callback(event)
 
