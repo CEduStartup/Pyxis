@@ -10,10 +10,12 @@ class EventError(Exception):
     """Base class for all events error.
     """
 
+
 class EventSerializationError(EventError):
 
     """This exception indicates that an event serialization has been failed.
     """
+
 
 class EventMeta(type):
 
@@ -21,16 +23,16 @@ class EventMeta(type):
     These tags are defining topics to subscribe when listening for events.
     """
 
-    def __init__(cls, name, bases, dct):
-        super(EventMeta, cls).__init__(name, bases, dct)
-        if cls.eid:
-            cls.tags = []
+    def __init__(mcs, name, bases, dct):
+        super(EventMeta, mcs).__init__(name, bases, dct)
+        if mcs.eid:
+            mcs.tags = []
             tag = ''
-            for piece in cls.eid.split('.')[:-1]:
+            for piece in mcs.eid.split('.')[:-1]:
                 tag = '%s%s.' % (tag, piece)
-                cls.tags.append(tag)
+                mcs.tags.append(tag)
         else:
-            cls.tags = ['.']
+            mcs.tags = ['.']
 
 
 class BaseEvent:
@@ -74,7 +76,7 @@ class BaseEvent:
               *NOTE*: Please update `_msg_args` with `kwargs`.
         """
         self.__dict__.update(kwargs)
-        self._set_fire_time()
+        self._set_fire_time(custom_time=custom_time)
 
     def __getstate__(self):
         """This method will be invoked by `serialize()`. Its purpose is to
