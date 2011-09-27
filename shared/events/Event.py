@@ -10,10 +10,12 @@ class EventError(Exception):
     """Base class for all events error.
     """
 
+
 class EventSerializationError(EventError):
 
     """This exception indicates that an event serialization has been failed.
     """
+
 
 class EventMeta(type):
 
@@ -74,7 +76,7 @@ class BaseEvent:
               *NOTE*: Please update `_msg_args` with `kwargs`.
         """
         self.__dict__.update(kwargs)
-        self._set_fire_time()
+        self._set_fire_time(custom_time=custom_time)
 
     def __getstate__(self):
         """This method will be invoked by `serialize()`. Its purpose is to
