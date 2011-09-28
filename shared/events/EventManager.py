@@ -46,14 +46,14 @@ class EventSender(EventManagerBase):
         :Return:
             An event object.
         """
-        # Here we need to create an appropriate event object using it's eid.
+        # TODO: Here we need to create an appropriate event object using it's eid.
 
     def _serialize_event(self, event):
         """Serialize an event to string using pickle module.
         """
         return event.serialize()
 
-    def fire(event, tubes=None, **kwargs):
+    def fire(self, event, tubes=None, **kwargs):
         """Put event into current tube.
 
         :Parameters:
@@ -65,7 +65,7 @@ class EventSender(EventManagerBase):
         event = self._create_event_obj(event, **kwargs)
         serialized_event = self._serialize_event(event)
 
-        # We need to determine in which tube we should send an event.
+        # TODO: We need to determine in which tube we should send an event.
 
 
 class EventReceiver(EventManagerBase):
@@ -75,7 +75,7 @@ class EventReceiver(EventManagerBase):
     """
 
     def __init__(self, server_host, server_port, tube, callback):
-        EventReceiverBase.__init__(self, server_host, server_port, tube)
+        EventManagerBase.__init__(self, server_host, server_port, tube)
         self._callback = callback
 
     def dispatch(self):
