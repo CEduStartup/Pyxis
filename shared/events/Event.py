@@ -23,16 +23,16 @@ class EventMeta(type):
     These tags are defining topics to subscribe when listening for events.
     """
 
-    def __init__(mcs, name, bases, dct):
-        super(EventMeta, mcs).__init__(name, bases, dct)
-        if mcs.eid:
-            mcs.tags = []
-            tag = ''
-            for piece in mcs.eid.split('.')[:-1]:
-                tag = '%s%s.' % (tag, piece)
-                mcs.tags.append(tag)
-        else:
-            mcs.tags = ['.']
+    def __init__(cls, name, bases, dct):
+        super(EventMeta, cls).__init__(name, bases, dct)
+        cls.tags = ['']
+        if cls.eid:
+            tag_parts = cls.eid.split('.')
+            tag = tag_parts[0]
+            cls.tags.append(tag)
+            for part in tag_parts[1:]:
+                tag = '%s.%s' % (tag, part)
+                cls.tags.append(tag)
 
 
 class BaseEvent:
@@ -55,7 +55,7 @@ class BaseEvent:
 
     __metaclass__ = EventMeta
 
-    eid = '.'
+    eid = ''
     time = None
     # Log message text. For string formating please use dictionary
     # ('%(key_name)s'). You can pass all arguments to `__init__()` as a keyword
@@ -132,7 +132,7 @@ class TrackerEvent(BaseEvent):
     Don't invoke this event.
     """
 
-    eid = '.TRACKER.'
+    eid = 'TRACKER'
     tracker_id = None
 
 
@@ -141,7 +141,7 @@ class TrackerSuccessEvent(TrackerEvent):
     """ Invoked when tracker succesfully grabbed data.
     """
 
-    eid = '.TRACKER.SUCCESS.'
+    eid = 'TRACKER.SUCCESS'
     message = 'Tracker %s succesfully grabbed data.'
 
 
@@ -150,7 +150,7 @@ class TrackerFailureEvent(TrackerEvent):
     """ Base class for all tracker failures events.
     """
 
-    eid = '.TRACKER.FAILURE.'
+    eid = 'TRACKER.FAILURE'
 
 
 class TrackerParseErrorEvent(TrackerFailureEvent):
@@ -158,7 +158,7 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
     """ Invoked when parser error occure during data grabbing.
     """
 
-    eid = '.TRACKER.FAILURE.PARSE.'
+    eid = 'TRACKER.FAILURE.PARSE'
     message = ''
 
 
@@ -167,5 +167,5 @@ class TrackerWorkflowEvent(TrackerEvent):
     """ Base class for all non-failure events during data grabbing.
     """
 
-    eid = '.TRACKER.WORKFLOW.'
+    eid = 'TRACKER.WORKFLOW'
 
