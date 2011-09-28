@@ -1,3 +1,16 @@
+""" This module contains event dispatcher for non-multithread components.
+
+Usage example:
+
+dispatcher = EventDispatcher(host, port, 'consumer')
+
+dispatcher.subscribe([TrackerSuccessEvent], some_func_1)
+dispatcher.subscribe([TrackerFailureEvent], some_func_2)
+dispatcher.subscribe([TrackerSuccessEvent, TrackerFailureEvent], some_func_3)
+
+dispatcher.dispatch()
+"""
+
 from EventManager import EventReceiver
 
 

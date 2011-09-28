@@ -1,3 +1,26 @@
+""" This module contains event dispatcher for multithread components which use
+gevent.
+
+
+Usage example:
+
+dispatcher = EventDispatcher(host, port, 'consumer')
+
+# Subscribe with callback
+dispatcher.subscribe([TrackerEvent], some_func_1)
+# Subscribe without callback
+tracker_finished_subscr = dispatcher.subscribe([TrackerSuccessEvent, TrackerFailureEvent])
+
+# Subscriptions with callback are handled in dispatcher main loop.
+gevent.spawn(dispatcher.dispatch)
+
+# Handling subscription without callback
+while True:
+    # do something
+    timeout = time_left_to_next_action
+    event = dispatcher.receive(tracker_finished_subscr, timeout)
+"""
+
 from gevent.queue import Queue
 
 from EventDispatcher import EventDispatcher
@@ -25,8 +48,8 @@ class GEventDispatcher(EventDispatcher):
                 else:
                     listener(event)
 
-    def receive(self, subscriber_id):
-        return self._subscribers[subscriber_id].get()
+    def receive(self, subscriber_id, timeout=None):
+        return self._subscribers[subscriber_id].get(timeout=timeout)
 
     def subscribe(self, events, callback=None):
         """ Subscribes for bunch of events. Receiving of events arranged by
