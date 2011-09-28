@@ -24,8 +24,9 @@ class EventManagerBase(object):
         """
         self._client = beanstalkc.Connection(host=server_host, port=server_port)
         self._client.connect()
-        if tubes is not None:
-            self.set_watching_tubes(tubes)
+        
+        #if tubes is not None:
+        #    self.set_watching_tubes(tubes)
 
     def get_tubes(self):
         """Return a list of tubes which currently available.
@@ -54,13 +55,13 @@ class EventSender(EventManagerBase):
             pass
         self._client.using(tube)
 
-    def fire(event):
+    def fire(self, event):
         """Put event into current tube.
 
         :Parameters:
             - `event`: an picklable object.
         """
-        self._client.put(event)
+        self._client.put(pickle.dumps(event))
 
 
 class EventReceiver(EventManagerBase):
@@ -70,7 +71,7 @@ class EventReceiver(EventManagerBase):
     """
 
     def __init__(self, server_host, server_port, tube, callback):
-        EventReceiverBase.__init__(self, server_host, server_port, tube)
+        EventManagerBase.__init__(self, server_host, server_port, tube)
         self._callback = callback
 
     def dispatch(self):
@@ -80,8 +81,10 @@ class EventReceiver(EventManagerBase):
 
         while True:
             # TODO: error handling
-            job = self._client.reserve()
-            event = pickle.loads(job.body)
-            job.delete()
-            self._callback(event)
+            try:
+                job = self._client.reserve()
+                event = pickle.loads(job.body)
+                self._callback(event)
+            finally:
+                job.delete()
 

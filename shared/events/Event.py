@@ -64,7 +64,7 @@ class BaseEvent:
     log_level = None
 
     _serializeble_attrs = ['eid', 'time']
-    _msg_args = []
+    _msg_args = ['message']
 
     def __init__(self, custom_time=None, **kwargs):
         """Initialize event instance.
@@ -142,7 +142,7 @@ class TrackerSuccessEvent(TrackerEvent):
     """
 
     eid = 'TRACKER.SUCCESS'
-    message = 'Tracker %s succesfully grabbed data.'
+    msg = 'Tracker %s succesfully grabbed data.'
 
 
 class TrackerFailureEvent(TrackerEvent):
@@ -159,7 +159,7 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
     """
 
     eid = 'TRACKER.FAILURE.PARSE'
-    message = ''
+    msg = ''
 
 
 class TrackerWorkflowEvent(TrackerEvent):
@@ -169,3 +169,32 @@ class TrackerWorkflowEvent(TrackerEvent):
 
     eid = 'TRACKER.WORKFLOW'
 
+
+class LoggerEvent(BaseEvent):
+    """ Base class for all logger events. """
+    
+    eid = 'LOGGER'
+    msg = '%(message)s'
+
+class LoggerInfoEvent(LoggerEvent):
+    """ Event used for logger's info messages. """
+    
+    eid = 'LOGGER.INFO'
+
+
+class LoggerWarningEvent(LoggerEvent):
+    """ Event used for logger's warning messages. """
+
+    eid = 'LOGGER.WARNING'
+
+
+class LoggerDebugEvent(LoggerEvent):
+    """ Event used for logger's debug messages. """
+    
+    eid = 'LOGGER.DEBUG'
+
+
+class LoggerCriticalEvent(LoggerEvent):
+    """ Event used for logger's critical messages. """
+    
+    eid = 'LOGGER.CRITICAL'
