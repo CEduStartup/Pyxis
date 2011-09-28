@@ -3,6 +3,7 @@
 
 import beanstalkc
 import pickle
+from shared.events.Event import BaseEvent
 
 # This constant probably should be moved to settings.py
 # How long we can wait for information.
@@ -24,9 +25,6 @@ class EventManagerBase(object):
         """
         self._client = beanstalkc.Connection(host=server_host, port=server_port)
         self._client.connect()
-        
-        #if tubes is not None:
-        #    self.set_watching_tubes(tubes)
 
     def get_tubes(self):
         """Return a list of tubes which currently available.
@@ -39,29 +37,38 @@ class EventSender(EventManagerBase):
     """Used to send event to different tubes.
     """
 
-    def get_current_tube(self):
-        """Return a tube which is currently in use (to put event to).
-        """
-        return self._client.using()
-
-    def set_current_tube(self, tube):
-        """Set a tube to put event to.
+    def _create_event_obj(self, eid, **kwargs):
+        """Create an event and pass all required arguments.
 
         :Parameters:
-            - `tube`: string name of the tube.
-        """
-        if not tube in self.get_tubes():
-            # TODO: we need to handle this situation correctly.
-            pass
-        self._client.using(tube)
+            - `eid`: event ID.
+            - `kwargs`: additional arguments required for event.
 
-    def fire(self, event):
+        :Return:
+            An event object.
+        """
+        if isinstance(eid, BaseEvent):
+            return eid
+        # TODO: Here we need to create an appropriate event object using it's eid.
+
+    def _serialize_event(self, event):
+        """Serialize an event to string using pickle module.
+        """
+        return event.serialize()
+
+    def fire(self, event, tubes=None, **kwargs):
         """Put event into current tube.
 
         :Parameters:
-            - `event`: an picklable object.
+            - `event`: an event id.
+            - `tubes`: a list of tubes to send the `event` to.
+            - `kwargs`: dictionary which contains all required parameters to
+              format log message.
         """
-        self._client.put(pickle.dumps(event))
+        event = self._create_event_obj(event, **kwargs)
+        serialized_event = self._serialize_event(event)
+        # TODO: We need to determine in which tube we should send an event.
+        self._client.put(pickle.dumps(serialized_event))
 
 
 class EventReceiver(EventManagerBase):
