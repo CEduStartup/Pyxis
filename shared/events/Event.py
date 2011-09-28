@@ -10,10 +10,12 @@ class EventError(Exception):
     """Base class for all events error.
     """
 
+
 class EventSerializationError(EventError):
 
     """This exception indicates that an event serialization has been failed.
     """
+
 
 class EventMeta(type):
 
@@ -23,14 +25,14 @@ class EventMeta(type):
 
     def __init__(cls, name, bases, dct):
         super(EventMeta, cls).__init__(name, bases, dct)
+        cls.tags = ['']
         if cls.eid:
-            cls.tags = []
-            tag = ''
-            for piece in cls.eid.split('.')[:-1]:
-                tag = '%s%s.' % (tag, piece)
+            tag_parts = cls.eid.split('.')
+            tag = tag_parts[0]
+            cls.tags.append(tag)
+            for part in tag_parts[1:]:
+                tag = '%s.%s' % (tag, part)
                 cls.tags.append(tag)
-        else:
-            cls.tags = ['.']
 
 
 class BaseEvent:
@@ -53,7 +55,7 @@ class BaseEvent:
 
     __metaclass__ = EventMeta
 
-    eid = '.'
+    eid = ''
     time = None
     # Log message text. For string formating please use dictionary
     # ('%(key_name)s'). You can pass all arguments to `__init__()` as a keyword
@@ -74,7 +76,7 @@ class BaseEvent:
               *NOTE*: Please update `_msg_args` with `kwargs`.
         """
         self.__dict__.update(kwargs)
-        self._set_fire_time()
+        self._set_fire_time(custom_time=custom_time)
 
     def __getstate__(self):
         """This method will be invoked by `serialize()`. Its purpose is to
@@ -130,7 +132,7 @@ class TrackerEvent(BaseEvent):
     Don't invoke this event.
     """
 
-    eid = '.TRACKER.'
+    eid = 'TRACKER'
     tracker_id = None
 
 
@@ -139,7 +141,7 @@ class TrackerSuccessEvent(TrackerEvent):
     """ Invoked when tracker succesfully grabbed data.
     """
 
-    eid = '.TRACKER.SUCCESS.'
+    eid = 'TRACKER.SUCCESS'
     message = 'Tracker %s succesfully grabbed data.'
 
 
@@ -148,7 +150,7 @@ class TrackerFailureEvent(TrackerEvent):
     """ Base class for all tracker failures events.
     """
 
-    eid = '.TRACKER.FAILURE.'
+    eid = 'TRACKER.FAILURE'
 
 
 class TrackerParseErrorEvent(TrackerFailureEvent):
@@ -156,7 +158,7 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
     """ Invoked when parser error occure during data grabbing.
     """
 
-    eid = '.TRACKER.FAILURE.PARSE.'
+    eid = 'TRACKER.FAILURE.PARSE'
     message = ''
 
 
@@ -165,5 +167,5 @@ class TrackerWorkflowEvent(TrackerEvent):
     """ Base class for all non-failure events during data grabbing.
     """
 
-    eid = '.TRACKER.WORKFLOW.'
+    eid = 'TRACKER.WORKFLOW'
 
