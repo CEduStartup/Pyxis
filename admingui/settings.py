@@ -96,3 +96,6 @@ DEFAULT_FROM_EMAIL = 'info@pyxis'
 
 STATIC_ROOT = '%s/frontend/static' % (os.getcwd(),)
 STATIC_URL = '/static/'
+
+RPC_HOST = '127.0.0.1'
+RCP_PORT = 10123
