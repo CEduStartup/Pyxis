@@ -5,6 +5,8 @@ import pickle
 import time
 
 
+LOGGER_TUBE = 'LOGGER_TUBE'
+
 class EventError(Exception):
 
     """Base class for all events error.
@@ -14,6 +16,12 @@ class EventError(Exception):
 class EventSerializationError(EventError):
 
     """This exception indicates that an event serialization has been failed.
+    """
+
+
+class NoSuchEventError(EventError):
+
+    """Indicates that event whth given EID doesn't exist.
     """
 
 
@@ -198,3 +206,49 @@ class LoggerCriticalEvent(LoggerEvent):
     """ Event used for logger's critical messages. """
     
     eid = 'LOGGER.CRITICAL'
+
+
+# Maps event EID to event class. You need to update this mapping each time you
+# adding new event class.
+_EID_EVENT_MAPPING = {
+    TrackerSuccessEvent.eid: TrackerSuccessEvent,
+    TrackerFailureEvent.eid: TrackerFailureEvent,
+    TrackerParseErrorEvent.eid: TrackerParseErrorEvent,
+    TrackerWorkflowEvent.eid: TrackerWorkflowEvent,
+}
+
+# Defines a list of suitable tubes for each EID. You need to update this
+_EID_TUBE_MAPPING = {
+    'TRACKER.SUCCESS': (LOGGER_TUBE,),
+    'TRACKER.FAILURE': (LOGGER_TUBE),
+    'TRACKER.FAILURE.PARSE': (LOGGER_TUBE),
+    'TRACKER.WORKFLOW': (LOGGER_TUBE,),
+}
+
+def get_tubes(eid):
+    """Return a list of tubes appropriate for given `eid`.
+
+    :Exception:
+        - `NoSuchEventError` in case when given `eid` was not found.
+    """
+    try:
+        return _EID_TUBE_MAPPING[eid]
+    except KeyError:
+        raise NoSuchEventError(eid)
+
+def get_event(eid):
+    """Try to return an event class for given `eid`.
+
+    Please *always* use this method to get event object.
+
+    :Return:
+        - event class.
+
+    :Exception:
+        - `NoSuchEventError` in case when event with such `eid` doesn't exists.
+    """
+    try:
+        return _EID_EVENT_MAPPING[eid]
+    except KeyError:
+        raise NoSuchEventError(eid)
+

@@ -5,6 +5,8 @@ import beanstalkc
 import pickle
 from shared.events.Event import BaseEvent
 
+from shared.events import Event
+
 # This constant probably should be moved to settings.py
 # How long we can wait for information.
 TIMEOUT = 3
@@ -14,7 +16,7 @@ class EventManagerBase(object):
     """Base class for event sender and event receiver.
     """
 
-    def __init__(self, server_host, server_port, tubes=None):
+    def __init__(self, server_host='localhost', server_port=11300):
         """Initialize event manager.
 
         :Parameters:
@@ -25,12 +27,6 @@ class EventManagerBase(object):
         """
         self._client = beanstalkc.Connection(host=server_host, port=server_port)
         self._client.connect()
-
-    def get_tubes(self):
-        """Return a list of tubes which currently available.
-        """
-        return self._client.tubes()
-
 
 class EventSender(EventManagerBase):
 
@@ -47,9 +43,9 @@ class EventSender(EventManagerBase):
         :Return:
             An event object.
         """
-        if isinstance(eid, BaseEvent):
-            return eid
-        # TODO: Here we need to create an appropriate event object using it's eid.
+        # TODO: errors handling.
+        event_cls = Event.get_event(eid)
+        return event_cls(**kwargs)
 
     def _serialize_event(self, event):
         """Serialize an event to string using pickle module.
@@ -67,9 +63,21 @@ class EventSender(EventManagerBase):
         """
         event = self._create_event_obj(event, **kwargs)
         serialized_event = self._serialize_event(event)
-        # TODO: We need to determine in which tube we should send an event.
-        self._client.put(pickle.dumps(serialized_event))
 
+        if tubes is not None:
+            destanation = tubes
+        else:
+            destanation = Event.get_tubes(event.eid)
+
+        # TODO: errors handling.
+        for tube in destanation:
+            self._client.use(tube)
+            self._client.put(serialized_event)
+
+def null_callback(event):
+    """Null event handler.
+    """
+    pass
 
 class EventReceiver(EventManagerBase):
 
@@ -77,14 +85,24 @@ class EventReceiver(EventManagerBase):
     This class is non thread safe.
     """
 
-    def __init__(self, server_host, server_port, tube, callback):
-        EventManagerBase.__init__(self, server_host, server_port, tube)
+    def __init__(self, server_host='localhost', server_port=11300,
+                 tubes=('default',), callback=null_callback):
+        EventManagerBase.__init__(self, server_host, server_port)
         self._callback = callback
+        self._tubes = tubes
+
+    def _subscribe(self):
+        """Set tubes to watch for.
+        """
+        currect = self._client.ignore('default')
+        for tube in self._tubes:
+            self._client.watch(tube)
 
     def dispatch(self):
         """ Method that receive from message queue, restore and throw events to
         subscribed callback.
         """
+        self._subscribe()
 
         while True:
             # TODO: error handling
