@@ -65,12 +65,12 @@ class EventSender(EventManagerBase):
         serialized_event = self._serialize_event(event)
 
         if tubes is not None:
-            destanation = tubes
+            dest = tubes
         else:
-            destanation = Event.get_tubes(event.eid)
+            dest = Event.get_tubes(event.eid)
 
         # TODO: errors handling.
-        for tube in destanation:
+        for tube in dest:
             self._client.use(tube)
             self._client.put(serialized_event)
 
