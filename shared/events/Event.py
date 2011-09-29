@@ -5,6 +5,8 @@ import pickle
 import time
 
 
+LOGGER_TUBE = 'LOGGER_TUBE'
+
 class EventError(Exception):
 
     """Base class for all events error.
@@ -14,6 +16,12 @@ class EventError(Exception):
 class EventSerializationError(EventError):
 
     """This exception indicates that an event serialization has been failed.
+    """
+
+
+class NoSuchEventError(EventError):
+
+    """Indicates that event whth given EID doesn't exist.
     """
 
 
@@ -64,7 +72,7 @@ class BaseEvent:
     log_level = None
 
     _serializeble_attrs = ['eid', 'time']
-    _msg_args = []
+    _msg_args = ['message']
 
     def __init__(self, custom_time=None, **kwargs):
         """Initialize event instance.
@@ -142,7 +150,7 @@ class TrackerSuccessEvent(TrackerEvent):
     """
 
     eid = 'TRACKER.SUCCESS'
-    message = 'Tracker %s succesfully grabbed data.'
+    msg = 'Tracker %s succesfully grabbed data.'
 
 
 class TrackerFailureEvent(TrackerEvent):
@@ -159,7 +167,7 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
     """
 
     eid = 'TRACKER.FAILURE.PARSE'
-    message = ''
+    msg = ''
 
 
 class TrackerWorkflowEvent(TrackerEvent):
@@ -168,4 +176,90 @@ class TrackerWorkflowEvent(TrackerEvent):
     """
 
     eid = 'TRACKER.WORKFLOW'
+
+
+class LoggerEvent(BaseEvent):
+    """ Base class for all logger events. """
+    
+    eid = 'LOGGER'
+    msg = '%(message)s'
+    level = 'gene'
+
+class LoggerInfoEvent(LoggerEvent):
+    """ Event used for logger's info messages. """
+    
+    eid = 'LOGGER.INFO'
+    level = 'info'
+
+class LoggerWarningEvent(LoggerEvent):
+    """ Event used for logger's warning messages. """
+
+    eid = 'LOGGER.WARNING'
+    level = 'warn'
+
+class LoggerDebugEvent(LoggerEvent):
+    """ Event used for logger's debug messages. """
+    
+    eid = 'LOGGER.DEBUG'
+    level = 'debg'
+
+class LoggerCriticalEvent(LoggerEvent):
+    """ Event used for logger's critical messages. """
+    
+    eid = 'LOGGER.CRITICAL'
+    level = 'crit'
+
+# Maps event EID to event class. You need to update this mapping each time you
+# adding new event class.
+_EID_EVENT_MAPPING = {
+    TrackerSuccessEvent.eid: TrackerSuccessEvent,
+    TrackerFailureEvent.eid: TrackerFailureEvent,
+    TrackerParseErrorEvent.eid: TrackerParseErrorEvent,
+    TrackerWorkflowEvent.eid: TrackerWorkflowEvent,
+    
+    LoggerInfoEvent.eid: LoggerInfoEvent,
+    LoggerWarningEvent.eid: LoggerWarningEvent,
+    LoggerDebugEvent.eid: LoggerDebugEvent,
+    LoggerCriticalEvent.eid: LoggerCriticalEvent,
+}
+
+# Defines a list of suitable tubes for each EID. You need to update this
+_EID_TUBE_MAPPING = {
+    'TRACKER.SUCCESS': (LOGGER_TUBE,),
+    'TRACKER.FAILURE': (LOGGER_TUBE,),
+    'TRACKER.FAILURE.PARSE': (LOGGER_TUBE,),
+    'TRACKER.WORKFLOW': (LOGGER_TUBE,),
+    
+    LoggerInfoEvent.eid: (LOGGER_TUBE,),
+    LoggerWarningEvent.eid: (LOGGER_TUBE,),
+    LoggerDebugEvent.eid: (LOGGER_TUBE,),
+    LoggerCriticalEvent.eid: (LOGGER_TUBE,),
+}
+
+def get_tubes(eid):
+    """Return a list of tubes appropriate for given `eid`.
+
+    :Exception:
+        - `NoSuchEventError` in case when given `eid` was not found.
+    """
+    try:
+        return _EID_TUBE_MAPPING[eid]
+    except KeyError:
+        raise NoSuchEventError(eid)
+
+def get_event(eid):
+    """Try to return an event class for given `eid`.
+
+    Please *always* use this method to get event object.
+
+    :Return:
+        - event class.
+
+    :Exception:
+        - `NoSuchEventError` in case when event with such `eid` doesn't exists.
+    """
+    try:
+        return _EID_EVENT_MAPPING[eid]
+    except KeyError:
+        raise NoSuchEventError(eid)
 
