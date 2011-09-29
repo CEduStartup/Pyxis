@@ -215,6 +215,11 @@ _EID_EVENT_MAPPING = {
     TrackerFailureEvent.eid: TrackerFailureEvent,
     TrackerParseErrorEvent.eid: TrackerParseErrorEvent,
     TrackerWorkflowEvent.eid: TrackerWorkflowEvent,
+    
+    LoggerInfoEvent.eid: LoggerInfoEvent,
+    LoggerWarningEvent.eid: LoggerWarningEvent,
+    LoggerDebugEvent.eid: LoggerDebugEvent,
+    LoggerCriticalEvent.eid: LoggerCriticalEvent,
 }
 
 # Defines a list of suitable tubes for each EID. You need to update this
@@ -223,6 +228,11 @@ _EID_TUBE_MAPPING = {
     'TRACKER.FAILURE': (LOGGER_TUBE),
     'TRACKER.FAILURE.PARSE': (LOGGER_TUBE),
     'TRACKER.WORKFLOW': (LOGGER_TUBE,),
+    
+    LoggerInfoEvent.eid: (LOGGER_TUBE,),
+    LoggerWarningEvent.eid: (LOGGER_TUBE,),
+    LoggerDebugEvent.eid: (LOGGER_TUBE,),
+    LoggerCriticalEvent.eid: (LOGGER_TUBE,),
 }
 
 def get_tubes(eid):
