@@ -1,0 +1,10 @@
+Logger Component
+================
+
+This component shows logger events, occurred in the system and which were sent via message queue.
+It listens for own tube, and will handle different log levels with custom actions.
+
+By now it runs by next commands:
+python manager.py
+
+and shows all log events
