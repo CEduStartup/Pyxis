@@ -183,30 +183,31 @@ class LoggerEvent(BaseEvent):
     
     eid = 'LOGGER'
     msg = '%(message)s'
+    level = 'gene'
 
 class LoggerInfoEvent(LoggerEvent):
     """ Event used for logger's info messages. """
     
     eid = 'LOGGER.INFO'
-
+    level = 'info'
 
 class LoggerWarningEvent(LoggerEvent):
     """ Event used for logger's warning messages. """
 
     eid = 'LOGGER.WARNING'
-
+    level = 'warn'
 
 class LoggerDebugEvent(LoggerEvent):
     """ Event used for logger's debug messages. """
     
     eid = 'LOGGER.DEBUG'
-
+    level = 'debg'
 
 class LoggerCriticalEvent(LoggerEvent):
     """ Event used for logger's critical messages. """
     
     eid = 'LOGGER.CRITICAL'
-
+    level = 'crit'
 
 # Maps event EID to event class. You need to update this mapping each time you
 # adding new event class.
