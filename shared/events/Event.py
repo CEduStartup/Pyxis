@@ -180,13 +180,13 @@ class TrackerWorkflowEvent(TrackerEvent):
 
 class LoggerEvent(BaseEvent):
     """ Base class for all logger events. """
-    
+
     eid = 'LOGGER'
     msg = '%(message)s'
 
 class LoggerInfoEvent(LoggerEvent):
     """ Event used for logger's info messages. """
-    
+
     eid = 'LOGGER.INFO'
 
 
@@ -198,13 +198,13 @@ class LoggerWarningEvent(LoggerEvent):
 
 class LoggerDebugEvent(LoggerEvent):
     """ Event used for logger's debug messages. """
-    
+
     eid = 'LOGGER.DEBUG'
 
 
 class LoggerCriticalEvent(LoggerEvent):
     """ Event used for logger's critical messages. """
-    
+
     eid = 'LOGGER.CRITICAL'
 
 
@@ -215,7 +215,7 @@ _EID_EVENT_MAPPING = {
     TrackerFailureEvent.eid: TrackerFailureEvent,
     TrackerParseErrorEvent.eid: TrackerParseErrorEvent,
     TrackerWorkflowEvent.eid: TrackerWorkflowEvent,
-    
+
     LoggerInfoEvent.eid: LoggerInfoEvent,
     LoggerWarningEvent.eid: LoggerWarningEvent,
     LoggerDebugEvent.eid: LoggerDebugEvent,
@@ -224,11 +224,11 @@ _EID_EVENT_MAPPING = {
 
 # Defines a list of suitable tubes for each EID. You need to update this
 _EID_TUBE_MAPPING = {
-    'TRACKER.SUCCESS': (LOGGER_TUBE,),
-    'TRACKER.FAILURE': (LOGGER_TUBE,),
-    'TRACKER.FAILURE.PARSE': (LOGGER_TUBE,),
-    'TRACKER.WORKFLOW': (LOGGER_TUBE,),
-    
+    TrackerSuccessEvent.eid: (LOGGER_TUBE,),
+    TrackerFailureEvent.eid: (LOGGER_TUBE,),
+    TrackerParseErrorEvent.eid: (LOGGER_TUBE,),
+    TrackerWorkflowEvent.eid: (LOGGER_TUBE,),
+
     LoggerInfoEvent.eid: (LOGGER_TUBE,),
     LoggerWarningEvent.eid: (LOGGER_TUBE,),
     LoggerDebugEvent.eid: (LOGGER_TUBE,),
