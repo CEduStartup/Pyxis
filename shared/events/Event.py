@@ -190,8 +190,8 @@ _EID_EVENT_MAPPING = {
 # Defines a list of suitable tubes for each EID. You need to update this
 _EID_TUBE_MAPPING = {
     'TRACKER.SUCCESS': (LOGGER_TUBE,),
-    'TRACKER.FAILURE': (LOGGER_TUBE),
-    'TRACKER.FAILURE.PARSE': (LOGGER_TUBE),
+    'TRACKER.FAILURE': (LOGGER_TUBE,),
+    'TRACKER.FAILURE.PARSE': (LOGGER_TUBE,),
     'TRACKER.WORKFLOW': (LOGGER_TUBE,),
 }
 
