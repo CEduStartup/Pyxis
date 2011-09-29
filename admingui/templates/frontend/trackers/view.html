@@ -6,6 +6,9 @@
 var chart;
 $(document).ready(function() {
 
+	$(function() {
+		$('#start, #end').datepicker();
+	});
      
    options = {
 		  chart: {
@@ -70,6 +73,18 @@ $(document).ready(function() {
 });
 
 	function update_chart() {
+
+		var $inputs = $('#form :input');
+
+
+		var values = {};
+		$inputs.each(function() {
+			values[this.name] = $(this).val();
+		});
+
+
+		console.log(values);
+
 		$.ajax({ 
 			  url: "/trackers/call/1", 
 			  type: "GET", 
@@ -96,7 +111,54 @@ Status: {{ tracker.get_status }}<br/>
 Type: {{ tracker.get_type }}<br/>
 Values: {{ tracker.values }}<br/>
 <div id="container" style="width: 100%; height: 400px"></div>
-<div style="cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div>
+
+<div id='options'>
+	<form id='form' action='trackers/' method='post'>
+		<div class='row'>
+			<div class='span8'>
+				<label for='period'>Period:</label>
+				<select id='period' name='period'>
+					<option value='day'>Day</option>
+					<option value='week'>Week</option>
+					<option value='month'>Month</option>
+					<option value='year'>Year</option>
+				</select>
+			</div>
+			<div class='span8'>
+				<div>
+					<label for="start">Start:</label>
+					<input type="text" id="start" name="start"/>
+				</div>
+				<div>
+					<label for="end">End:</label>
+					<input type="text" id="end" name="end"/>
+				</div>
+			</div>
+		</div>
+
+		<div class='row'>
+			<div class='span8'>
+				<label for='method'>Method:</label>
+				<select id='method' name='method'>
+					<option value='avg'>AVG</option>
+					<option value='summ'>SUMM</option>
+					<option value='min'>MIN</option>
+					<option value='max'>MAX</option>
+				</select>
+			</div>
+			<div class='span8'>
+				<label for='type' name='type'>Type:</label>
+				<select id='type'>
+					<option value='bar'>Bar</option>
+					<option value='line'>Line</option>
+				</select>
+			</div>
+		</div>
+	</from>
+</div>
+
+
+<div style="margin-top: 100px; clear: both; cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div>
 <br/>
 <a href="/trackers/edit/{{ tracker.id }}">Edit</a> | <a href="/trackers/">Back to list</a>
 {% endblock content %}
