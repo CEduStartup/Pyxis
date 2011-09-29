@@ -1,5 +1,6 @@
 from shared.events.EventManager import EventReceiver
 from datetime import datetime
+from shared.events.Event import LOGGER_TUBE
 
 class LogManager:
     
@@ -10,7 +11,7 @@ class LogManager:
     """
     
     def __init__(self):
-        self.receiver = EventReceiver('localhost', 11300, 'logger', self.on_message)
+        self.receiver = EventReceiver(tubes=(LOGGER_TUBE,), callback=self.on_message)
     
     def start(self):
         self.receiver.dispatch()
