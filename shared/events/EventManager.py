@@ -49,6 +49,11 @@ class EventManagerBase(object):
         self._client = beanstalkc.Connection(host=server_host, port=server_port)
         self._client.connect()
 
+    def __del__(self):
+        """Destructor is responsible for safety connection closing.
+        """
+        self._client.close()
+
 
 class EventSender(EventManagerBase):
 
