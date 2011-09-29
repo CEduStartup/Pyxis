@@ -7,9 +7,30 @@ from shared.events.Event import BaseEvent
 
 from shared.events import Event
 
-# This constant probably should be moved to settings.py
-# How long we can wait for information.
-TIMEOUT = 3
+
+class EventManagerError(Exception):
+
+    """Base class for all EventManager errors.
+    """
+
+
+class EventSenderError(EventManagerError):
+
+    """Base class for all EventSender errors.
+    """
+
+
+class EventReceiverError(EventManagerError):
+
+    """Base class for all EventReciver errors.
+    """
+
+
+class UnserializableEvent(EventSenderError):
+
+    """Sender cannot serialize event.
+    """
+
 
 class EventManagerBase(object):
 
@@ -28,6 +49,12 @@ class EventManagerBase(object):
         self._client = beanstalkc.Connection(host=server_host, port=server_port)
         self._client.connect()
 
+    def __del__(self):
+        """Destructor is responsible for safety connection closing.
+        """
+        self._client.close()
+
+
 class EventSender(EventManagerBase):
 
     """Used to send event to different tubes.
@@ -43,14 +70,44 @@ class EventSender(EventManagerBase):
         :Return:
             An event object.
         """
-        # TODO: errors handling.
         event_cls = Event.get_event(eid)
         return event_cls(**kwargs)
 
     def _serialize_event(self, event):
         """Serialize an event to string using pickle module.
+
+        :Exception:
+            - `UnserializableEvent`: in case when the given event cannot be
+              serialized.
         """
-        return event.serialize()
+        try:
+            return event.serialize()
+        except Event.EventSerializationError, err:
+            raise UnserializableEvent(str(err))
+
+    def _get_destination(self, eid, dest=None):
+        """Return a tuple with tubes suitable from event with the given `eid`.
+
+        :Parameters:
+            - `eid`: string with EID.
+            - `dest`: string (or list of strings) which contains tubes for
+              ivent. In case when it's None, default destinations for event
+              whith such `eid` will be returned.
+
+        :Exception:
+            - `NoSuchEventError`: in case when there is not event with such
+              `eid`.
+        """
+        res_dest = []
+        if dest is not None:
+            if isinstance(dest, str):
+                res_dest.append(dest)
+            elif isinstance(dest, (list, tuple)):
+                res_dest.extend(dest)
+        else:
+            res_dest.extend(Event.get_tubes(eid))
+
+        return res_dest
 
     def fire(self, event, tubes=None, **kwargs):
         """Put event into current tube.
@@ -63,21 +120,22 @@ class EventSender(EventManagerBase):
         """
         event = self._create_event_obj(event, **kwargs)
         serialized_event = self._serialize_event(event)
+        dest = self._get_destination(event.eid, tubes)
 
-        if tubes is not None:
-            dest = tubes
-        else:
-            dest = Event.get_tubes(event.eid)
-
-        # TODO: errors handling.
         for tube in dest:
-            self._client.use(tube)
-            self._client.put(serialized_event)
+            try:
+                self._client.use(tube)
+                self._client.put(serialized_event)
+            except (beanstalkc.UnexpectedResponse,
+                    beanstalkc.CommandFailed), err:
+                raise EventSenderError(str(err))
+
 
 def null_callback(event):
     """Null event handler.
     """
     pass
+
 
 class EventReceiver(EventManagerBase):
 
@@ -94,7 +152,7 @@ class EventReceiver(EventManagerBase):
     def _subscribe(self):
         """Set tubes to watch for.
         """
-        currect = self._client.ignore('default')
+        self._client.ignore('default')
         for tube in self._tubes:
             self._client.watch(tube)
 
