@@ -13,7 +13,7 @@ $(document).ready(function() {
    options = {
 		  chart: {
 		     renderTo: 'container',
-		     defaultSeriesType: 'area'
+		     defaultSeriesType: '{{ options.types.value|default:"column" }}'
 		  },
 		  title: {
 		     text: 'Monthly Average Rainfall'
