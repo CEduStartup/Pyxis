@@ -7,13 +7,13 @@ var chart;
 $(document).ready(function() {
 
 	$(function() {
-		$('#start, #end').datepicker();
+		$('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker();
 	});
      
    options = {
 		  chart: {
 		     renderTo: 'container',
-		     defaultSeriesType: 'column'
+		     defaultSeriesType: 'area'
 		  },
 		  title: {
 		     text: 'Monthly Average Rainfall'
@@ -47,8 +47,8 @@ $(document).ready(function() {
 		     layout: 'vertical',
 		     align: 'left',
 		     verticalAlign: 'top',
-		     x: 100,
-		     y: 70,
+		     x: 70,
+		     y: 0,
 		     floating: true,
 		     shadow: true
 		  },
@@ -70,33 +70,40 @@ $(document).ready(function() {
 		  }],
 		}
 	chart = new Highcharts.Chart(options);
+
+	$('#id_{{ options.types.html_name }}').change(function() {
+		render_chart(options, $('#id_{{ options.types.html_name }}').val());
+	});
 });
 
 	function update_chart() {
-
 		var values = {};
 		$.each($('#form').serializeArray(), function(i, field) {
 			values[field.name] = field.value;
 		});
 
-		console.log(values);
-
 		$.ajax({ 
-			  url: "/trackers/call", 
-			  type: "POST", 
-			  dataType: "json",
-			  data: values,
-			  success: function(data){ 
-				console.log(data); 
-				var lviv = {};
-				lviv.name = 'Lviv';
-				lviv.data = data;
-				options.series.push(lviv);
-				chart = new Highcharts.Chart(options);
-			  },
-		   } 
-		)
+			url: "/trackers/call", 
+			type: "POST", 
+			dataType: "json",
+			data: values,
+			success: function(data, lviv){ 
+				var tracker = {
+					'name': 'Lviv',
+					'data': data,
+				}
+				options.series.push(tracker);
+				render_chart(options, values['types']);
+			},
+		});
+	}
 
+	function render_chart(config, type) {
+		config = config || options
+		type = type || 'line';
+		config.chart.defaultSeriesType = type;
+		chart = new Highcharts.Chart(config);
+		console.log(chart);
 	}
  </script>
 
@@ -106,17 +113,21 @@ $(document).ready(function() {
 <div id='options'>
 	<form id='form' action='trackers/' method='post'>
 		<input type='hidden' name='id' value='{{ tracker.id }}'>
+		{{ options.id }}
 		<div class='row'>
 			<div class='span8'>
+				{{ options.periods.errors }}
 				{{ options.periods.label_tag }}
 				{{ options.periods }}
 			</div>
 			<div class='span8'>
 				<div>
+					{{ options.start.errors }}
 					{{ options.start.label_tag }}
 					{{ options.start }}
 				</div>
 				<div>
+					{{ options.end.errors }}
 					{{ options.end.label_tag }}
 					{{ options.end }}
 				</div>
@@ -125,10 +136,12 @@ $(document).ready(function() {
 
 		<div class='row'>
 			<div class='span8'>
+				{{ options.method.errors }}
 				{{ options.methods.label_tag }}
 				{{ options.methods }}
 			</div>
 			<div class='span8'>
+				{{ options.types.errors }}
 				{{ options.types.label_tag }}
 				{{ options.types }}
 			</div>

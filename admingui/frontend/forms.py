@@ -1,14 +1,12 @@
-import django.forms
-
-from django import forms
+from django.forms import *
 from models import Tracker
 
-class TrackerForm(forms.ModelForm):
+class TrackerForm(ModelForm):
     class Meta:
         model = Tracker
         exclude = ('id', 'user', 'values_count', 'status')
 
-class OptionsForm(forms.Form):
+class OptionsForm(Form):
 
     PERIOD_CHOICES = (
         ('hour', 'Hour'),
@@ -26,16 +24,18 @@ class OptionsForm(forms.Form):
     )
 
     TYPE_CHOICES = (
-        ('bar', 'Bar'),
+        ('area', 'Area'),
+        ('column', 'Bar'),
         ('line', 'Line'),
     )
 
-    periods = forms.ChoiceField(label='Period', choices=PERIOD_CHOICES)
-    start = forms.DateField(label='Start', input_formats='%d/%m/%Y',
-                            widget=forms.TextInput(attrs=
-                               {'placeholder': 'dd/mm/YYYY'}))
-    end = forms.DateField(label='End', input_formats='%d/%m/%Y',
-                          widget=forms.TextInput(attrs=
-                             {'placeholder': 'dd/mm/YYYY'}))
-    methods = forms.ChoiceField(label='Method', choices=METHOD_CHOICES)
-    types = forms.ChoiceField(label='Type', choices=TYPE_CHOICES)
+    id = IntegerField(widget=HiddenInput())
+    periods = ChoiceField(label='Period', choices=PERIOD_CHOICES)
+    start = DateField(label='Start', input_formats='%d/%m/%Y',
+                      widget=TextInput(attrs=
+                         {'placeholder': 'dd/mm/YYYY'}))
+    end = DateField(label='End', input_formats='%d/%m/%Y',
+                    widget=TextInput(attrs=
+                       {'placeholder': 'dd/mm/YYYY'}))
+    methods = ChoiceField(label='Method', choices=METHOD_CHOICES)
+    types = ChoiceField(label='Type', choices=TYPE_CHOICES)

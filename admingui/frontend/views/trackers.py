@@ -20,12 +20,14 @@ def index(request):
 @render_to('frontend/trackers/view.html')
 def view(request, tracker_id):
     options = OptionsForm()
+    options['id'].value = tracker_id
     tracker = get_object_or_404(Tracker, pk=tracker_id,
                                 #user=request.user
                                 )
     c = bjsonrpc.connect(settings.RPC_HOST, settings.RPC_PORT)
     data = c.call.get_tracker_data(1)
     tracker.data = data
+    print 'Option: ', dir(options['id'].value)
     return {'tracker': tracker, 'options': options}
 
 #@login_required
