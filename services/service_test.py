@@ -1,7 +1,6 @@
 import bjsonrpc
-import pgdb
-from config import db_config
-from config import srv_config
+#import pgdb
+#import config.db as db_config, config.srv as srv_config
 from services.service_base import SharedService
 
 

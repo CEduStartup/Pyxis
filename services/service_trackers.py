@@ -1,7 +1,7 @@
 # Service working with trackers.
 # All services are launched automatically by services/services_launcher.py.
-import pgdb
-from config import db_config
+#import pgdb
+#import config.db as db_config
 from services.service_base import SharedService
 
 
