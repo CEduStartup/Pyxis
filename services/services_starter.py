@@ -1,6 +1,6 @@
 # Module starts all services defined in config/srv_config and services/service.py
 # All services are run under gevent.
-from config import srv_config
+import config.srv as srv_config
 from services.service_base import SharedService
 import types
 import gevent

@@ -1,17 +1,18 @@
 import gevent
-import settings
+import config.collector as collector_config
+import config.storage as storage_config
 import sys
 import time
 
 from gevent.backdoor import BackdoorServer
 from Scheduler import Scheduler
 from TrackerCollection import TrackerCollection
-from storage import storage_types
+from shared.storage import storage_types
 
 
-storage_class = storage_types[settings.STORAGE_TYPE]
-storage = storage_class(settings.STORAGE_HOST, settings.STORAGE_PORT,
-                        settings.STORAGE_DB_NAME)
+storage_class = storage_types[storage_config.storage_type]
+storage = storage_class(storage_config.host, storage_config.port,
+                        storage_config.db_name)
 scheduler = Scheduler()
 tracker_collection = TrackerCollection(scheduler, storage)
 
@@ -31,5 +32,5 @@ Options:
 
 handle_command_line_args()
 
-BackdoorServer((settings.BACKDOOR_HOST, settings.BACKDOOR_PORT)).serve_forever()
+BackdoorServer((collector_config.backdoor_host, collector_config.backdoor_port)).serve_forever()
 

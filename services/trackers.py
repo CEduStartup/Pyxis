@@ -1,6 +1,6 @@
 import bjsonrpc
 import pgdb
-from config import db_config, srv_config
+import config.db as db_config, config.srv as srv_config
 
 
 class TrackersService(SharedService):

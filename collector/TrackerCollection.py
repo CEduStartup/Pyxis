@@ -3,7 +3,7 @@ from __future__ import with_statement
 import gevent
 
 from trackers import Tracker
-from settings import TRACKERS_REFRESH_INTERVAL
+from config.collector import trackers_refresh_interval
 
 class TrackerCollection:
 
@@ -32,7 +32,7 @@ class TrackerCollection:
                         self.scheduler.add_tracker(self.trackers[key])
                 for tracker in old_trackers:
                     self.scheduler.remove_tracker(tracker)
-            gevent.sleep(TRACKERS_REFRESH_INTERVAL)
+            gevent.sleep(trackers_refresh_interval)
 
     def start(self):
         gevent.spawn(self._tracker_updater)
