@@ -3,10 +3,13 @@ import settings
 import sys
 import time
 
+
+from EventSender import sender
 from gevent.backdoor import BackdoorServer
+from shared.events import Event
 from Scheduler import Scheduler
-from TrackerCollection import TrackerCollection
 from storage import storage_types
+from TrackerCollection import TrackerCollection
 
 
 storage_class = storage_types[settings.STORAGE_TYPE]
@@ -30,6 +33,5 @@ Options:
         exit()
 
 handle_command_line_args()
-
 BackdoorServer((settings.BACKDOOR_HOST, settings.BACKDOOR_PORT)).serve_forever()
 
