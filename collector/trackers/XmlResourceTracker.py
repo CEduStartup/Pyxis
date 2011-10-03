@@ -1,7 +1,7 @@
 from . import HttpResourceTracker
 from config import logger
 
-from parser import parser
+from shared.Parser import get_parser
 
 class XmlResourceTracker(HttpResourceTracker):
     """
@@ -14,7 +14,7 @@ class XmlResourceTracker(HttpResourceTracker):
         def cast(l):
             return dict((k, v) for k,v in enumerate(l))
 
-        xml_parser = parser.get_parser('xml')
+        xml_parser = get_parser('xml')
         xml_parser.initialize()
         xml_parser.parse(html)
         what = '//TEMPERATURE/@max'

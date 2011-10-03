@@ -4,10 +4,13 @@ import config.storage as storage_config
 import sys
 import time
 
+
+from EventSender import sender
 from gevent.backdoor import BackdoorServer
+from shared.events import Event
 from Scheduler import Scheduler
+from storage import storage_types
 from TrackerCollection import TrackerCollection
-from shared.storage import storage_types
 
 
 storage_class = storage_types[storage_config.storage_type]
