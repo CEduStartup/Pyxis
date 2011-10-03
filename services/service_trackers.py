@@ -6,8 +6,6 @@ from services.service_base import SharedService
 
 
 class TrackersService(SharedService):
-    description = 'trackers operations service'
-
     def get_trackers(modified_since=None):
         """Get list of trackers.
 

@@ -1,31 +1,35 @@
 # This file contains shared services definition.
 # Services logic are defined in services dir.
 
-class service_config(object):
-    """Base class for services configuration."""
-
-    # IP address or hostname service will be bind to. For example, 127.0.0.1 or
-    # 0.0.0.0.
-    bind_host = None
-    # Bind port.
+class SharedServiceConfig:
+    # Service description.
+    description = None
+    # Should this service be run automatically ?
+    active = None
+    # Host to bind.
+    bind_host = '127.0.0.1'
+    # Port to bind.
     bind_port = None
-    # Module name under $ROOT/services.
-    module = None
-    # Handler class defined in given module. See services/SharedService docstring
-    # for details.
-    handler = None
+    # Name of module under $ROOT_DIR/services.
+    module = 'service_trackers'
+    # Name of class inside module (described above).
+    handler = 'TrackersService'
 
 
-class trackers(service_config):
+class trackers(SharedServiceConfig):
     """Service which exports methods working with Trackers."""
+    description = 'trackers operations'
+    active = True
     bind_host = '127.0.0.1'
     bind_port = 8000
     module = 'service_trackers'
     handler = 'TrackersService'
 
 
-class test(service_config):
+class test(SharedServiceConfig):
     """Test service."""
+    description = 'test service'
+    active = False
     bind_host = '127.0.0.1'
     bind_port = 8001
     module = 'service_test'

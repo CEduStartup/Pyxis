@@ -17,21 +17,32 @@ def start_service(service_config):
                         fromlist=(service_config.module))
     service_class = getattr(module, service_config.handler)
     service_class.set_config(service_config)
-    service_class.start()
-    print 'Started %s' %service_class.description
+    print 'Started %s' %service_config.description
+    return service_class.start()
+
+
+def _is_service_config_class(attribute):
+    """Determine if given module attribute is a shared service configuration
+    class."""
+    return (isinstance(attribute, types.ClassType) and
+            issubclass(attribute, srv_config.SharedServiceConfig) and
+            attribute.description)
 
 
 def launch_services():
     """Launch all services defined in config/srv_config.py."""
     print 'Starting services...'
+    threads = []
     for attribute in dir(srv_config):
         attribute = getattr(srv_config, attribute)
-        if 'handler' in dir(attribute):
+        if _is_service_config_class(attribute):
             service_config = attribute
-            start_service(service_config)
+            if service_config.active:
+                threads.append(start_service(service_config))
+            else:
+                print 'Service disabled by administrator: %s' %service_config.description
 
-    while(True):
-        gevent.sleep(0.01)
+    gevent.joinall(threads)
 
 
 if __name__ == '__main__':

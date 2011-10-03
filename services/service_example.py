@@ -15,4 +15,3 @@ class TestService(SharedService):
 
 # After this is done, add entry for your service to config/srv_config.py and
 # re-run services/services_launcher.py which will autiomaticall run your service.
-
