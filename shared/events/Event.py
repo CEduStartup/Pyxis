@@ -128,16 +128,7 @@ class BaseEvent:
             raise EventSerializationError(str(e))
 
 
-class TrackerEvent(BaseEvent):
-
-    """Base class for all tracker events.
-
-    Don't invoke this event.
-    """
-
-    eid = 'TRACKER'
-    tracker_id = None
-
+# Collector events.
 
 class CollectorEvent(BaseEvent):
 
@@ -148,13 +139,44 @@ class CollectorEvent(BaseEvent):
     level = 'info'
 
 
-class CollectorWorkflow(CollectorEvent):
+class CollectorSuccessEvent(CollectorEvent):
 
-    """Describe some collectors state.
+    """Base class for all tracker success events.
     """
 
-    eid = 'COLLECTOR.WORKFLOW'
-    msg = '%(message)s'
+    eid = 'COLLECTOR.SUCCESS'
+    level = 'info'
+
+
+class CollectorFailureEvent(CollectorEvent):
+
+    """Base class for all collector failure events.
+    """
+
+    eid = 'COLLECTOR.FAILURE'
+    level = 'crit'
+    msg = 'Collector critical error. Details: %(error_details)s'
+
+
+class CollectorServiceStartedEvent(CollectorSuccessEvent):
+
+    """Indicates that collector successfully started a service.
+    """
+
+    eid = 'COLLECTOR.SERVICE_STARTED.SUCCESS'
+    msg = 'Service "%(srv_name)s" started succesfully.'
+
+# Tracker events.
+
+class TrackerEvent(BaseEvent):
+
+    """Base class for all tracker events.
+
+    Don't invoke this event.
+    """
+
+    eid = 'TRACKER'
+    tracker_id = None
 
 
 class TrackerSuccessEvent(TrackerEvent):
@@ -212,6 +234,8 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
           'Details: %(error_details)s'
 
 
+# Logger events.
+
 class LoggerEvent(BaseEvent):
     """ Base class for all logger events. """
 
@@ -251,7 +275,9 @@ class LoggerCriticalEvent(LoggerEvent):
 # adding new event class.
 _EID_EVENT_MAPPING = {
     # Collector events.
-    CollectorWorkflow.eid: CollectorWorkflow,
+    CollectorServiceStartedEvent.eid: CollectorServiceStartedEvent,
+    CollectorFailureEvent.eid: CollectorFailureEvent,
+
     # Tracker events.
     TrackerGrabSuccessEvent.eid: TrackerGrabSuccessEvent,
     TrackerGrabFailureEvent.eid: TrackerGrabFailureEvent,
@@ -268,7 +294,9 @@ _EID_EVENT_MAPPING = {
 # Defines a list of suitable tubes for each EID. You need to update this
 _EID_TUBE_MAPPING = {
     # Collector events.
-    CollectorWorkflow.eid: (LOGGER_TUBE,),
+    CollectorServiceStartedEvent.eid: (LOGGER_TUBE,),
+    CollectorFailureEvent.eid: (LOGGER_TUBE,),
+
     # Tracker events.
     TrackerGrabSuccessEvent.eid: (LOGGER_TUBE,),
     TrackerGrabFailureEvent.eid: (LOGGER_TUBE,),
