@@ -10,7 +10,9 @@ from ..forms import OptionsForm
 def tracker_data(request):
     if request.POST:
         #TODO Need validate POST data
-        print request.POST
+        import pdb
+        pdb.set_trace()
+        print request.POST.getlist('methods')
         c = bjsonrpc.connect()
         data = c.method.get_tracker_data(1)
         print data()
