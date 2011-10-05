@@ -5,7 +5,12 @@
 # Usage: from services.aervices_api import trackers_api
 # trackers_api.method(<params>)
 from config.srv_config import trackers as trackers_config
+from shared.trackers.Tracker import Tracker
 import bjsonrpc
+import zlib
+import cPickle
+import base64
+import time
 
 
 class method_wrapper:
@@ -32,21 +37,45 @@ class service_api_base:
         obj.connection = self.connection
         return obj
 
+    def deserialize(self, data):
+        """Decompresses and de-serialises data received from bjsonrpc server."""
+        return cPickle.loads(zlib.decompress(base64.decodestring(data)))
+
 
 class trackers_api(service_api_base):
-    """API for trackers stuff. """
+    """API for trackers stuff."""
     config = trackers_config
 
 
 if __name__ == '__main__':
-    o = trackers_api()
-    import time
+    def get_trackers_test():
+        N = 50
+        start_time = time.time()
+        for i in range(N):
+            data = trackers_api.get_trackers()
+            print len(data)
+            trackers = trackers_api.deserialize(data)
+            print len(trackers)
 
-    N = 1000
-    start_time = time.time()
-    for i in range(N):
-        print o.get_trackers()
+        end_time = time.time()
+        print '%s calls executed; execution time: %0.1f seconds' %(N, end_time-start_time)
 
-    end_time = time.time()
+    def save_trackers_test():
+        N = 1500
+        start_time = time.time()
+        for i in range(N):
+            tracker = Tracker(None, None)
+            tracker.tracker_id = i+70000
+            tracker.source_type = 1
+            tracker.data_type = 1
+            tracker.name = 'tracker %s' %tracker.tracker_id
+            tracker.description = 'tracker %s' %tracker.tracker_id
+            tracker.interval = 300
+            trackers_api.save_tracker(pickle.dumps(tracker))
 
-    print '%s calls executed; execution time: %0.1f seconds' %(N, end_time-start_time)
+        end_time = time.time()
+        print '%s calls executed; execution time: %0.1f seconds' %(N, end_time-start_time)
+
+    trackers_api = trackers_api()
+    get_trackers_test()
+    #save_trackers_test()
