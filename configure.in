@@ -1,0 +1,18 @@
+# Input file for producing configure script
+
+AC_INIT([pyxis], [0.0.1])
+
+AC_CONFIG_FILES([Makefile])
+
+AC_CHECK_PROG(PYTHON, python, yes, no)
+if test $PYTHON = no; then
+    AC_MSG_ERROR([The Python program is required])
+fi
+
+AC_CHECK_PROG(PIP, pip, yes, no)
+#if test $PIP = no; then
+#    AC_MSG_ERROR([The pip program is required])
+#fi
+
+AC_OUTPUT
+
