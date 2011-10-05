@@ -1,0 +1,11 @@
+.period-block, .method-block {
+	float: left;
+}
+
+.datepicker-block, .type-block {
+	float: right;
+}
+
+label {
+	padding-right: 10px;
+}

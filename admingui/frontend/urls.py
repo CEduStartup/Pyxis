@@ -7,3 +7,7 @@ urlpatterns = patterns('frontend.views.trackers',
     (r'^edit/(\d)/$', 'edit'),
     (r'^view/(\d)/$', 'view'),
 )
+
+urlpatterns += patterns('',
+    (r'^call$', 'frontend.views.client.tracker_data'),
+)

@@ -1,11 +1,14 @@
-from django.shortcuts import get_object_or_404, render_to_response, redirect
-from django.views.generic.simple import redirect_to
-from django.views.decorators.csrf import csrf_protect
+import bjsonrpc
+import simplejson
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render_to_response, redirect
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_protect
 from ..models import Tracker
-from ..forms import TrackerForm
+from ..forms import OptionsForm, TrackerForm
 from admingui.util import render_to
-import admingui
 
 #@login_required
 @render_to('frontend/trackers/index.html')
@@ -16,10 +19,15 @@ def index(request):
 #@login_required
 @render_to('frontend/trackers/view.html')
 def view(request, tracker_id):
+    options = OptionsForm()
+    options['id'].value = tracker_id
     tracker = get_object_or_404(Tracker, pk=tracker_id,
                                 #user=request.user
                                 )
-    return locals()
+    c = bjsonrpc.connect(settings.RPC_HOST, settings.RPC_PORT)
+    data = c.call.get_tracker_data(1)
+    tracker.data = data
+    return {'tracker': tracker, 'options': options}
 
 #@login_required
 def add(request):
