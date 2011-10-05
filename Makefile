@@ -1,59 +1,79 @@
-.DEFAULT_GOAL := all
+.DEFAULT_GOAL := collector-all
+SHELL = /bin/bash
+
+################ Constants ################
 
 ADMINGUI_DIR := admingui
 COLLECTOR_DIR := collector
 GRAPHGUI_DIR := graphgui
 LOGGER_DIR := logger
 
+COMPONENT_CONF_FILE := comp.conf
 PIP_REQUIRE := requirements.txt
 
 TARGETS := all collector-all admingui-all graphgui-all collector admingui graphgui logger
 
+################ Functions ################
+
+echo_target_done = @echo Making $(1) done.
+
+echo_target_started = @echo Making $(1).
+
+define add_component
+  @echo 'components+=( "$(1)" )' >> $(COMPONENT_CONF_FILE)
+endef
+
+################  Targets  ################
+
 .PHONY: $(TARGETS)
 
 all: collector admingui graphgui logger
-	@echo Making $@ done.
+	$(call echo_target_done,$@)
 
 collector-all: collector logger
-	@echo Making $@ done.
+	$(call echo_target_done,$@)
 
 admingui-all: admingui logger
-	@echo Making $@ done.
+	$(call echo_target_done,$@)
 
 graphgui-all: graphgui logger
-	@echo Making $@ done.
+	$(call echo_target_done,$@)
 
 collector:
-	@echo Making $@.
+	$(call echo_target_started,$@)
 	pip install -r $(COLLECTOR_DIR)/$(PIP_REQUIRE)
-	@echo Making $@ done.
+	
+	$(call add_component,$@)
+
+	$(call echo_target_done,$@)
 
 admingui:
-	@echo Making $@.
+	$(call echo_target_started,$@)
 	pip install -r $(ADMINGUI_DIR)/$(PIP_REQUIRE)
-	@echo Making $@ done.
+	
+	$(call add_component,$@)
+	
+	$(call echo_target_done,$@)
 
 graphgui:
-	@echo Making $@.
+	$(call echo_target_started,$@)
 	pip install -r $(GRAPHGUI_DIR)/$(PIP_REQUIRE)
-	@echo Making $@ done.
+	
+	$(call add_component,$@)
+	
+	$(call echo_target_done,$@)
 
 logger:
-	@echo Making $@.
+	$(call echo_target_started,$@)
 	pip install -r $(LOGGER_DIR)/$(PIP_REQUIRE)
-	@echo Making $@ done.
+	
+	$(call add_component,$@)
+	
+	$(call echo_target_done,$@)
 
-$(TARGETS): pre_clean create_run_script
+$(TARGETS): create_run_env
 
-pre_clean:
-	@echo Pre-make cleaning.
-	-rm run.sh
-
-create_run_script: pre_clean
-	@echo Creating executable run script.
-	touch run.sh
-	chmod +x run.sh
-
-post_write_runscript: $(TARGETS)
-	@echo Post-build script
+create_run_env:
+	@echo Creating running environment.
+	cp comp.conf.in comp.conf
 
