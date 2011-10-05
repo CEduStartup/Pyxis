@@ -5,7 +5,7 @@ from config.mq import QUEUE_HOST, QUEUE_PORT
 
 class LogManager:
 
-    """ Log manager which listens for logger events and shows them on the screen.
+    """Log manager which listens for logger events and shows them on the screen.
 
     Now provides possibility just to show all logs.
     FUTURE: possibility to filter by some rules
@@ -22,9 +22,11 @@ class LogManager:
 
     def on_message(self, event):
         if isinstance(event, BaseEvent):
-            log_msg = '%s [ %s ] %s' % (datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
-                                        event.level.upper(),
-                                        event.msg)
+            log_msg = '[ %s ] - %s [ %s ] %s' % (
+               event.tags[1].upper(), # Component name.
+               datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
+               event.level.upper(),
+               event.msg)
             print log_msg
 
 

@@ -61,15 +61,15 @@ class BaseEvent:
 
     __metaclass__ = EventMeta
 
-    eid = ''
+    eid = None
     time = None
     # Log message text. For string formating please use dictionary
     # ('%(key_name)s'). You can pass all arguments to `__init__()` as a keyword
     # parameters.
     msg = None
-    level = 'info'
+    level = None
 
-    _serializeble_attrs = ['time']
+    _serializeble_attrs = ['time', 'tags']
 
     def __init__(self, custom_time=None, **kwargs):
         """Initialize event instance.
