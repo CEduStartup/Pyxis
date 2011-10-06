@@ -1,0 +1,35 @@
+{% extends "frontend/layout.html" %}
+
+{% block content %}
+<h1>User Login</h1>
+
+{% if user.is_authenticated %}
+You already authorized
+{% else %}
+
+{% if form.non_field_errors %}
+{{ form.non_field_errors}}
+{% endif %}
+
+<form method="post" action="">
+{% csrf_token %}
+{% for field in form %}
+    {{ field.label_tag }}&nbsp;
+    {{ field }}<br />
+    {% if field.help_text %}<div class="clearfix">{{ field.help_text }}</div>{% endif %}
+    {% if field.errors %}<div class="myerrors clearfix">{{ field.errors }}</div>{% endif %}
+{% endfor %}
+<input type="submit" value="Login" class="btn primary">
+</form>
+
+<script type="text/javascript">
+document.getElementById('id_username').focus()
+</script>
+
+<br/><br/>
+<ul>
+    <li><a href="{% url auth_password_reset %}">Password restore</a></li>
+    <li><a href="{% url registration_register %}">Signup</a></li>
+</ul>  
+{% endif %}
+{% endblock %}
