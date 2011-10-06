@@ -11,7 +11,10 @@ LOGGER_DIR := logger
 COMPONENT_CONF_FILE := comp.conf
 PIP_REQUIRE := requirements.txt
 
-TARGETS := all collector-all admingui-all graphgui-all collector admingui graphgui logger
+COMPONENTS := all collector-all admingui-all graphgui-all collector admingui graphgui logger
+SERVICES :=
+SERVERS := beanstalkd
+TARGETS := $(COMPONENTS) $(SERVICES) $(SERVERS)
 
 ################ Functions ################
 
@@ -21,6 +24,14 @@ echo_target_started = @echo Making $(1).
 
 define add_component
   @echo 'components+=( "$(1)" )' >> $(COMPONENT_CONF_FILE)
+endef
+
+define add_service
+  @echo 'services+=( "$(1)" )' >> $(COMPONENT_CONF_FILE)
+endef
+
+define add_server
+  @echo 'servers+=( "$(1)" )' >> $(COMPONENT_CONF_FILE)
 endef
 
 ################  Targets  ################
@@ -68,6 +79,13 @@ logger:
 	pip install -r $(LOGGER_DIR)/$(PIP_REQUIRE)
 	
 	$(call add_component,$@)
+	
+	$(call echo_target_done,$@)
+
+beanstalkd:
+	$(call echo_target_started,$@)
+	
+	$(call add_server,$@)
 	
 	$(call echo_target_done,$@)
 
