@@ -3,8 +3,8 @@
 
 import beanstalkc
 import pickle
-from shared.events.Event import BaseEvent
 
+from config import mq
 from shared.events import Event
 
 
@@ -37,7 +37,7 @@ class EventManagerBase(object):
     """Base class for event sender and event receiver.
     """
 
-    def __init__(self, server_host='localhost', server_port=11300):
+    def __init__(self, server_host=mq.QUEUE_HOST, server_port=mq.QUEUE_PORT):
         """Initialize event manager.
 
         :Parameters:

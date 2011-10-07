@@ -34,7 +34,7 @@ class service_api_base:
 
 
 class trackers_api(service_api_base):
-    """API for trackers stuff."""
+    """API for trackers stuff. """
     config = trackers_config
 
 
