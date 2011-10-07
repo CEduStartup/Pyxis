@@ -46,15 +46,15 @@ class Tracker(object):
     def get_id(self):
         return self.tracker_id
 
-    def grab_data():
+    def _grab_data():
         """Grab data from datasource.
         """
         # TODO: here we need to create datasource appropriate to the
         # `self.source_type`.
         datasource = None
-        self._raw_data = datasource.grab_data()
+        self._raw_data = datasource._grab_data()
 
-    def parse_data(self):
+    def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
         `values` attribute.
         """
@@ -64,28 +64,28 @@ class Tracker(object):
         parser.parse()
         parser.xpath()
 
-    def check_data(self):
+    def _check_data(self):
         """Check if the data stored in `values` attribute has the same type as
         it was requested by the user.
         """
         # Currecntly we cannot implement this method correctly.
         pass
 
-    def save_data(self):
+    def _save_data(self):
         """Save data to storage.
         """
         # TODO: store data to the storage.
         pass
 
-    def start(self):
+    def process(self):
         """Main logic of the tracker.
         Create appropriate datasource, and get raw data. Then parse the data
         using appropriate parser and try to validate them. The last step is to
         save parsed values to the storage.
         """
-        self.grab_data()
-        self.parse_data()
-        self.check_data()
-        self.save_data()
+        self._grab_data()
+        self._parse_data()
+        self._check_data()
+        self._save_data()
         self.last_modified = time.time()
 
