@@ -80,7 +80,7 @@ function update_chart() {
                 'data': data,
             }
             options.series.push(tracker);
-            render_chart(options, values['types']);
+            render_chart(options);
         },
     });
 }
