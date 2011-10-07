@@ -13,6 +13,8 @@ class DatasourceCommon(object):
     """
 
     __metaclass__ = ABCMeta
+    
+    response_code, grab_spent_time, raw_data_size = None, None, None
 
     def __init__(self, target):
         """Initialize class instance with valid configuration.

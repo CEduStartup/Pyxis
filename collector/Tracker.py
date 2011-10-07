@@ -4,6 +4,11 @@ from datasource and return parsed values.
 
 import time
 
+from datasources import get_data_source
+from datasources.Errors import BaseGrabError, UnknownDatasourceError
+
+RESPONSE_URL_ERROR = 50001
+RESPONSE_GEVENT_TIMEOUT = 50504
 
 class Tracker(object):
 
@@ -49,10 +54,8 @@ class Tracker(object):
     def _grab_data():
         """Grab data from datasource.
         """
-        # TODO: here we need to create datasource appropriate to the
-        # `self.source_type`.
-        datasource = None
-        self._raw_data = datasource._grab_data()
+        ds = get_data_source(self.source)
+        self._raw_data = ds._grab_data()
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
@@ -76,6 +79,10 @@ class Tracker(object):
         """
         # TODO: store data to the storage.
         pass
+        
+    def _process_datasource_exception(e):
+        # TODO: process exception here
+        pass
 
     def process(self):
         """Main logic of the tracker.
@@ -83,9 +90,12 @@ class Tracker(object):
         using appropriate parser and try to validate them. The last step is to
         save parsed values to the storage.
         """
-        self._grab_data()
-        self._parse_data()
-        self._check_data()
-        self._save_data()
-        self.last_modified = time.time()
+        try:
+            self._grab_data()
+            self._parse_data()
+            self._check_data()
+            self._save_data()
+            self.last_modified = time.time()
+        except BaseGrabError, e:
+            self._process_datasource_exception(e)
 
