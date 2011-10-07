@@ -6,9 +6,7 @@ import time
 
 from datasources import get_data_source
 from datasources.Errors import BaseGrabError, UnknownDatasourceError
-
-RESPONSE_URL_ERROR = 50001
-RESPONSE_GEVENT_TIMEOUT = 50504
+from shared.Parser import get_parser
 
 class Tracker(object):
 
@@ -31,6 +29,7 @@ class Tracker(object):
     source_type = None # JSON, XML, etc.
     source = None
     values = None
+    values_to_get = []
 
 
     def __init__(self, tracker_id, source, source_type, values_to_get,
@@ -51,21 +50,23 @@ class Tracker(object):
     def get_id(self):
         return self.tracker_id
 
-    def _grab_data():
+    def _grab_data(self):
         """Grab data from datasource.
         """
         ds = get_data_source(self.source)
-        self._raw_data = ds._grab_data()
+        self._raw_data = ds.grab_data()
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
         `values` attribute.
         """
         # TODO: create a parser instance appropriate to the `self.source_type`.
-        parser = None
+        parser = get_parser(self.source_type)
         parser.initialize()
-        parser.parse()
-        parser.xpath()
+        parser.parse(self._raw_data)
+        self.values = []
+        for xpath in self.values_to_get:
+            self.values.append(parser.xpath(xpath))
 
     def _check_data(self):
         """Check if the data stored in `values` attribute has the same type as
@@ -80,9 +81,9 @@ class Tracker(object):
         # TODO: store data to the storage.
         pass
         
-    def _process_datasource_exception(e):
+    def _process_datasource_exception(self, e):
         # TODO: process exception here
-        pass
+        print 'DATASOURCE EXCEPTION', type(e)
 
     def process(self):
         """Main logic of the tracker.

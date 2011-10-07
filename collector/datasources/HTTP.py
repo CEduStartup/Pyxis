@@ -6,13 +6,13 @@ from __future__ import with_statement
 
 from gevent import monkey; monkey.patch_socket()
 from .Common import DatasourceCommon
-from .Errors import ResponseGeventTimeout
+from .Errors import ResponseHTTPError, ResponseURLError, ResponseGeventTimeout
 
 import gevent
 import urllib2
 import time
 
-from Tracker import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
+from trackers.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
 from config.collector import tracker_thread_timeout
 
 class DatasourceHTTP(DatasourceCommon):
@@ -42,4 +42,5 @@ class DatasourceHTTP(DatasourceCommon):
             
         now = time.time()
         self.grab_spent_time = now-start_time
+        return self.raw_data
 

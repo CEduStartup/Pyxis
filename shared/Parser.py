@@ -12,6 +12,7 @@ import StringIO
 from lxml import etree
 from lxml.html import soupparser
 
+from .trackers.data_types import XML_DATA, HTML_DATA, JSON_DATA
 
 # Determine how many tags will be parser before return control to gevent()
 ELEMENTS_IN_ROUND = 50
@@ -231,7 +232,7 @@ class GXMLParser(XMLParser):
     def _create_parser(self):
         """Prepare parser to work.
         """
-        xml_target = target.GTreeBuilder()
+        xml_target = GTreeBuilder()
         self._parser = etree.XMLParser(target=xml_target)
 
 
@@ -269,22 +270,22 @@ class GHTMLParser(HTMLParser):
 # Maps datatype to parser class which can handle it.
 _PARSER_TYPES_MAPPING = {
     'plain': {
-        'xml': XMLParser,
-        'html': HTMLParser,
+        XML_DATA: XMLParser,
+        HTML_DATA: HTMLParser,
     },
 
     'gevent_safe': {
-        'xml': GXMLParser,
-        'html': GHTMLParser,
+        XML_DATA: GXMLParser,
+        HTML_DATA: GHTMLParser,
     }
 }
 
-def get_parser(datatype='xml', gevent_safe=True):
+def get_parser(datatype, gevent_safe=True):
     """Return `lxml` compatible parsers.
 
     :Parameters:
         - `datatype`: string which contains datatype. Currently it's one of the
-          following: 'xml', 'html', 'json'.
+          following: XML_DATA, JSON_DATA, HTML_DATA.
         - `gevent_safe`: boolean. If `True` then this method will *always*
           return parser instance which is compatible with gevent.
 
