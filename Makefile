@@ -49,36 +49,28 @@ all: collector admingui graphgui logger
 collector:
 	$(call echo_target_started,$@)
 	pip install -r $(COLLECTOR_DIR)/$(PIP_REQUIRE)
-	
 	$(call add_component,$@)
-
 	$(call echo_target_done,$@)
 
 admingui:
 	$(call echo_target_started,$@)
 	pip install -r $(ADMINGUI_DIR)/$(PIP_REQUIRE)
-	
 	$(call echo_target_done,$@)
 
 graphgui:
 	$(call echo_target_started,$@)
 	pip install -r $(GRAPHGUI_DIR)/$(PIP_REQUIRE)
-	
 	$(call echo_target_done,$@)
 
 logger:
 	$(call echo_target_started,$@)
 	pip install -r $(LOGGER_DIR)/$(PIP_REQUIRE)
-	
 	$(call add_component,$@)
-	
 	$(call echo_target_done,$@)
 
 beanstalkd:
 	$(call echo_target_started,$@)
-	
 	$(call add_server,$@)
-	
 	$(call echo_target_done,$@)
 
 $(TARGETS): create_run_env
