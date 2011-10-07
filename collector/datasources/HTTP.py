@@ -12,7 +12,7 @@ import gevent
 import urllib2
 import time
 
-from trackers.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
+from tracker.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
 from config.collector import tracker_thread_timeout
 
 class DatasourceHTTP(DatasourceCommon):
