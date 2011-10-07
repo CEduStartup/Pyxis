@@ -1,4 +1,9 @@
-.DEFAULT_GOAL := collector-all
+# This makefile installing python libs required by components this makefile was ran for.
+# Also those components adding to comp.conf file in order to be ran by run-script.
+#
+# When make without compoent list specified all component target will be made.
+
+.DEFAULT_GOAL := all
 SHELL = /bin/bash
 
 ################ Constants ################
@@ -11,10 +16,10 @@ LOGGER_DIR := logger
 COMPONENT_CONF_FILE := comp.conf
 PIP_REQUIRE := requirements.txt
 
-COMPONENTS := all collector-all admingui-all graphgui-all collector admingui graphgui logger
+COMPONENTS := collector admingui graphgui logger
 SERVICES :=
 SERVERS := beanstalkd
-TARGETS := $(COMPONENTS) $(SERVICES) $(SERVERS)
+TARGETS := all $(COMPONENTS) $(SERVICES) $(SERVERS)
 
 ################ Functions ################
 
@@ -41,15 +46,6 @@ endef
 all: collector admingui graphgui logger
 	$(call echo_target_done,$@)
 
-collector-all: collector logger
-	$(call echo_target_done,$@)
-
-admingui-all: admingui logger
-	$(call echo_target_done,$@)
-
-graphgui-all: graphgui logger
-	$(call echo_target_done,$@)
-
 collector:
 	$(call echo_target_started,$@)
 	pip install -r $(COLLECTOR_DIR)/$(PIP_REQUIRE)
@@ -62,15 +58,11 @@ admingui:
 	$(call echo_target_started,$@)
 	pip install -r $(ADMINGUI_DIR)/$(PIP_REQUIRE)
 	
-	$(call add_component,$@)
-	
 	$(call echo_target_done,$@)
 
 graphgui:
 	$(call echo_target_started,$@)
 	pip install -r $(GRAPHGUI_DIR)/$(PIP_REQUIRE)
-	
-	$(call add_component,$@)
 	
 	$(call echo_target_done,$@)
 

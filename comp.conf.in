@@ -3,19 +3,16 @@
 ################ Collector section  ################
 
 collector_match_string="collector.py"
-
 collector_start="python collector/collector.py"
 
 ################   Logger section   ################
 
 logger_match_string="manager.py"
-
 logger_start="python logger/manager.py"
 
 ################ Beanstalkd section ################
 
 beanstalkd_match_string="beanstalkd"
-
 beanstalkd_start="beanstalkd -l 127.0.0.1 -p 11300"
 
 ################   Common section   ################
