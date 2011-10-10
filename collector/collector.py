@@ -6,9 +6,9 @@ import config.storage as storage_config
 
 from config.init.trackers import sender
 from gevent.backdoor import BackdoorServer
-from .Scheduler import Scheduler
+from Scheduler import Scheduler
 from storage import storage_types
-from .TrackerCollection import TrackerCollection
+from TrackerCollection import TrackerCollection
 
 
 storage = None
