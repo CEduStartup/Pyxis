@@ -12,8 +12,9 @@ import gevent
 import urllib2
 import time
 
-from tracker.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
+from shared.trackers.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
 from config.collector import tracker_thread_timeout
+from config.init.trackers import sender
 
 class DatasourceHTTP(DatasourceCommon):
     def initialize(self):
@@ -29,15 +30,13 @@ class DatasourceHTTP(DatasourceCommon):
                 self.response_code = response.code
         except urllib2.HTTPError, e:
             self.response_code = e.code
+            sender.fire('LOGGER.WARNING', message='HTTPError for %s: %d' % (self.source, e.code))
             raise ResponseHTTPError(e)
-            #logger.warn('HTTPError for %s: %d' % (self.source, e.code))
         except urllib2.URLError, e:
+            sender.fire('LOGGER.WARNING', message='URLError for %s: %s' % (self.source, e.reason))
             raise ResponseURLError(e)
-            #self.response_code = RESPONSE_URL_ERROR
-            #logger.warn('URLError for %s: %s' % (self.source, e.reason))
         except gevent.Timeout, e:
-            #logger.warn('URL Gevent timeout - %s' % self.source)
-            #self.response_code = RESPONSE_GEVENT_TIMEOUT
+            sender.fire('LOGGER.WARNING', message='URL Gevent timeout - %s' % self.source)
             raise ResponseGeventTimeout()
             
         now = time.time()
