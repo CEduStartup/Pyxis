@@ -195,6 +195,8 @@ class TrackerFailureEvent(TrackerEvent):
 
     eid = 'TRACKER.FAILURE'
     level = 'crit'
+    msg = """\
+Tracker "%(tracker_id)s" unhandled error. Details: %(error_details)s"""
 
 
 class TrackerWorkflowEvent(TrackerEvent):
