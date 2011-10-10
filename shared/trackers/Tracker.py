@@ -5,9 +5,7 @@ from datasource and return parsed values.
 import time
 import traceback
 
-from EventSender import sender
 from shared.Parser import get_parser
-
 
 from datasources import get_data_source
 from datasources.Errors import BaseGrabError, UnknownDatasourceError

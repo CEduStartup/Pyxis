@@ -23,7 +23,7 @@ while True:
 
 from gevent.queue import Queue
 
-from EventDispatcher import EventDispatcher
+from .EventDispatcher import EventDispatcher
 
 
 class GEventDispatcher(EventDispatcher):

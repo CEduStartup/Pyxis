@@ -1,7 +1,7 @@
-from shared.events.EventManager import EventReceiver
 from datetime import datetime
-from shared.events.Event import BaseEvent, LOGGER_TUBE
 from config.mq import QUEUE_HOST, QUEUE_PORT
+from shared.events.EventManager import EventReceiver
+from shared.events.Event import BaseEvent, LOGGER_TUBE
 
 class LogManager:
 
