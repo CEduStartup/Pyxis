@@ -3,6 +3,11 @@ from datasource and return parsed values.
 """
 
 import time
+import traceback
+
+from EventSender import sender
+from shared.Parser import get_parser
+
 
 from datasources import get_data_source
 from datasources.Errors import BaseGrabError, UnknownDatasourceError
@@ -29,17 +34,17 @@ class Tracker(object):
     source_type = None # JSON, XML, etc.
     source = None
     values = None
-    values_to_get = []
+    queries = None
 
 
-    def __init__(self, tracker_id, source, source_type, values_to_get,
+    def __init__(self, tracker_id, source, source_type, queries,
                  interval, storage):
         """Initialize the tracker with valid configuration.
         """
         self.tracker_id = tracker_id
         self.source = source
         self.source_type = source_type
-        self.values_to_get = values_to_get
+        self.queries = queries
         self.interval = interval
         self.storage = storage
 
@@ -47,7 +52,10 @@ class Tracker(object):
         self.last_modified = 0
         interval = 0
 
+
     def get_id(self):
+        """Return a string with unique tracker ID.
+        """
         return self.tracker_id
 
     def _grab_data(self):
@@ -60,30 +68,31 @@ class Tracker(object):
         """Parse raw data with appropriate parser and save gathered values in
         `values` attribute.
         """
-        # TODO: create a parser instance appropriate to the `self.source_type`.
-        parser = get_parser(self.source_type)
-        parser.initialize()
-        parser.parse(self._raw_data)
-        self.values = []
-        for xpath in self.values_to_get:
-            self.values.append(parser.xpath(xpath))
+        self._parser = get_parser(self.source_type)
+        self._parser.initialize()
+        self._parser.parse(self._raw_data)
+        self._clean_data = [self._parser.xpath(query)
+                            for query in self.queries]
 
     def _check_data(self):
         """Check if the data stored in `values` attribute has the same type as
         it was requested by the user.
         """
         # Currecntly we cannot implement this method correctly.
+        # TODO: validate self._clean_data
         pass
 
     def _save_data(self):
         """Save data to storage.
         """
+<<<<<<< Updated upstream:collector/tracker/Tracker.py
         # TODO: store data to the storage.
         pass
-        
+
     def _process_datasource_exception(self, e):
         # TODO: process exception here
         print 'DATASOURCE EXCEPTION', type(e)
+
 
     def process(self):
         """Main logic of the tracker.
@@ -96,7 +105,10 @@ class Tracker(object):
             self._parse_data()
             self._check_data()
             self._save_data()
-            self.last_modified = time.time()
         except BaseGrabError, e:
             self._process_datasource_exception(e)
+
+        # TODO: wee need to handle all errors which can occure.
+        finally:
+            self.last_modified = time.time()
 
