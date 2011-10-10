@@ -2,7 +2,7 @@ from __future__ import with_statement
 
 import gevent
 
-from tracker import Tracker
+from shared.trackers import Tracker
 from config.collector import trackers_refresh_interval
 
 class TrackerCollection:
