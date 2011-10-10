@@ -1,16 +1,16 @@
+# Trackers representation classes.
+# Each tracker has a datasource, which knows where to get data from and how to
+# get them.
 import abc
 
-class Tracker:
-    __metaclass__ = abc.ABCMeta
-    
+
+class TrackerBase:
+    """Base class for trackers."""
     tracker_id = None
     interval = None
     source = None
     last_modified = None
     source_type = None # JSON, XML, etc.
-    values = [
-        ('body.div[0]', 'int')
-    ]
 
     def __init__(self, tracker_id, storage):
         self.tracker_id = tracker_id
@@ -41,8 +41,11 @@ class Tracker:
     def grab_data(): pass
 
 
+class Tracker(TrackerBase):
+    pass
+
+
 class DummyTracker(Tracker):
     def grab_data():
         from config import logger
         logger.info('just simple message from tracker %s' % self.get_id())
-        

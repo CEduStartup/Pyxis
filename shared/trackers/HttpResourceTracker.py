@@ -13,7 +13,7 @@ import time
 from trackers import Tracker
 from trackers.constants import RESPONSE_URL_ERROR, RESPONSE_GEVENT_TIMEOUT
 
-from config.collector import tracker_thread_timeout
+from settings import TRACKER_THREAD_TIMEOUT
 from config import logger
 
 class HttpResourceTracker(Tracker):
@@ -34,7 +34,7 @@ class HttpResourceTracker(Tracker):
         data = dict(value=None)
         start_time = time.time()
         try:
-            with gevent.Timeout(tracker_thread_timeout):
+            with gevent.Timeout(TRACKER_THREAD_TIMEOUT):
                 request = urllib2.Request(self.source)
                 response = urllib2.urlopen(request)
                 html = response.read()
