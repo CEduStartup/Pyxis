@@ -16,7 +16,11 @@ import time
 class method_wrapper:
     """This class acts as a proxy which bypasses request to bjsonrpc server."""
     def __call__(self, *args, **kargs):
-        return self.proxy_method(*args, **kargs)
+        return self.deserialize(self.proxy_method(*args, **kargs))
+
+    def deserialize(self, data):
+        """Decompresses and de-serialises data received from bjsonrpc server."""
+        return cPickle.loads(zlib.decompress(base64.decodestring(data)))
 
     def proxy_method(self, *args, **kargs):
         return getattr(self.connection.call, self.method_name)(*args, **kargs)
@@ -37,10 +41,6 @@ class service_api_base:
         obj.connection = self.connection
         return obj
 
-    def deserialize(self, data):
-        """Decompresses and de-serialises data received from bjsonrpc server."""
-        return cPickle.loads(zlib.decompress(base64.decodestring(data)))
-
 
 class trackers_api(service_api_base):
     """API for trackers stuff."""
@@ -49,13 +49,11 @@ class trackers_api(service_api_base):
 
 if __name__ == '__main__':
     def get_trackers_test():
-        N = 50
+        N = 100
         start_time = time.time()
         for i in range(N):
             data = trackers_api.get_trackers()
             print len(data)
-            trackers = trackers_api.deserialize(data)
-            print len(trackers)
 
         end_time = time.time()
         print '%s calls executed; execution time: %0.1f seconds' %(N, end_time-start_time)

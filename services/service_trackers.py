@@ -1,12 +1,9 @@
 # Service working with trackers.
 # All services are launched automatically by services/services_launcher.py.
-#import pgdb
-#import config.db as db_config
+import pgdb
 from services.service_base import SharedService
 from shared.trackers.Tracker import Tracker
-import pickle
-import zlib
-import base64
+from config import db_config
 
 
 class db_adapter:
