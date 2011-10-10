@@ -1,1 +1,6 @@
-la la la 
+Account activation - {{ site }}
+
+You should follow next link to activate your account:
+{{ site }}/accounts/activate/{{ activation_key }}/
+
+Thanks

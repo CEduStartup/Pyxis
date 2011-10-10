@@ -24,11 +24,15 @@
             <li><a href="#">Private Trackers/Views</a></li>
           </ul>
           {% if user.is_authenticated %}
-          <p class="pull-right">Logged in as <a href="#">username</a></p>
+          <p class="pull-right">
+            Logged in as
+            <a href="#">{{ user.get_full_name }}</a>
+            <a href="/users/logout">Log out</a>
+          </p>
           {% else %}
           <p class="pull-right">&nbsp;|&nbsp;<a href="/accounts/register/">Register</a></p>
-          <form action="" class="pull-right">
-                <input class="input-small" type="text" placeholder="Username">
+          <form action="/accounts/login/" class="pull-right">
+                <input name="username" class="input-small" type="text" placeholder="Username">
                 <input class="input-small" type="password" placeholder="Password">
                 <button class="btn" type="submit">Sign in</button>
           </form>

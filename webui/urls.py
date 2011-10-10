@@ -8,7 +8,7 @@ urlpatterns = patterns('',
 )
 urlpatterns += patterns('',
     (r'^users/$', 'frontend.views.users.profile'),
-    *[(r'^users/%s' % action, 'frontend.views.users.%s' % action) for action in ['signup', 'login', 'logout', 'profile']]
+    *[(r'^users/%s' % action, 'frontend.views.users.%s' % action) for action in ['profile']]
 )
 #urlpatterns += patterns('',
 #    (r'^trackers/$', 'frontend.views.trackers.index'),
