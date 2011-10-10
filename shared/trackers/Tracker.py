@@ -1,51 +1,114 @@
-# Trackers representation classes.
-# Each tracker has a datasource, which knows where to get data from and how to
-# get them.
-import abc
+"""This module contains Tracker class wich is responsible for gathering raw data
+from datasource and return parsed values.
+"""
+
+import time
+import traceback
+
+from EventSender import sender
+from shared.Parser import get_parser
 
 
-class TrackerBase:
-    """Base class for trackers."""
+from datasources import get_data_source
+from datasources.Errors import BaseGrabError, UnknownDatasourceError
+from shared.Parser import get_parser
+
+class Tracker(object):
+
+    """Gather data from datasource and parse them using appropriate parser.
+
+    :Instance variables:
+        - `tracker_id`: unique ID of tracker.
+        - `interval`: interval to grab data.
+        - `source`: string which contains target for this tracker.
+        - `source_type`: string which contains type of the raw data (XML, HTML,
+          JSON etc.)
+        - `last_modified`: time (in seconds) of last modification.
+        - `values_to_get`: a list of XPATH or other queries for parser.
+        - `values`: a list of parsed values.
+    """
+
     tracker_id = None
     interval = None
-    source = None
     last_modified = None
     source_type = None # JSON, XML, etc.
+    source = None
+    values = None
+    queries = None
 
-    def __init__(self, tracker_id, storage):
+
+    def __init__(self, tracker_id, source, source_type, queries,
+                 interval, storage):
+        """Initialize the tracker with valid configuration.
+        """
         self.tracker_id = tracker_id
+        self.source = source
+        self.source_type = source_type
+        self.queries = queries
+        self.interval = interval
         self.storage = storage
 
+        self.values = []
+        self.last_modified = 0
+        interval = 0
+
+
     def get_id(self):
+        """Return a string with unique tracker ID.
+        """
         return self.tracker_id
 
-    def get_interval(self):
-        return self.interval
+    def _grab_data(self):
+        """Grab data from datasource.
+        """
+        ds = get_data_source(self.source)
+        self._raw_data = ds.grab_data()
 
-    def get_source(self):
-        return self.source
+    def _parse_data(self):
+        """Parse raw data with appropriate parser and save gathered values in
+        `values` attribute.
+        """
+        self._parser = get_parser(self.source_type)
+        self._parser.initialize()
+        self._parser.parse(self._raw_data)
+        self._clean_data = [self._parser.xpath(query)
+                            for query in self.queries]
 
-    def get_last_modified(self):
-        return self.last_modified
+    def _check_data(self):
+        """Check if the data stored in `values` attribute has the same type as
+        it was requested by the user.
+        """
+        # Currecntly we cannot implement this method correctly.
+        # TODO: validate self._clean_data
+        pass
 
-    def set_interval(self, interval):
-        self.interval = interval
+    def _save_data(self):
+        """Save data to storage.
+        """
+        # TODO: store data to the storage.
+        pass
 
-    def set_source(self, source):
-        self.source = source
-
-    def set_last_modified(self, last_modified):
-        self.last_modified = last_modified
-
-    @abc.abstractmethod
-    def grab_data(): pass
+    def _process_datasource_exception(self, e):
+        # TODO: process exception here
+        print 'DATASOURCE EXCEPTION', type(e)
 
 
-class Tracker(TrackerBase):
-    pass
+    def process(self):
+        """Main logic of the tracker.
+        Create appropriate datasource, and get raw data. Then parse the data
+        using appropriate parser and try to validate them. The last step is to
+        save parsed values to the storage.
+        """
+        try:
+            self._grab_data()
+            self._parse_data()
+            self._check_data()
+            self._save_data()
+        except BaseGrabError, e:
+            self._process_datasource_exception(e)
 
+        # TODO: wee need to handle all errors which can occure.
 
-class DummyTracker(Tracker):
-    def grab_data():
-        from config import logger
-        logger.info('just simple message from tracker %s' % self.get_id())
+        finally:
+            self.last_modified = time.time()
+
