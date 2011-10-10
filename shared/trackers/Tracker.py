@@ -13,6 +13,8 @@ from datasources import get_data_source
 from datasources.Errors import BaseGrabError, UnknownDatasourceError
 from shared.Parser import get_parser
 
+from config.init.trackers import sender
+
 class Tracker(object):
 
     """Gather data from datasource and parse them using appropriate parser.
@@ -90,7 +92,7 @@ class Tracker(object):
 
     def _process_datasource_exception(self, e):
         # TODO: process exception here
-        print 'DATASOURCE EXCEPTION', type(e)
+        sender.fire('LOGGER.DEBUG', message='DATASOURCE EXCEPTION %s' % (type(e),))
 
 
     def process(self):
@@ -106,9 +108,8 @@ class Tracker(object):
             self._save_data()
         except BaseGrabError, e:
             self._process_datasource_exception(e)
-
-        # TODO: wee need to handle all errors which can occure.
-
+        except Exception, e:
+            sender.fire('LOGGER.CRITICAL', message=type(e))
         finally:
             self.last_modified = time.time()
 

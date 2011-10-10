@@ -37,7 +37,7 @@ class EventManagerBase(object):
     """Base class for event sender and event receiver.
     """
 
-    def __init__(self, server_host=mq.QUEUE_HOST, server_port=mq.QUEUE_PORT):
+    def __init__(self, server_host=mq.queue_host, server_port=mq.queue_port):
         """Initialize event manager.
 
         :Parameters:
