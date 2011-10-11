@@ -1,9 +1,9 @@
+# Ubuntu users please meke sure that the following packages are installed:
+# libxml2-dev, libxslt-dev, python-dev, libevent-dev
 beanstalkc
 PyYAML
 gevent
 pymongo
-# Ubuntu users please meke sure that the following packages are installed:
-# libxml2, libxslt, libxml2-dev, libxslt-dev
 lxml
 BeautifulSoup
 bjsonrpc
