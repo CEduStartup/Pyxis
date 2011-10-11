@@ -1,5 +1,5 @@
 from datetime import datetime
-from config.mq import QUEUE_HOST, QUEUE_PORT
+from config.mq import queue_host, queue_port
 from shared.events.EventManager import EventReceiver
 from shared.events.Event import BaseEvent, LOGGER_TUBE
 
@@ -31,7 +31,7 @@ class LogManager:
 
 
 if __name__ == '__main__':
-    LogManager(QUEUE_HOST, QUEUE_PORT).start()
+    LogManager(queue_host, queue_port).start()
 
 
 
