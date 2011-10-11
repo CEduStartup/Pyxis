@@ -11,7 +11,7 @@ dispatcher.subscribe([TrackerSuccessEvent, TrackerFailureEvent], some_func_3)
 dispatcher.dispatch()
 """
 
-from EventManager import EventReceiver
+from .EventManager import EventReceiver
 
 
 class EventDispatcher(object):

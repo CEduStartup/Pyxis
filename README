@@ -22,9 +22,13 @@ Requirements
 - MongoDB server
 - beanstalkd queue server (>1.4.6)
 - Postgresql
+- libxml2
 
 Python libraries used
 =====================
 gevent
 Django
 pymongo
+lxml
+BeautifulSoup
+beanstalkc (client)

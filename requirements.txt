@@ -1,0 +1,5 @@
+beanstalkc
+gevent
+pymongo
+lxml
+BeautifulSoup
