@@ -3,7 +3,7 @@ from shared.Utils import rollup_periods, get_date_str, value_generator, \
 import time
 
 
-class TimeBasedData(Object):
+class TimeBasedData(object):
     connection = None
     db = None
 
@@ -63,7 +63,7 @@ class TimeBasedData(Object):
                 for i in range(1, xpaths_per_tracker+1):
                     xpath_id = '%s_%s' % (tracker_id, i)
                     values[xpath_id] = vg.next()
-                self.insert_raw_data(tracker_id, timestamp, values)
+                self.insert_raw_data(tracker_id, ts, values)
 
     def insert_raw_data(self, tracker_id, timestamp, data):
         """Inserts `data` to the MongoDB and aggregates data in `1hour` and
