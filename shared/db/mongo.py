@@ -7,6 +7,21 @@ class TimeBasedData(Object):
     connection = None
     db = None
 
+    def clear_db(self, collection=None):
+        """Remove all items from collection `collection`.
+
+        :Parameters:
+
+            - `collection`: collection name which should be cleaned.
+              If not specified, all collectionns will be cleared.
+        """
+        if collection:
+            collection = [collection,]
+        else:
+            collection = self.db.collection_names()
+        for i in collection:
+            self.db[i].remove({})
+
     def fill_test_data(self, trackers_count=5, xpaths_per_tracker=3,
                        date_from=None, date_to=None, duration_in_days=365):
         """Fill in the MongoDb with the test data.
