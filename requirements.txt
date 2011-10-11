@@ -1,4 +1,5 @@
 beanstalkc
+PyYAML
 gevent
 pymongo
 # Ubuntu users please meke sure that the following packages are installed:
