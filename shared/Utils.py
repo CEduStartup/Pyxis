@@ -1,47 +1,68 @@
 import time
+import dateutil.parser
 from random import randint
 
-FIVE_MIN = 60 * 5
-ONE_HOUR = 60 * 60
+ONE_MIN = 60
+ONE_HOUR = ONE_MIN * 60
 ONE_DAY  = ONE_HOUR * 24
 
-rollup_periods = ['5min', '1hour', '1day']
+rollup_periods = ['1min', '1hour', '1day']
 rollup_periods_display = {
-    '5min' : '5 minutes',
-    '1hour': '1 hour',
-    '1day' : '1 day',
+    '1min'  : '5 minutes',
+    '1hour' : '1 hour',
+    '1day'  : '1 day',
+    '1month': '1 month',
+}
+
+periods_mapping = {
+    '1min'  : ONE_MIN,
+    '1hour' : ONE_HOUR,
+    '1day'  : ONE_DAY,
+    '1month': ONE_DAY,
+}
+
+time_formats = {
+    '1min'  : '%Y-%m-%d %H:%M',
+    '1hour' : '%Y-%m-%d %H',
+    '1day'  : '%Y-%m-%d',
+    '1month': '%Y-%m',
 }
 
 def value_generator(n):
     while 1:
-        f = n - randint(0, 5)
-        if f < 0:
-            f = 0
-        t = n + randint(0, 10)
-        if t > 30:
-            t = 30
+        f = n - randint(0, 15)
+        if f < -30:
+            f = -30
+        t = n + randint(0, 15)
+        if t > 50:
+            t = 50
         n = randint(f, t)
         yield n
 
 def time_round(ts, period='1day'):
     t = time.localtime(ts)
-    if period == '1day':
+    if period == '1month':
+        t = (t.tm_year, t.tm_mon, 1, 0, 0, 0, -1, -1, -1)
+    elif period == '1day':
         t = (t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, -1, -1, -1)
     elif period == '1hour':
         t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, 0, 0, -1, -1, -1)
-    elif period == '5min':
-        tm_min = 5 * (t.tm_min / 5)
-        t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, tm_min, 0, -1, -1, -1)
+    elif period == '1min':
+        t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, 0, -1, -1, -1)
     else:
-        raise ValueError('`period` must be `1day`, `1hour` or `5min`')
+        raise ValueError('`period` must be `1month`, `1day`, `1hour` or `1min` (got %s)' % period)
     return time.mktime(t)
 
 def str2time(string):
     try:
-        t = time.strptime(string, '%Y-%m-%d')
-        return time.mktime(t)
+        d = dateutil.parser.parse(string)
+        return time.mktime(d.timetuple())
     except:
-        raise ValueError('Date `%s` does not match format `%Y-%m-%d`.')
+        msg = '`%s` s not known time format`.'
+        raise ValueError(msg)
+
+def get_date_str_1month(ts):
+    return time.strftime('%Y-%m', time.localtime(ts))
 
 def get_date_str_1day(ts):
     return time.strftime('%Y-%m-%d', time.localtime(ts))
@@ -50,34 +71,42 @@ def get_date_str_1hour(ts):
     t = time_round(ts, '1hour')
     return time.strftime('%Y-%m-%d %H', time.localtime(t))
 
-def get_date_str_5min(ts):
-    t = time_round(ts, '5min')
+def get_date_str_1min(ts):
+    t = time_round(ts, '1min')
     return time.strftime('%Y-%m-%d %H:%M', time.localtime(t))
 
 date_str_functions = {
-    '5min'  : get_date_str_5min,
-    '1hour' : get_date_str_1hour,
-    '1day'  : get_date_str_1day,
+    '1min'    : get_date_str_1min,
+    '1hour'   : get_date_str_1hour,
+    '1day'    : get_date_str_1day,
+    '1month'  : get_date_str_1month,
 }
 
 def get_date_str(timestamp, rollup_period='1day'):
+    try:
+        timestamp = int(timestamp)
+    except ValueError:
+        timestamp = str2time(timestamp)
     return date_str_functions[rollup_period](timestamp)
 
-def get_from_to_range(date_from=None, date_to=None, duration_in_days=365):
+def get_from_to_range(date_from=None, date_to=None, rollup_period='1day',
+                      periods_count=365):
     ts_from = ts_to = None
-    if not duration_in_days:
+    d = periods_mapping[rollup_period]
+    duration = d * periods_count
+    if not duration:
         duration_in_days = 365
     if date_from:
-        ts_from = time_round(str2time(date_form))
+        ts_from = time_round(str2time(date_from), rollup_period)
     if date_to:
-        ts_to = min(int(time.time()), time_round(str2time(date_to)) + ONE_DAY)
+        ts_to = min(int(time.time()), time_round(str2time(date_to), rollup_period) + d)
     if date_from is None and date_to is None:
         ts_to = int(time.time())
-        ts_from = time_round(ts_to - duration_in_days * ONE_DAY)
+        ts_from = time_round(ts_to - duration, rollup_period)
     if ts_from is None:
-        ts_from = time_round(ts_to - duration_in_days * ONE_DAY)
+        ts_from = time_round(ts_to - duration, rollup_period)
     if ts_to is None:
-        ts_to = min(int(time.time()), ts_from + duration_in_days * ONE_DAY)
+        ts_to = min(int(time.time()), ts_from + duration)
 
-    return ts_from, ts_to
+    return int(ts_from), int(ts_to)
 
