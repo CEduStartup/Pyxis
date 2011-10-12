@@ -2,17 +2,14 @@
 from datasource and return parsed values.
 """
 
-import sys
 import time
 import traceback
 
-from shared.Parser import get_parser
-
-from datasources import get_data_source
-from datasources.Errors import BaseGrabError, UnknownDatasourceError
-from shared.Parser import get_parser
-
 from config.init.trackers import sender
+from datasources import get_data_source
+from datasources.Errors import BaseGrabError
+from shared.Parser import get_parser
+
 
 class Tracker(object):
 
@@ -52,6 +49,10 @@ class Tracker(object):
         self.last_modified = 0
         interval = 0
 
+        self._parser = None
+        self._raw_data = None
+        self._clean_data = None
+
     def get_id(self):
         """Return a string with unique tracker ID.
         """
@@ -60,8 +61,8 @@ class Tracker(object):
     def _grab_data(self):
         """Grab data from datasource.
         """
-        ds = get_data_source(self.source)
-        self._raw_data = ds.grab_data()
+        datasource = get_data_source(self.source)
+        self._raw_data = datasource.grab_data()
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
@@ -87,9 +88,10 @@ class Tracker(object):
         # TODO: store data to the storage.
         pass
 
-    def _process_datasource_exception(self, e):
+    def _process_datasource_exception(self, err):
         # TODO: process exception here
-        sender.fire('LOGGER.DEBUG', message='DATASOURCE EXCEPTION %s' % (type(e),))
+        sender.fire('LOGGER.DEBUG',
+                    message='DATASOURCE EXCEPTION %s' % (type(err),))
 
     def process(self):
         """Main logic of the tracker.

@@ -15,6 +15,8 @@ class TrackerCollection:
         self.storage = storage
         self.trackers = {}
 
+        self._trackers_api = None
+
     def _tracker_updater(self):
         while True:
             if not self.trackers:
