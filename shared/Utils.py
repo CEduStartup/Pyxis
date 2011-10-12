@@ -24,20 +24,22 @@ def value_generator(n):
         yield n
 
 def time_round(ts, period='1day'):
-    d = None
+    t = time.localtime(ts)
     if period == '1day':
-        d = ONE_DAY
+        t = (t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, -1, -1, -1)
     elif period == '1hour':
-        d = ONE_HOUR
+        t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, 0, 0, -1, -1, -1)
     elif period == '5min':
-        d = FIVE_MIN
+        tm_min = 5 * (t.tm_min / 5)
+        t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, tm_min, 0, -1, -1, -1)
     else:
         raise ValueError('`period` must be `1day`, `1hour` or `5min`')
-    return d * (int(ts) / d)
+    return time.mktime(t)
 
 def str2time(string):
     try:
-        return time.mktime(time.strptime(string, '%Y-%m-%d'))
+        t = time.strptime(string, '%Y-%m-%d')
+        return time.mktime(t)
     except:
         raise ValueError('Date `%s` does not match format `%Y-%m-%d`.')
 
@@ -58,5 +60,24 @@ date_str_functions = {
     '1day'  : get_date_str_1day,
 }
 
-def get_date_str(rollup_period, timestamp):
+def get_date_str(timestamp, rollup_period='1day'):
     return date_str_functions[rollup_period](timestamp)
+
+def get_from_to_range(date_from=None, date_to=None, duration_in_days=365):
+    ts_from = ts_to = None
+    if not duration_in_days:
+        duration_in_days = 365
+    if date_from:
+        ts_from = time_round(str2time(date_form))
+    if date_to:
+        ts_to = min(int(time.time()), time_round(str2time(date_to)) + ONE_DAY)
+    if date_from is None and date_to is None:
+        ts_to = int(time.time())
+        ts_from = time_round(ts_to - duration_in_days * ONE_DAY)
+    if ts_from is None:
+        ts_from = time_round(ts_to - duration_in_days * ONE_DAY)
+    if ts_to is None:
+        ts_to = min(int(time.time()), ts_from + duration_in_days * ONE_DAY)
+
+    return ts_from, ts_to
+

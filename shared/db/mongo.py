@@ -1,6 +1,11 @@
 from shared.Utils import rollup_periods, get_date_str, value_generator, \
-                         time_round, str2time, FIVE_MIN, ONE_HOUR, ONE_DAY
+                         get_from_to_range, FIVE_MIN
 import time
+
+
+
+
+from pprint import pprint as pp
 
 
 class TimeBasedData(object):
@@ -40,22 +45,8 @@ class TimeBasedData(object):
                used with either `date_from` or `date_to`. If both `date_from`
                and `date_to` are specified `duration_in_days` will be omitted.
         """
-        ts_from = ts_to = None
-        if not duration_in_days:
-            duration_in_days = 365
-        if date_from:
-            ts_from = time_round(str2time(date_form))
-        if date_to:
-            ts_to = min(int(time.time()), time_round(str2time(date_to)) + ONE_DAY)
-        if date_from is None and date_to is None:
-            ts_to = int(time.time())
-            ts_from = time_round(ts_to - duration_in_days * ONE_DAY)
-        if ts_from is None:
-            ts_from = time_round(ts_to - duration_in_days * ONE_DAY)
-        if ts_to is None:
-            ts_to = min(int(time.time()), ts_from + duration_in_days * ONE_DAY)
-
         vg = value_generator(5)
+        ts_from, ts_to = get_from_to_range(date_from, date_to, duration_in_days)
 
         for ts in range(ts_from, ts_to, FIVE_MIN):
             for tracker_id in range(1, trackers_count+1):
@@ -80,7 +71,7 @@ class TimeBasedData(object):
         """
         for period_name in rollup_periods:
             collection = self.db[period_name]
-            date = get_date_str(period_name, timestamp)
+            date = get_date_str(timestamp, period_name)
             res = collection.find_one({'date': date, 'tracker_id': tracker_id})
             if res is None:
                 values = {}
@@ -103,4 +94,19 @@ class TimeBasedData(object):
                         if values[xpath_id]['max'] < value:
                             values[xpath_id]['max'] = value
                 collection.update({'_id': res['_id']}, res, True)
+    def query(self, tracker_id, source_id, rollup_period, date_from=None,
+              date_to=None, aggregation_function='avg', periods_in_group=1):
+        date_from, date_to = map(get_date_str,
+                                 get_from_to_range(date_from, date_to))
+        collection = self.db[rollup_period]
+        res = collection.find({'tracker_id': tracker_id,
+                               'date': {'$gte': date_from, '$lt': date_to}})
+        for r in res:
+            pp(r)
+
+
+
+ts_from, ts_to = get_from_to_range()
+print get_date_str(ts_to)
+print time.localtime(ts_to)
 
