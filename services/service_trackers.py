@@ -1,9 +1,10 @@
 # Service working with trackers.
 # All services are launched automatically by services/services_launcher.py.
+
 import pgdb
 from services.service_base import SharedService
 from shared.trackers.Tracker import Tracker
-from config import db_config
+from config import db
 
 
 class db_adapter:
@@ -29,8 +30,8 @@ class db_adapter:
 class pgsql_adapter(db_adapter):
     """Database adapter for PostgreSQL."""
     def connect(self):
-        self.connection = pgdb.connect(db_config.db_name, host=db_config.db_host,
-            user=db_config.db_user, password=db_config.db_password)
+        self.connection = pgdb.connect(db.db_name, host=db.db_host,
+            user=db.db_user, password=db.db_password)
 
     def save_tracker(self, tracker):
         cursor = self.connection.cursor()
@@ -52,9 +53,8 @@ tracker.description, tracker.source_type, tracker.data_type, tracker.interval)
         tracker_objects = []
         for (tracker_id, name, description, created, last_modified, status,
              source_type, data_type, source, interval) in trackers_raw:
-            tracker = Tracker(None, None)
-            tracker.tracker_id = tracker_id
-            tracker.set_interval(interval)
+            tracker = Tracker(tracker_id, source, source_type, '', interval,
+                              None)
             tracker_objects.append(tracker)
 
         cursor.close()
@@ -89,8 +89,8 @@ class TrackersService(SharedService):
 
 
 if __name__ == '__main__':
-    db = pgsql_adapter()
-    db.connect()
+    db_adapter = pgsql_adapter()
+    db_adapter.connect()
     import time
 
 

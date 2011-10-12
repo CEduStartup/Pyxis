@@ -2,6 +2,7 @@
 from datasource and return parsed values.
 """
 
+import sys
 import time
 import traceback
 
@@ -36,7 +37,6 @@ class Tracker(object):
     values = None
     queries = None
 
-
     def __init__(self, tracker_id, source, source_type, queries,
                  interval, storage):
         """Initialize the tracker with valid configuration.
@@ -51,7 +51,6 @@ class Tracker(object):
         self.values = []
         self.last_modified = 0
         interval = 0
-
 
     def get_id(self):
         """Return a string with unique tracker ID.
@@ -92,7 +91,6 @@ class Tracker(object):
         # TODO: process exception here
         sender.fire('LOGGER.DEBUG', message='DATASOURCE EXCEPTION %s' % (type(e),))
 
-
     def process(self):
         """Main logic of the tracker.
         Create appropriate datasource, and get raw data. Then parse the data
@@ -104,10 +102,10 @@ class Tracker(object):
             self._parse_data()
             self._check_data()
             self._save_data()
-        except BaseGrabError, e:
-            self._process_datasource_exception(e)
-        except Exception, e:
-            sender.fire('LOGGER.CRITICAL', message=type(e))
+        except BaseGrabError, err:
+            self._process_datasource_exception(err)
+        except Exception:
+            sender.fire('LOGGER.CRITICAL', message=traceback.format_exc())
         finally:
             self.last_modified = time.time()
 

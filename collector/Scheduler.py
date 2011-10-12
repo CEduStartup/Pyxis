@@ -34,7 +34,7 @@ class Scheduler:
         """
         while True:
             tracker = self.to_run.get()
-            self.pool.spawn(tracker.grab_data)
+            self.pool.spawn(tracker.process)
 
     def _schedule_tasks(self):
         """This method is processing upcoming tasks, deletes them if necessary
@@ -51,7 +51,7 @@ class Scheduler:
                 gevent.sleep(min(time - cur_time, config.scheduler_maximum_sleep))
                 continue
             self.to_run.put(tracker)
-            self.tasks.put((time + tracker.get_interval(), tracker))
+            self.tasks.put((time + tracker.interval, tracker))
 
     def get_run_queue_size(self):
         return self.to_run.qsize()

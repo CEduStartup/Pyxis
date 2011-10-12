@@ -4,7 +4,8 @@
 
 # Usage: from services.aervices_api import trackers_api
 # trackers_api.method(<params>)
-from config.srv_config import trackers as trackers_config
+
+from config.services import trackers as trackers_config
 from shared.trackers.Tracker import Tracker
 import bjsonrpc
 import zlib
