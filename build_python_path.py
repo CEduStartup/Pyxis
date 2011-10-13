@@ -83,7 +83,12 @@ where this script is located).
         dir_name = os.getcwd()
 
     path = process_dir(dir_name)
-    print ':'.join(path)
+    if os.name == 'posix':
+        separator = ':'
+    else:
+        separator = ';'
+
+    print separator.join(path)
 
 
 
