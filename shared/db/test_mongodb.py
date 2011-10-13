@@ -3,8 +3,8 @@ from shared.db.mongo import TimeBasedData
 
 
 if __name__ == '__main__':
-    #connection = Connection('172.22.60.75')
-    connection = Connection()
+    connection = Connection('172.22.60.75')
+    #connection = Connection()
     db = connection['time-based-data']
 
     data_storage = TimeBasedData()
