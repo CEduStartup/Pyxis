@@ -6,7 +6,7 @@ ONE_MIN = 60
 ONE_HOUR = ONE_MIN * 60
 ONE_DAY  = ONE_HOUR * 24
 
-rollup_periods = ['1min', '1hour', '1day']
+rollup_periods = ['1min', '1hour', '1day', '1month']
 rollup_periods_display = {
     '1min'  : '5 minutes',
     '1hour' : '1 hour',
@@ -14,11 +14,11 @@ rollup_periods_display = {
     '1month': '1 month',
 }
 
-periods_mapping = {
+duration_in_seconds = {
     '1min'  : ONE_MIN,
     '1hour' : ONE_HOUR,
     '1day'  : ONE_DAY,
-    '1month': ONE_DAY,
+    '1month': ONE_DAY * 31,
 }
 
 time_formats = {
@@ -50,8 +50,12 @@ def time_round(ts, period='1day'):
     elif period == '1min':
         t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, 0, -1, -1, -1)
     else:
-        raise ValueError('`period` must be `1month`, `1day`, `1hour` or `1min` (got %s)' % period)
-    return time.mktime(t)
+        msg = """\
+`period` must be `1month`, `1day`, `1hour` or `1min` (got %s)""" % \
+            (period,)
+        raise ValueError(msg)
+
+    return int(time.mktime(t))
 
 def str2time(string):
     try:
@@ -82,29 +86,28 @@ date_str_functions = {
     '1month'  : get_date_str_1month,
 }
 
-def get_date_str(timestamp, rollup_period='1day'):
+def get_date_str(timestamp, period='1day'):
     try:
         timestamp = int(timestamp)
     except ValueError:
         timestamp = str2time(timestamp)
-    return date_str_functions[rollup_period](timestamp)
+    return date_str_functions[period](timestamp)
 
-def get_from_to_range(date_from=None, date_to=None, rollup_period='1day',
+def get_from_to_range(date_from=None, date_to=None, period='1day',
                       periods_count=365):
     ts_from = ts_to = None
-    d = periods_mapping[rollup_period]
-    duration = d * periods_count
-    if not duration:
-        duration_in_days = 365
+    d = duration_in_seconds[period]
+    if not periods_count:
+        periods_count = 365
     if date_from:
-        ts_from = time_round(str2time(date_from), rollup_period)
+        ts_from = time_round(str2time(date_from), period)
     if date_to:
-        ts_to = min(int(time.time()), time_round(str2time(date_to), rollup_period) + d)
+        ts_to = min(int(time.time()), time_round(str2time(date_to), period) + d)
     if date_from is None and date_to is None:
         ts_to = int(time.time())
-        ts_from = time_round(ts_to - duration, rollup_period)
+        ts_from = time_round(ts_to - duration, period)
     if ts_from is None:
-        ts_from = time_round(ts_to - duration, rollup_period)
+        ts_from = time_round(ts_to - duration, period)
     if ts_to is None:
         ts_to = min(int(time.time()), ts_from + duration)
 

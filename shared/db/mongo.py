@@ -1,18 +1,22 @@
+import pymongo
+
 from shared.Utils import rollup_periods, get_date_str, value_generator, \
-                         get_from_to_range, periods_mapping, ONE_MIN
+                         get_from_to_range, duration_in_seconds, time_round, ONE_MIN
 from random import randint
 
 from pprint import pprint as pp
 
 
-def x_keys_time_based(rollup_period, ts_from, ts_to,
-                      periods_in_group=1):
+def x_keys_time_based(period, ts_from, ts_to):
     keys = []
-    d = periods_mapping[rollup_period]
-    for ts in range(ts_from, ts_to, d*periods_in_group):
-        key =  et_date_str(ts, rollup_period)
+    d = duration_in_seconds[period]
+    ts = ts_from
+    while ts < ts_to:
+        ts = time_round(ts, period)
+        key = get_date_str(ts, period)
         if not key in keys:
             keys.append(key)
+        ts += d
     return keys
 
 
@@ -54,9 +58,8 @@ class TimeBasedData(object):
                and `date_to` are specified `duration_in_days` will be omitted.
         """
         vg = value_generator(5)
-        ts_from, ts_to = get_from_to_range(date_from, date_to, rollup_period='1day',
+        ts_from, ts_to = get_from_to_range(date_from, date_to, period='1day',
                                            periods_count=duration_in_days)
-
         ts = ts_from
         while ts < ts_to:
             for tracker_id in range(1, trackers_count+1):
@@ -80,13 +83,17 @@ class TimeBasedData(object):
             - `data`: dictionary with values to insert in format
               { <src_id>: <value>, }
         """
-        for period_name in rollup_periods:
-            collection = self.db[period_name]
-            date = get_date_str(timestamp, period_name)
-            res = collection.find_one({'date': date, 'tracker_id': tracker_id})
+        for period in rollup_periods:
+            collections = self.db.collection_names()
+            collection = self.db[period]
+            if not period in collections:
+                collection.create_index([('tracker_id', pymongo.ASCENDING),
+                                         ('timestamp', pymongo.ASCENDING)])
+            ts = get_date_str(timestamp, period)
+            res = collection.find_one({'timestamp': ts, 'tracker_id': tracker_id})
             if res is None:
                 values = {}
-                res = {'tracker_id': tracker_id, 'date': date, 'values': values}
+                res = {'tracker_id': tracker_id, 'timestamp': ts, 'values': values}
                 for src_id, value in data.iteritems():
                     values[src_id] = {'min': value, 'max': value,
                                         'sum': value, 'count': 1}
@@ -107,15 +114,16 @@ class TimeBasedData(object):
                         if values[src_id]['max'] < value:
                             values[src_id]['max'] = value
                 collection.update({'_id': res['_id']}, res, True)
-    def query(self, tracker_id, rollup_period, src_parms=None, date_from=None,
-              date_to=None, periods_in_group=1):
+
+    def query(self, tracker_id, period, src_parms=None, date_from=None,
+              date_to=None):
         """Query MongoDB and aggregate data by the rollup period and source.
 
         :Parameters:
 
             - `tracker_id`: id of data source group;
 
-            - `rollup_period`: minimal interval which will be displayed on graph;
+            - `period`: minimal interval which will be displayed on graph;
 
             - `src_parms`: list of pairs: (<source-id>, <aggregation-method>);
 
@@ -123,13 +131,12 @@ class TimeBasedData(object):
 
             - `date_to`: date to string in format `%Y-%m-%d %H:%M`;
         """
-        collection_name = rollup_period
-        if rollup_period == '1month':
+        collection_name = period
+        if period == '1month':
             collection_name = '1day'
-        ranges = get_from_to_range(date_from, date_to, rollup_period=rollup_period)
+        ranges = get_from_to_range(date_from, date_to, period=period)
         date_from, date_to = map(lambda x:get_date_str(x, collection_name), ranges)
-        x_keys = x_keys_time_based(rollup_period, *ranges,
-                                   periods_in_group=periods_in_group)
+        x_keys = x_keys_time_based(period, *ranges)
         collection = self.db[collection_name]
         res = collection.find({'tracker_id': tracker_id,
                                'date': {'$gte': date_from, '$lt': date_to}})
@@ -142,7 +149,7 @@ class TimeBasedData(object):
         for i in range(res.count()+1):
             try:
                 item = res[i]
-                key = get_date_str(item['date'], rollup_period)
+                key = get_date_str(item['date'], period)
             except IndexError:
                 item = key = None
             if key != last_key:
