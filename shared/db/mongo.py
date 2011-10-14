@@ -89,7 +89,7 @@ class TimeBasedData(object):
             if not period in collections:
                 collection.create_index([('tracker_id', pymongo.ASCENDING),
                                          ('timestamp', pymongo.ASCENDING)])
-            ts = get_date_str(timestamp, period)
+            ts = time_round(timestamp, period)
             res = collection.find_one({'timestamp': ts, 'tracker_id': tracker_id})
             if res is None:
                 values = {}
@@ -134,35 +134,31 @@ class TimeBasedData(object):
         collection_name = period
         if period == '1month':
             collection_name = '1day'
-        ranges = get_from_to_range(date_from, date_to, period=period)
-        date_from, date_to = map(lambda x:get_date_str(x, collection_name), ranges)
-        x_keys = x_keys_time_based(period, *ranges)
+        ts_from, ts_to = get_from_to_range(date_from, date_to, period=period)
         collection = self.db[collection_name]
         res = collection.find({'tracker_id': tracker_id,
-                               'date': {'$gte': date_from, '$lt': date_to}})
+                               'timestamp': {'$gte': ts_from, '$lt': ts_to}})
         data_map = {}
         for src_id, aggr in src_parms:
-            d = [0] * len(x_keys)
-            data_map[(src_id, aggr)] = d
+            data_map[(src_id, aggr)] = []
         last_key = None
         tmp_vals = None
         for i in range(res.count()+1):
             try:
                 item = res[i]
-                key = get_date_str(item['date'], period)
+                key = time_round(item['timestamp'], period)
             except IndexError:
                 item = key = None
             if key != last_key:
-                if last_key in x_keys:
-                    idx = x_keys.index(last_key)
+                if last_key is not None:
                     for (src_id, aggr) in data_map:
                         if not src_id in tmp_vals:
                             continue
                         d = data_map[(src_id, aggr)]
                         if aggr == 'avg':
-                            d[idx] = 1.0 * tmp_vals[src_id]['sum'] / tmp_vals[src_id]['count']
+                            d.append((last_key, 1.0 * tmp_vals[src_id]['sum'] / tmp_vals[src_id]['count']))
                         else:
-                            d[idx] = tmp_vals[src_id][aggr]
+                            d.append((last_key, tmp_vals[src_id][aggr]))
                 tmp_vals = {}
                 if item:
                     tmp_vals.update(item['values'])
@@ -181,6 +177,25 @@ class TimeBasedData(object):
                     if tmp['max'] < src_vals['max']:
                         tmp['max'] = src_vals['max']
                 tmp_vals[src_id] = tmp
-        return {'x_keys': x_keys,
-                'data': data_map}
+        series = []
+        data_keys = data_map.keys()
+        for key in sorted(data_keys):
+            data = data_map[key]
+            seria = {
+                'name': str(key),
+                'data': data
+            }
+            series.append(seria)
+        return series
+
+    def get_db(tracker_id):
+        if not 'trackers_map' in self.util_db.collection_names():
+            self.util_db['trackers_map'].create_index('tracker_id')
+        trackers_map = self.util_db['trackers_map']
+        tracker_res = trackers_map.find_one({'tracker_id': tracker_id})
+        if tracker_res:
+            return self.conn[tracker_res['db_name']]
+        if not 'current_db_index' in self.util_db.collection_names():
+            self.util_db['current_db_index'].save({'db_index': 0})
+
 
