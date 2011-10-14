@@ -1,6 +1,6 @@
 import bjsonrpc
 from bjsonrpc.handlers import BaseHandler
-from django.conf import settings
+import settings
 from random import random
 from pymongo.connection import Connection
 from shared.db.mongo import TimeBasedData

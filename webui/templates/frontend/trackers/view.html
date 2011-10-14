@@ -1,0 +1,65 @@
+{% extends 'frontend/trackers/index.html' %}
+
+{% block content %}
+
+<script>
+    $(document).ready(function() {
+        $(function() {
+            $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker();
+        });
+
+        $('#id_{{ options.types.html_name }}').change(function() {
+            render_chart(options, $('#id_{{ options.types.html_name }}').val());
+        });
+
+        build_chart({{ tracker.data }}, '{{ options.types.value|default:"column" }}');
+    });
+</script>
+
+<h3>{{ tracker.name }}</h3>
+<div id="container" style="width: 100%; height: 400px"></div>
+
+<div id='options'>
+    <form id='form' action='trackers/' method='post'>
+        <input type='hidden' name='id' value='{{ tracker.id }}'>
+        {{ options.id }}
+        <div class='row'>
+            <div class='span8'>
+                {{ options.periods.errors }}
+                {{ options.periods.label_tag }}
+                {{ options.periods }}
+            </div>
+            <div class='span8'>
+                <div>
+                    {{ options.start.errors }}
+                    {{ options.start.label_tag }}
+                    {{ options.start }}
+                </div>
+                <div>
+                    {{ options.end.errors }}
+                    {{ options.end.label_tag }}
+                    {{ options.end }}
+                </div>
+            </div>
+        </div>
+
+        <div class='row'>
+            <div class='span8'>
+                {{ options.method.errors }}
+                {{ options.methods.label_tag }}
+                {{ options.methods }}
+            </div>
+            <div class='span8'>
+                {{ options.types.errors }}
+                {{ options.types.label_tag }}
+                {{ options.types }}
+            </div>
+        </div>
+    </from>
+</div>
+
+
+<div style="margin-top: 100px; clear: both; cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div>
+<br/>
+<a href="/trackers/edit/{{ tracker.id }}">Edit</a> | <a href="/trackers/">Back to list</a>
+{% endblock content %}

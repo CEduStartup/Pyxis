@@ -8,15 +8,15 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
 from ..models import Tracker
 from ..forms import OptionsForm, TrackerForm
-from admingui.util import render_to
+from webui.util import render_to
 
-#@login_required
+@login_required
 @render_to('frontend/trackers/index.html')
 def index(request):
     trackers = Tracker.objects.all()
     return locals()
 
-#@login_required
+@login_required
 @render_to('frontend/trackers/view.html')
 def view(request, tracker_id):
     options = OptionsForm()
@@ -29,13 +29,13 @@ def view(request, tracker_id):
     tracker.data = data
     return {'tracker': tracker, 'options': options}
 
-#@login_required
+@login_required
 def add(request):
     return form(request, Tracker(
                                  #user=request.user
                                  ))
 
-#@login_required
+@login_required
 def edit(request, tracker_id):
     return form(request, get_object_or_404(Tracker, pk=tracker_id,
                                            #user=request.user
@@ -51,6 +51,6 @@ def form(request, tracker):
     tracker_id = tracker.id
     return locals()
 
-#@login_required
+@login_required
 def enable(request):
     return index(request)

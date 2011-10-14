@@ -1,6 +1,6 @@
 import os
 
-# Django settings for admingui project.
+# Django settings for webuiproject.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -66,7 +66,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'admingui.urls'
+ROOT_URLCONF = 'webui.urls'
 
 TEMPLATE_DIRS = (
     '%s/templates' % os.getcwd(),
