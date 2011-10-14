@@ -99,6 +99,7 @@ def get_from_to_range(date_from=None, date_to=None, period='1day',
     d = duration_in_seconds[period]
     if not periods_count:
         periods_count = 365
+    duration = d * periods_count
     if date_from:
         ts_from = time_round(str2time(date_from), period)
     if date_to:
