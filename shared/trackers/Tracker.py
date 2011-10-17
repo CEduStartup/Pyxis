@@ -6,9 +6,9 @@ import time
 import traceback
 
 from config.init.trackers import sender
-from datasources import get_data_source
+from datasources import get_datasource, UnknownDatasourceError
 from datasources.Errors import BaseGrabError
-from shared.Parser import get_parser
+from shared.Parser import get_parser, ParserError
 
 
 class Tracker(object):
@@ -18,9 +18,7 @@ class Tracker(object):
     :Instance variables:
         - `tracker_id`: unique ID of tracker.
         - `refresh_interval`: interval to grab data.
-        - `source`: string which contains target for this tracker.
-        - `source_type`: string which contains type of the raw data (XML, HTML,
-          JSON etc.)
+        - `_datasource_settings`: JSON obkect which
         - `last_modified`: time (in seconds) of last modification.
         - `values_to_get`: a list of XPATH or other queries for parser.
         - `values`: a list of parsed values.
@@ -70,6 +68,7 @@ class Tracker(object):
 
         self.last_modified = 0
 
+        self._datasources = None
         self._parser = None
         self._raw_data = None
         self._clean_data = None
@@ -106,27 +105,47 @@ class Tracker(object):
                 - datasource instance.
 
             """
-            pass
-
+            try:
+                datasource = get_datasource(settings_dict)
+                print datasource
+            except UnknownDatasourceError, err:
+                # TODO: handle this error correctly.
+                print 'SOME ERROR', err
+                pass
+            return datasource
 
         if isinstance(self._datasource_settings, dict):
             self._datasources = [create_datasource(self._datasource_settings),]
-
-        self._datasources = [create_datasource(setting) for setting in
-                             self._datasource_settings]
+        else:
+            self._datasources = [create_datasource(setting) for setting in
+                                 self._datasource_settings]
 
         return len(self._datasources)
 
     def _grab_data(self):
         """Grab data from datasource.
         """
-        datasource = get_data_source(self.source)
-        self._raw_data = datasource.grab_data()
+        print self._create_datasources()
+
+        for ds in self._datasources:
+            try:
+                ds.grab_data()
+            except BaseGrabError:
+                # Log this event.
+                pass
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
         `values` attribute.
         """
+        for ds in self._datasources:
+            try:
+                ds.get_raw_data()
+            except ParserError:
+                # TODO: we need to log this error and notify another components
+                # about it.
+                pass
+
         self._parser = get_parser(self.source_type)
         self._parser.initialize()
         self._parser.parse(self._raw_data)
@@ -149,6 +168,7 @@ class Tracker(object):
 
     def _process_datasource_exception(self, err):
         # TODO: process exception here
+        print 'ERROR', err
         sender.fire('LOGGER.DEBUG',
                     message='DATASOURCE EXCEPTION %s' % (type(err),))
 
