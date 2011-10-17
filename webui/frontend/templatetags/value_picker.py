@@ -18,7 +18,7 @@ def xml_picker_node(node, generator):
     return locals()
 
 @register.inclusion_tag('frontend/value_picker/templatetags/xml_picker_attribute.html')
-def xml_picker_attribute(attribute, node_xpath):
+def xml_picker_attribute(attribute):
     attribute_name = attribute[0]
     attribute_value = attribute[1]
     return locals()

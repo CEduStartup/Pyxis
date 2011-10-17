@@ -5,7 +5,7 @@
     <div class="tree_element_title">
       &lt;<span class="tree_element_tag_name">{{ node_name }}</span>
       {% for attribute in attributes %}
-        &nbsp;<span class="tree_element_attribute" xpath="{{ node_xpath }}@{{ attribute[0] }}">{% xml_picker_attribute attribute %}</span>
+        &nbsp;<span class="tree_element_attribute" xpath="{{ node_xpath }}@{{ attribute.0 }}">{% xml_picker_attribute attribute %}</span>
       {% endfor %}&gt;
     </div>
     <div class="tree_element_content" id="{{ node_id }}_content">

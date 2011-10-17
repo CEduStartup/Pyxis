@@ -1,5 +1,9 @@
 {% extends 'frontend/layout.html'  %}
 
+{% block add_css %}
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/value_picker.css">
+{% endblock add_css %}
+
 {% block content %}
   <form>
     {% csrf_token %}
@@ -7,8 +11,7 @@
     <div id="xml_content">
       XML Content
     </div>
-    <!--link type="text/css" src="{{ STATIC_PREFIX }}css/ValuePicker.css">
-    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/ValuePicker.js">
+    <!--script type="text/javascript" src="{{ STATIC_PREFIX }}js/ValuePicker.js">
     </script-->
     <script>
         $.ajaxSetup({ 
