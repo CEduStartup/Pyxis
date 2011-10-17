@@ -17,7 +17,7 @@ class Tracker(object):
 
     :Instance variables:
         - `tracker_id`: unique ID of tracker.
-        - `interval`: interval to grab data.
+        - `refresh_interval`: interval to grab data.
         - `source`: string which contains target for this tracker.
         - `source_type`: string which contains type of the raw data (XML, HTML,
           JSON etc.)
@@ -26,28 +26,49 @@ class Tracker(object):
         - `values`: a list of parsed values.
     """
 
-    tracker_id = None
-    interval = None
-    last_modified = None
-    source_type = None # JSON, XML, etc.
-    source = None
-    values = None
-    queries = None
 
-    def __init__(self, tracker_id, source, source_type, queries,
-                 interval, storage):
+    def __init__(self, tracker_id, refresh_interval, datasource_settings):
         """Initialize the tracker with valid configuration.
+
+        :Parameters:
+
+            - `tracker_id`: `int`. Unique ID of the tracker.
+            - `refresh_interval`: `int`. How often (in seconds) we need
+                                   to refresh data.
+            - `datasource_settings`: `dict` (or list of dicts in case when
+                                     tracker uses multiple datasources) of the
+                                     following structure: ::
+
+                {
+                  `access_method`: `str`. Describes protocol which should be
+                                          used to grab data (HTTP, XMLRPC,
+                                          SOAP, etc.)
+                  `query`: JSON encoded object. Required fields:
+                           - `URI`: `str`. URI of the resource.
+                           - `method_name`: `str`. In case of XMLRPC or SOAP
+                             this field contains the name of the method which
+                             should be called to grab data.
+                           - `params`: `dict` pairs of parameter name and
+                             parameter value to pass them to `method_name
+                  `datatype`: `str`. Type of the data e.i. HTML, XML, CSV,
+                              JSON, etc.
+                  `values`: `list` of `dict` of the following structure: ::
+
+                              {
+                                `value_id`: `int` unique ID of the value.
+                                `type`: `str`. A rule to validate value.
+                                        Currently `int` or `float`.
+                                `extraction_rule`: `str`. XPATH, JSONPATH,
+                                                   regexp, etc.
+                              }
+                }
+
         """
         self.tracker_id = tracker_id
-        self.source = source
-        self.source_type = source_type
-        self.queries = queries
-        self.interval = interval
-        self.storage = storage
+        self.refresh_interval = refresh_interval
+        self._datasource_settings = datasource_settings
 
-        self.values = []
         self.last_modified = 0
-        interval = 0
 
         self._parser = None
         self._raw_data = None
@@ -57,6 +78,44 @@ class Tracker(object):
         """Return a string with unique tracker ID.
         """
         return self.tracker_id
+
+    def touch(self, timestamp=None):
+        """Update last modified attribute.
+
+        :Parameters:
+            - `timestamp`: float. If it's present then last modified attribute
+              will be set to its value, otherwise current time will be used.
+
+        :Return:
+            - new value of `last_modified` attribute.
+        """
+        self.last_modified = timestamp or time.time()
+        return self.last_modified
+
+    def _create_datasources(self):
+        """Create datasource (or datasources) using `_datasource_settings`
+        atribute. In case when it's a `dict` then current tracker use only 1
+        datasource. In case of list we need to create more datasources.
+        """
+        def create_datasource(settings_dict):
+            """Create datasource instance. Please see description of
+            `datasource_settings` (of `__init__()` method) to see a format of
+            `settings_dict`.
+
+            :Return:
+                - datasource instance.
+
+            """
+            pass
+
+
+        if isinstance(self._datasource_settings, dict):
+            self._datasources = [create_datasource(self._datasource_settings),]
+
+        self._datasources = [create_datasource(setting) for setting in
+                             self._datasource_settings]
+
+        return len(self._datasources)
 
     def _grab_data(self):
         """Grab data from datasource.
