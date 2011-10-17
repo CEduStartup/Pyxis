@@ -9,12 +9,22 @@ from abc import ABCMeta, abstractmethod
 class DatasourceCommon(object):
 
     """This is the base class for all datasources.
-    Its main method is `grab_data()` grabs raw data and returns it.
+    Its main method is `grab_data()` grabs raw data from the source.
+
+    :Instance variables:
+
+        - `grab_spent_time`: `float`. How many time was spent while grabbing
+          data.
+        - `raw_data_size`: `int`. Size of `raw_data` in bytes.
+        - `raw_data`: `str`: Contains raw data grabbed from the source.
+
     """
 
     __metaclass__ = ABCMeta
-    
-    response_code, grab_spent_time, raw_data_size = None, None, None
+
+    grab_spent_time = None
+    raw_data_size = None
+    raw_data = None
 
     def __init__(self, target):
         """Initialize class instance with valid configuration.
