@@ -3,6 +3,10 @@
 {% block content %}
 
 <script>
+    {% autoescape off %}
+    var chart_series = {{ tracker.data }};
+    {% endautoescape %}
+
     $(document).ready(function() {
         $(function() {
             $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker();
@@ -12,7 +16,7 @@
             render_chart(options, $('#id_{{ options.types.html_name }}').val());
         });
 
-        build_chart({{ tracker.data }}, '{{ options.types.value|default:"column" }}');
+        build_chart(chart_series, '{{ options.types.value|default:"column" }}');
     });
 </script>
 

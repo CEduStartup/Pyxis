@@ -8,15 +8,15 @@ from shared.db.mongo import TimeBasedData
 class TrackersHandler(BaseHandler, TimeBasedData):
     def _setup(self, *args, **kwargs):
         self.conn = Connection('172.22.60.75')
-        self.util_db = self.conn['util_db']
+        self.db = self.conn['time-based-data']
 
     def _shutdown(self):
         self.conn.disconnect()
 
     def get_tracker_data(self, id, start=0, end=0, period=False, method=False):
 
-        res = self.query(1, '1month', date_from='2011-08-01', date_to='2011-10-13',
-                       src_parms=(('1_1', 'min'), ('1_1', 'max'), ('1_1', 'avg')))
+        res = self.query(1, 'day', date_from='2011-09-12', date_to='2011-10-19', periods_in_group=7,
+                       src_parms=(('1_1', 'count'), ('1_1', 'min'), ('1_1', 'max'), ('1_1', 'avg')))
         return res
 
 

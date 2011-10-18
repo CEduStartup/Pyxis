@@ -6,26 +6,26 @@ ONE_MIN = 60
 ONE_HOUR = ONE_MIN * 60
 ONE_DAY  = ONE_HOUR * 24
 
-rollup_periods = ['1min', '1hour', '1day', '1month']
+rollup_periods = ['minute', 'hour', 'day']
 rollup_periods_display = {
-    '1min'  : '5 minutes',
-    '1hour' : '1 hour',
-    '1day'  : '1 day',
-    '1month': '1 month',
+    'minute': '1 minute',
+    'hour'  : '1 hour',
+    'day'   : '1 day',
+    'month' : '1 month',
 }
 
 duration_in_seconds = {
-    '1min'  : ONE_MIN,
-    '1hour' : ONE_HOUR,
-    '1day'  : ONE_DAY,
-    '1month': ONE_DAY * 31,
+    'minute'  : ONE_MIN,
+    'hour' : ONE_HOUR,
+    'day'  : ONE_DAY,
+    'month': ONE_DAY * 31,
 }
 
 time_formats = {
-    '1min'  : '%Y-%m-%d %H:%M',
-    '1hour' : '%Y-%m-%d %H',
-    '1day'  : '%Y-%m-%d',
-    '1month': '%Y-%m',
+    'minute'  : '%Y-%m-%d %H:%M',
+    'hour' : '%Y-%m-%d %H',
+    'day'  : '%Y-%m-%d',
+    'month': '%Y-%m',
 }
 
 def value_generator(n):
@@ -39,19 +39,19 @@ def value_generator(n):
         n = randint(f, t)
         yield n
 
-def time_round(ts, period='1day'):
-    t = time.localtime(ts)
-    if period == '1month':
+def time_round(ts, period='day'):
+    t = time.gmtime(ts)
+    if period == 'month':
         t = (t.tm_year, t.tm_mon, 1, 0, 0, 0, -1, -1, -1)
-    elif period == '1day':
+    elif period == 'day':
         t = (t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, -1, -1, -1)
-    elif period == '1hour':
+    elif period == 'hour':
         t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, 0, 0, -1, -1, -1)
-    elif period == '1min':
+    elif period == 'minute':
         t = (t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, 0, -1, -1, -1)
     else:
         msg = """\
-`period` must be `1month`, `1day`, `1hour` or `1min` (got %s)""" % \
+`period` must be `month`, `day`, `hour` or `minute` (got %s)""" % \
             (period,)
         raise ValueError(msg)
 
@@ -65,35 +65,35 @@ def str2time(string):
         msg = '`%s` s not known time format`.'
         raise ValueError(msg)
 
-def get_date_str_1month(ts):
-    return time.strftime('%Y-%m', time.localtime(ts))
+def get_date_str_month(ts):
+    return time.strftime('%Y-%m', time.gmtime(ts))
 
-def get_date_str_1day(ts):
-    return time.strftime('%Y-%m-%d', time.localtime(ts))
+def get_date_str_day(ts):
+    return time.strftime('%Y-%m-%d', time.gmtime(ts))
 
-def get_date_str_1hour(ts):
-    t = time_round(ts, '1hour')
-    return time.strftime('%Y-%m-%d %H', time.localtime(t))
+def get_date_str_hour(ts):
+    t = time_round(ts, 'hour')
+    return time.strftime('%Y-%m-%d %H', time.gmtime(t))
 
-def get_date_str_1min(ts):
-    t = time_round(ts, '1min')
-    return time.strftime('%Y-%m-%d %H:%M', time.localtime(t))
+def get_date_str_minute(ts):
+    t = time_round(ts, 'minute')
+    return time.strftime('%Y-%m-%d %H:%M', time.gmtime(t))
 
 date_str_functions = {
-    '1min'    : get_date_str_1min,
-    '1hour'   : get_date_str_1hour,
-    '1day'    : get_date_str_1day,
-    '1month'  : get_date_str_1month,
+    'minute' : get_date_str_minute,
+    'hour'   : get_date_str_hour,
+    'day'    : get_date_str_day,
+    'month'  : get_date_str_month,
 }
 
-def get_date_str(timestamp, period='1day'):
+def get_date_str(timestamp, period='day'):
     try:
         timestamp = int(timestamp)
     except ValueError:
         timestamp = str2time(timestamp)
     return date_str_functions[period](timestamp)
 
-def get_from_to_range(date_from=None, date_to=None, period='1day',
+def get_from_to_range(date_from=None, date_to=None, period='day',
                       periods_count=365):
     ts_from = ts_to = None
     d = duration_in_seconds[period]

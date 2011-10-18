@@ -26,7 +26,7 @@ def view(request, tracker_id):
                                 )
     c = bjsonrpc.connect(settings.RPC_HOST, settings.RPC_PORT)
     data = c.call.get_tracker_data(1)
-    tracker.data = data
+    tracker.data = simplejson.dumps(data)
     return {'tracker': tracker, 'options': options}
 
 @login_required

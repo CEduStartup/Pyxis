@@ -4,7 +4,7 @@ function build_chart(data, chart_type) {
    options = {
           chart: {
              renderTo: 'container',
-             defaultSeriesType: chart_type,
+             defaultSeriesType: chart_type
           },
           title: {
              text: 'Monthly Average Rainfall'
@@ -13,23 +13,10 @@ function build_chart(data, chart_type) {
              text: 'Source: WorldClimate.com'
           },
           xAxis: {
-             categories: [
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'May',
-                'Jun',
-                'Jul',
-                'Aug',
-                'Sep',
-                'Oct',
-                'Nov',
-                'Dec'
-             ]
+            type: 'datetime'
+            //categories: x_cats
           },
           yAxis: {
-             min: 0,
              title: {
                 text: 'Rainfall (mm)'
              }
@@ -44,22 +31,16 @@ function build_chart(data, chart_type) {
              shadow: true
           },
           tooltip: {
-             formatter: function() {
-                return ''+
-                   this.x +': '+ this.y +' mm';
-             }
+            formatter: function() {
+              console.log(this);
+              return '<b>'+ this.series.name +'</b><br/>'+
+                     '"<b>' +Highcharts.dateFormat('%e %b %H:%M', this.x) +'</b>" '+ this.y;
+            }
           },
-          plotOptions: {
-             column: {
-                pointPadding: 0.2,
-                borderWidth: 0
-             }
-          },
-          series: [{
-             name: 'Tokyo',
-             data: data,
-          }],
+          plotOptions: get_plot_options(chart_type),
+          series: data
         }
+
     chart = new Highcharts.Chart(options);
 };
 
@@ -88,8 +69,33 @@ function update_chart() {
 function render_chart(config, type) {
     config = config || options
     type = type || 'line';
+    config.plotOptions = get_plot_options(type);
     config.chart.defaultSeriesType = type;
     chart = new Highcharts.Chart(config);
     console.log(chart);
 }
 
+function get_plot_options(chart_type){
+  if(chart_type == 'line' || chart_type == 'area') {
+    return {
+      series: {
+        marker: {
+          enabled: false,
+          states: {
+            hover: {
+              enabled: true,
+              radius: 4
+            }
+          }
+        }
+      }
+    }
+  } else {
+    return {
+      column: {
+        pointPadding: 0.2,
+        borderWidth: 0
+      }
+    }
+  }
+}
