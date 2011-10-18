@@ -3,10 +3,8 @@
   <div class="tree_element_node">{% value_picker_tree_node node_id %}</div>
   <div class="tree_element_body">
     <div class="tree_element_title">
-      &lt;<span class="tree_element_tag_name">{{ node_name }}</span>
-      {% for attribute in attributes %}
-        &nbsp;<span class="tree_element_attribute" xpath="{{ node_xpath }}@{{ attribute.0 }}">{% xml_picker_attribute attribute %}</span>
-      {% endfor %}&gt;
+      &lt;<span class="tree_element_tag_name">{{ node_name }}</span>{% for attribute in attributes %}
+        <span class="tree_element_attribute" xpath="{{ node_xpath }}@{{ attribute.0 }}">{% xml_picker_attribute attribute %}</span>{% endfor %}&gt;
     </div>
     <div class="tree_element_content" id="{{ node_id }}_content">
       {% if node_value %}
@@ -21,3 +19,5 @@
     </div>
   </div>
 </div>
+{% comment %}
+{% endcomment %}

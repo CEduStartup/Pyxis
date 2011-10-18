@@ -5,7 +5,7 @@ from util import render_to, IdGenerator
 def xml_picker(request):
     return locals()
 
-@render_to('frontend/value_picker/xml_picker.html')
+@render_to('frontend/value_picker/load_xml.html')
 def load_xml(request):
     parser = get_parser(gevent_safe=False)
     parser.initialize()
