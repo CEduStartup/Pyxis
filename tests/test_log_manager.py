@@ -1,6 +1,8 @@
 import unittest
-import sys
 from Queue import Queue
+from logger.manager import LogManager
+from shared.events.EventManager import EventSender, EventReceiver
+import shared.events.EventManager as EventManager
 
 class TestBeanstalkc:
     UnexpectedResponse, CommandFailed = None, None
@@ -22,13 +24,6 @@ class TestBeanstalkc:
         def reserve(self):
             return self.queue.get_nowait()
 
-
-
-
-from logger.manager import LogManager
-from shared.events.EventManager import EventSender, EventReceiver
-import shared.events.EventManager as EventManager
-
 class LogManagerTest(unittest.TestCase):
     def setUp(self):
         self.original_beanstalkc = EventManager.beanstalkc
@@ -46,6 +41,7 @@ class LogManagerTest(unittest.TestCase):
 logmanager_tests = unittest.TestSuite()
 loader = unittest.TestLoader()
 logmanager_tests.addTests(loader.loadTestsFromTestCase(LogManagerTest))
+
 
 if __name__ == '__main__':
     # Run
