@@ -5,13 +5,11 @@ from datasource and return parsed values.
 import time
 import traceback
 
-from shared.Parser import get_parser
-
-from datasources import get_data_source
-from datasources.Errors import BaseGrabError, UnknownDatasourceError
-from shared.Parser import get_parser
-
 from config.init.trackers import sender
+from .datasources.factory import get_datasource
+from .datasources.Errors import UnknownDatasourceError, BaseGrabError
+from shared.Parser import get_parser, ParserError
+
 
 class Tracker(object):
 
@@ -19,55 +17,135 @@ class Tracker(object):
 
     :Instance variables:
         - `tracker_id`: unique ID of tracker.
-        - `interval`: interval to grab data.
-        - `source`: string which contains target for this tracker.
-        - `source_type`: string which contains type of the raw data (XML, HTML,
-          JSON etc.)
+        - `refresh_interval`: interval to grab data.
+        - `_datasource_settings`: JSON obkect which
         - `last_modified`: time (in seconds) of last modification.
         - `values_to_get`: a list of XPATH or other queries for parser.
         - `values`: a list of parsed values.
     """
 
-    tracker_id = None
-    interval = None
-    last_modified = None
-    source_type = None # JSON, XML, etc.
-    source = None
-    values = None
-    queries = None
 
-
-    def __init__(self, tracker_id, source, source_type, queries,
-                 interval, storage):
+    def __init__(self, tracker_id, refresh_interval, datasource_settings):
         """Initialize the tracker with valid configuration.
+
+        :Parameters:
+
+            - `tracker_id`: `int`. Unique ID of the tracker.
+            - `refresh_interval`: `int`. How often (in seconds) we need
+                                   to refresh data.
+            - `datasource_settings`: `dict` (or list of dicts in case when
+                                     tracker uses multiple datasources) of the
+                                     following structure: ::
+
+                {
+                  `access_method`: `int`. Describes protocol which should be
+                                          used to grab data (HTTP, XMLRPC,
+                                          SOAP, etc.)
+                  `query`: JSON encoded object. Required fields:
+                           - `URI`: `str`. URI of the resource.
+                           - `method_name`: `str`. In case of XMLRPC or SOAP
+                             this field contains the name of the method which
+                             should be called to grab data.
+                           - `params`: `dict` pairs of parameter name and
+                             parameter value to pass them to `method_name
+                  `datatype`: `str`. Type of the data e.i. HTML, XML, CSV,
+                              JSON, etc.
+                  `values`: `list` of `dict` of the following structure: ::
+
+                              {
+                                `value_id`: `int` unique ID of the value.
+                                `type`: `str`. A rule to validate value.
+                                        Currently `int` or `float`.
+                                `extraction_rule`: `str`. XPATH, JSONPATH,
+                                                   regexp, etc.
+                              }
+                }
+
         """
         self.tracker_id = tracker_id
-        self.source = source
-        self.source_type = source_type
-        self.queries = queries
-        self.interval = interval
-        self.storage = storage
+        self.refresh_interval = refresh_interval
+        self._datasource_settings = datasource_settings
 
-        self.values = []
         self.last_modified = 0
-        interval = 0
 
+        self._datasources = None
+        self._parser = None
+        self._raw_data = None
+        self._clean_data = None
 
     def get_id(self):
         """Return a string with unique tracker ID.
         """
         return self.tracker_id
 
+    def touch(self, timestamp=None):
+        """Update last modified attribute.
+
+        :Parameters:
+            - `timestamp`: float. If it's present then last modified attribute
+              will be set to its value, otherwise current time will be used.
+
+        :Return:
+            - new value of `last_modified` attribute.
+        """
+        self.last_modified = timestamp or time.time()
+        return self.last_modified
+
+    def _create_datasources(self):
+        """Create datasource (or datasources) using `_datasource_settings`
+        atribute. In case when it's a `dict` then current tracker use only 1
+        datasource. In case of list we need to create more datasources.
+        """
+        def create_datasource(settings_dict):
+            """Create datasource instance. Please see description of
+            `datasource_settings` (of `__init__()` method) to see a format of
+            `settings_dict`.
+
+            :Return:
+                - datasource instance.
+
+            """
+            try:
+                datasource = get_datasource(settings_dict)
+                print datasource
+            except UnknownDatasourceError, err:
+                # TODO: handle this error correctly.
+                print 'SOME ERROR', err
+                pass
+            return datasource
+
+        if isinstance(self._datasource_settings, dict):
+            self._datasources = [create_datasource(self._datasource_settings),]
+        else:
+            self._datasources = [create_datasource(setting) for setting in
+                                 self._datasource_settings]
+
+        return len(self._datasources)
+
     def _grab_data(self):
         """Grab data from datasource.
         """
-        ds = get_data_source(self.source)
-        self._raw_data = ds.grab_data()
+        print self._create_datasources()
+
+        for ds in self._datasources:
+            try:
+                ds.grab_data()
+            except BaseGrabError:
+                # Log this event.
+                pass
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
         `values` attribute.
         """
+        for ds in self._datasources:
+            try:
+                ds.get_raw_data()
+            except ParserError:
+                # TODO: we need to log this error and notify another components
+                # about it.
+                pass
+
         self._parser = get_parser(self.source_type)
         self._parser.initialize()
         self._parser.parse(self._raw_data)
@@ -88,10 +166,11 @@ class Tracker(object):
         # TODO: store data to the storage.
         pass
 
-    def _process_datasource_exception(self, e):
+    def _process_datasource_exception(self, err):
         # TODO: process exception here
-        sender.fire('LOGGER.DEBUG', message='DATASOURCE EXCEPTION %s' % (type(e),))
-
+        print 'ERROR', err
+        sender.fire('LOGGER.DEBUG',
+                    message='DATASOURCE EXCEPTION %s' % (type(err),))
 
     def process(self):
         """Main logic of the tracker.
@@ -104,10 +183,10 @@ class Tracker(object):
             self._parse_data()
             self._check_data()
             self._save_data()
-        except BaseGrabError, e:
-            self._process_datasource_exception(e)
-        except Exception, e:
-            sender.fire('LOGGER.CRITICAL', message=type(e))
+        except BaseGrabError, err:
+            self._process_datasource_exception(err)
+        except Exception:
+            sender.fire('LOGGER.CRITICAL', message=traceback.format_exc())
         finally:
             self.last_modified = time.time()
 
