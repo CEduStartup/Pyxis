@@ -6,14 +6,14 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render_to_response, redirect
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
-from ..models import Tracker
+from ..models import TrackerModel
 from ..forms import OptionsForm, TrackerForm
 from webui.util import render_to
 
 @login_required
 @render_to('frontend/trackers/index.html')
 def index(request):
-    trackers = Tracker.objects.all()
+    trackers = TrackerModel.objects.all()
     return locals()
 
 @login_required
@@ -21,7 +21,7 @@ def index(request):
 def view(request, tracker_id):
     options = OptionsForm()
     options['id'].value = tracker_id
-    tracker = get_object_or_404(Tracker, pk=tracker_id,
+    tracker = get_object_or_404(TrackerModel, pk=tracker_id,
                                 #user=request.user
                                 )
     c = bjsonrpc.connect(settings.RPC_HOST, settings.RPC_PORT)
@@ -31,13 +31,13 @@ def view(request, tracker_id):
 
 @login_required
 def add(request):
-    return form(request, Tracker(
+    return form(request, TrackerModel(
                                  #user=request.user
                                  ))
 
 @login_required
 def edit(request, tracker_id):
-    return form(request, get_object_or_404(Tracker, pk=tracker_id,
+    return form(request, get_object_or_404(TrackerModel, pk=tracker_id,
                                            #user=request.user
                                            ))
 
