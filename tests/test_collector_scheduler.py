@@ -32,3 +32,7 @@ loader = unittest.TestLoader()
 
 scheduler_tests.addTests(loader.loadTestsFromTestCase(SchedulerTestCase))
 
+if __name__ == '__main__':
+    # Run
+    unittest.TextTestRunner(verbosity=2).run(scheduler_tests)
+
