@@ -10,7 +10,9 @@ class TrackerModel(models.Model):
 
     user             = models.ForeignKey(User)
     name             = models.CharField(max_length=60)
+    status           = models.PositiveIntegerField()
     refresh_interval = models.PositiveIntegerField()
+    last_modified    = models.DateTimeField(auto_now=True, auto_now_add=True)
 
 
 class DataTypeModel(models.Model):
@@ -37,10 +39,10 @@ class DataSourceModel(models.Model):
    class  Meta:
        db_table  = 'datasource'
 
-   tracker_id       = models.ForeignKey(TrackerModel)
-   access_method_id = models.ForeignKey(AccessMethodModel)
+   tracker       = models.ForeignKey(TrackerModel)
+   access_method = models.ForeignKey(AccessMethodModel)
    query            = models.CharField(max_length=60)
-   data_type_id	    = models.ForeignKey(DataTypeModel)
+   data_type	    = models.ForeignKey(DataTypeModel)
 
 
 class ValueTypeModel(models.Model):
@@ -58,7 +60,7 @@ class ValueModel(models.Model):
    class  Meta:
        db_table  = 'value'
 
-   datasource_id     = models.ForeignKey(DataSourceModel)
+   data_source     = models.ForeignKey(DataSourceModel)
    name              = models.CharField(max_length=60)
-   value_type_id     = models.ForeignKey(ValueTypeModel)
+   value_type     = models.ForeignKey(ValueTypeModel)
    extraction_rule   = models.CharField(max_length=200)
