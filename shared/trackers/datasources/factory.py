@@ -1,5 +1,6 @@
-from datasources.HTTP import DatasourceHTTP
-from datasources.Errors import UnknownDatasourceError
+from .HTTP import DatasourceHTTP
+from .Errors import UnknownDatasourceError
+from .constants import HTTP_DATASOURCE
 
 def get_datasource(settings_dict):
     """Factory function, which returns concrete datasource object by source.
@@ -11,10 +12,9 @@ def get_datasource(settings_dict):
     :Return:
         - datasource class instance suitable for the given `access_method`.
     """
-    if settings_dict['access_method'] in ('HTTP', ):
+    if settings_dict['access_method'] in (HTTP_DATASOURCE, ):
         return DatasourceHTTP(settings_dict)
     # TODO: add another types.
     else:
         raise UnknownDatasourceError('Datasource not found for access method'\
                  '"%s"' % (settings_dict['access_method'],))
-
