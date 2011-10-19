@@ -11,11 +11,13 @@ import urllib2
 from .Common import DatasourceCommon
 from .Errors import ResponseHTTPError, ResponseURLError, \
                                ResponseGeventTimeout
+from shared.trackers.datasources.query_parsers import JSON
+from .query_parsers.JSON import QueryParserJSON
 
 from config.collector import tracker_thread_timeout
 from config.init.trackers import sender
 
-class DatasourceHTTP(DatasourceCommon):
+class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
 
     """This datasource type is responsible for grabbing data via HTTP
     protocol.
@@ -45,10 +47,8 @@ class DatasourceHTTP(DatasourceCommon):
             - `config`: dictionary of the same format as a `settings` dict
               described in `__init__()`.
         """
-        print config
-        parsed_settings = json.loads(config['query'])
-        self._target = parsed_settings['URI']
-        # TODO: We definitely need more initialization here.
+        query = self.parse_query(config['query'])
+        self._target = query['URI']
 
     def grab_data(self):
         start_time = time.time()
@@ -61,15 +61,15 @@ class DatasourceHTTP(DatasourceCommon):
         except urllib2.HTTPError, err:
             self.response_code = err.code
             sender.fire('LOGGER.WARNING', message='HTTPError for %s: %d' %
-                                                  (self.source, err.code))
+                                                  (self._target, err.code))
             raise ResponseHTTPError(err)
         except urllib2.URLError, err:
             sender.fire('LOGGER.WARNING', message='URLError for %s: %s' %
-                                                  (self.source, err.reason))
+                                                  (self._target, err.reason))
             raise ResponseURLError(err)
         except gevent.Timeout, err:
             sender.fire('LOGGER.WARNING', message='URL Gevent timeout - %s'
-                                                  % self.source)
+                                                  % self._target)
             raise ResponseGeventTimeout()
 
         now = time.time()
