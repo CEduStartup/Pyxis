@@ -10,9 +10,15 @@ from frontend.models import TrackerModel
 from frontend.forms import OptionsForm, TrackerForm
 from webui.util import render_to
 
-@login_required
 @render_to('frontend/trackers/index.html')
 def index(request):
+    trackers = TrackerModel.objects.all()
+    return locals()
+
+@login_required
+@render_to('frontend/trackers/index.html')
+def private_trackers(request):
+    # List of private trackers.
     trackers = TrackerModel.objects.all()
     return locals()
 
