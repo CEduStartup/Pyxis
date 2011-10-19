@@ -49,6 +49,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
         """
         query = self.parse_query(config['query'])
         self._target = query['URI']
+        self.datatype = config['datatype']
 
     def grab_data(self):
         start_time = time.time()
