@@ -8,8 +8,8 @@ import json
 import time
 import urllib2
 
-from datasources.Common import DatasourceCommon
-from datasources.Errors import ResponseHTTPError, ResponseURLError, \
+from .Common import DatasourceCommon
+from .Errors import ResponseHTTPError, ResponseURLError, \
                                ResponseGeventTimeout
 
 from config.collector import tracker_thread_timeout

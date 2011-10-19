@@ -1,5 +1,5 @@
-from datasources.HTTP import DatasourceHTTP
-from datasources.Errors import UnknownDatasourceError
+from .HTTP import DatasourceHTTP
+from .Errors import UnknownDatasourceError
 
 def get_datasource(settings_dict):
     """Factory function, which returns concrete datasource object by source.
