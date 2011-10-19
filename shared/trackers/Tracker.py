@@ -6,8 +6,8 @@ import time
 import traceback
 
 from config.init.trackers import sender
-from .datasources import get_datasource, UnknownDatasourceError
-from .datasources.Errors import BaseGrabError
+from .datasources.factory import get_datasource
+from .datasources.Errors import UnknownDatasourceError, BaseGrabError
 from shared.Parser import get_parser, ParserError
 
 
@@ -38,7 +38,7 @@ class Tracker(object):
                                      following structure: ::
 
                 {
-                  `access_method`: `str`. Describes protocol which should be
+                  `access_method`: `int`. Describes protocol which should be
                                           used to grab data (HTTP, XMLRPC,
                                           SOAP, etc.)
                   `query`: JSON encoded object. Required fields:
