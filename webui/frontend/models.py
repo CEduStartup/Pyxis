@@ -7,6 +7,8 @@ class TrackerModel(models.Model):
     """
     class Meta:
         db_table = 'tracker'
+    class Admin:
+        pass
 
     user             = models.ForeignKey(User)
     name             = models.CharField(max_length=60)

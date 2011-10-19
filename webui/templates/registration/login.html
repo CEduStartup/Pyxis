@@ -7,27 +7,8 @@ You already authorized
 {% else %}
 
 <form method="post" action="">
-{% if form.non_field_errors %}
-<div class="alert-message error">
-{{ form.non_field_errors|join:". "}}
-</div>
-{% endif %}
 {% csrf_token %}
-{% for field in form %}
-    <div class="{{ field.errors|yesno:"error,"}} clearfix">
-    {{ field.label_tag }} {{ field }}
-    {% if field.help_text %}
-      <div class="clearfix">
-        {{ field.help_text }}
-      </div>
-    {% endif %}
-    {% if field.errors %}
-        <span class="help-inline">
-        {{ field.errors|join:". " }}
-        </span>
-    {% endif %}
-      </div>
-{% endfor %}
+{% include "accounts/submit_form_snippet.html" %}
 <input type="submit" value="Login" class="btn primary">
 </form>
 
