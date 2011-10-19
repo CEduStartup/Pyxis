@@ -1,9 +1,9 @@
 from django.forms import *
-from models import Tracker
+from models import TrackerModel
 
 class TrackerForm(ModelForm):
     class Meta:
-        model = Tracker
+        model = TrackerModel
         exclude = ('id', 'user', 'values_count', 'status')
 
 class OptionsForm(Form):
