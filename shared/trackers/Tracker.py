@@ -6,8 +6,8 @@ import time
 import traceback
 
 from config.init.trackers import sender
-from datasources import get_datasource, UnknownDatasourceError
-from datasources.Errors import BaseGrabError
+from .datasources import get_datasource, UnknownDatasourceError
+from .datasources.Errors import BaseGrabError
 from shared.Parser import get_parser, ParserError
 
 
