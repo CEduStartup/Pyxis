@@ -1,6 +1,6 @@
 import os
 
-# Django settings for admingui project.
+# Django settings for webuiproject.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -62,10 +62,11 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'admingui.urls'
+ROOT_URLCONF = 'webui.urls'
 
 TEMPLATE_DIRS = (
     '%s/templates' % os.getcwd(),
@@ -77,6 +78,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'frontend',
     'registration'
 )
@@ -91,3 +93,12 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'info@pyxis'
+
+STATIC_ROOT = '%s/frontend/static' % (os.getcwd(),)
+STATIC_URL = '/static/'
+
+# RPC Configuration
+RPC_HOST = '127.0.0.1'
+RPC_PORT = 10123
+
+APPEND_SLASH = False

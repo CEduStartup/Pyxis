@@ -12,16 +12,14 @@ You already authorized
 {% endif %}
 
 <form method="post" action="">
-<dl class="register">  
+{% csrf_token %}
 {% for field in form %}
-    <dt>{{ field.label_tag }}</dt>
-    <dd class="clearfix">{{ field }}
+    {{ field.label_tag }}&nbsp;
+    {{ field }}<br />
     {% if field.help_text %}<div class="clearfix">{{ field.help_text }}</div>{% endif %}
     {% if field.errors %}<div class="myerrors clearfix">{{ field.errors }}</div>{% endif %}
-    </dd>
 {% endfor %}
-</dl>
-<input type="submit" value="Login" class="clearfix">
+<input type="submit" value="Login" class="btn primary">
 </form>
 
 <script type="text/javascript">
