@@ -6,13 +6,19 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render_to_response, redirect
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
-from ..models import TrackerModel
-from ..forms import OptionsForm, TrackerForm
+from frontend.models import TrackerModel
+from frontend.forms import OptionsForm, TrackerForm
 from webui.util import render_to
+
+@render_to('frontend/trackers/index.html')
+def index(request):
+    trackers = TrackerModel.objects.all()
+    return locals()
 
 @login_required
 @render_to('frontend/trackers/index.html')
-def index(request):
+def private_trackers(request):
+    # List of private trackers.
     trackers = TrackerModel.objects.all()
     return locals()
 
