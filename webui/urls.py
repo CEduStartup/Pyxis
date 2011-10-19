@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 
 from django.contrib import admin
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -17,9 +18,11 @@ urlpatterns += patterns('',
 #urlpatterns += patterns('',
 #    (r'^tracker1s/', include('registration.urls')),
 #)
+
 urlpatterns += patterns('',
     (r'^trackers/', include('frontend.urls')),
     (r'^accounts/', include('registration.urls')),
+    (r'^trackerwiz/', include('trackers_wiz.urls')),
     (r'^admin/', include(admin.site.urls)),
 )
 
