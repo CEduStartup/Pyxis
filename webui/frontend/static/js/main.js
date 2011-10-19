@@ -4,7 +4,8 @@ function build_chart(data, chart_type) {
    options = {
           chart: {
              renderTo: 'container',
-             defaultSeriesType: chart_type
+             defaultSeriesType: chart_type,
+             zoomType: 'x'
           },
           title: {
              text: 'Monthly Average Rainfall'

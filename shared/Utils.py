@@ -40,7 +40,7 @@ def value_generator(n):
         yield n
 
 def time_round(ts, period='day'):
-    t = time.gmtime(ts)
+    t = time.localtime(ts)
     if period == 'month':
         t = (t.tm_year, t.tm_mon, 1, 0, 0, 0, -1, -1, -1)
     elif period == 'day':
@@ -66,18 +66,18 @@ def str2time(string):
         raise ValueError(msg)
 
 def get_date_str_month(ts):
-    return time.strftime('%Y-%m', time.gmtime(ts))
+    return time.strftime('%Y-%m', time.localtime(ts))
 
 def get_date_str_day(ts):
-    return time.strftime('%Y-%m-%d', time.gmtime(ts))
+    return time.strftime('%Y-%m-%d', time.localtime(ts))
 
 def get_date_str_hour(ts):
     t = time_round(ts, 'hour')
-    return time.strftime('%Y-%m-%d %H', time.gmtime(t))
+    return time.strftime('%Y-%m-%d %H', time.localtime(t))
 
 def get_date_str_minute(ts):
     t = time_round(ts, 'minute')
-    return time.strftime('%Y-%m-%d %H:%M', time.gmtime(t))
+    return time.strftime('%Y-%m-%d %H:%M', time.localtime(t))
 
 date_str_functions = {
     'minute' : get_date_str_minute,

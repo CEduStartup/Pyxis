@@ -38,4 +38,4 @@ class OptionsForm(Form):
                     widget=TextInput(attrs=
                        {'placeholder': 'dd/mm/YYYY'}))
     methods = ChoiceField(label='Method', choices=METHOD_CHOICES)
-    types = ChoiceField(label='Type', choices=TYPE_CHOICES, initial='column')
+    types = ChoiceField(label='Type', choices=TYPE_CHOICES, initial='line')

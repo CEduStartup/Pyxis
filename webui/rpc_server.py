@@ -15,8 +15,8 @@ class TrackersHandler(BaseHandler, TimeBasedData):
 
     def get_tracker_data(self, id, start=0, end=0, period=False, method=False):
 
-        res = self.query(1, 'day', date_from='2011-09-12', date_to='2011-10-19', periods_in_group=7,
-                       src_parms=(('1_1', 'count'), ('1_1', 'min'), ('1_1', 'max'), ('1_1', 'avg')))
+        res = self.query(1, 'minute', date_from='2011-10-16', date_to='2011-10-19', periods_in_group=15,
+                       src_parms=(('1_2', 'min'), ('1_2', 'max'), ('1_2', 'avg'), ('1_1', 'min'), ('1_1', 'max'), ('1_1', 'avg')))
         return res
 
 

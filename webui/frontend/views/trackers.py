@@ -10,6 +10,8 @@ from ..models import Tracker
 from ..forms import OptionsForm, TrackerForm
 from webui.util import render_to
 
+from pprint import pprint as pp
+
 @login_required
 @render_to('frontend/trackers/index.html')
 def index(request):

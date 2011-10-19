@@ -4,7 +4,12 @@
 
 <script>
     {% autoescape off %}
+    var d = new Date();
+    var offset = d.getTimezoneOffset() * 60 * 1000;
     var chart_series = {{ tracker.data }};
+    for(var i=0; i<chart_series.length; i++){
+       chart_series[i].pointStart -= offset;
+    }
     {% endautoescape %}
 
     $(document).ready(function() {
@@ -16,7 +21,7 @@
             render_chart(options, $('#id_{{ options.types.html_name }}').val());
         });
 
-        build_chart(chart_series, '{{ options.types.value|default:"column" }}');
+        build_chart(chart_series, '{{ options.types.value|default:"line" }}');
     });
 </script>
 

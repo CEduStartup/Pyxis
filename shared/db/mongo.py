@@ -169,7 +169,7 @@ class TimeBasedData(object):
         ts_keys.pop()
         data_map = {}
         for value_id, aggr in src_parms:
-            data_map[(value_id, aggr)] = [0] * len(ts_keys)
+            data_map[(value_id, aggr)] = [None] * len(ts_keys)
         last_key = None
         tmp_vals = None
         for idx in sorted(groups):
@@ -200,8 +200,11 @@ class TimeBasedData(object):
                     grouped_values[value_id]['count'] += values['count']
             for (value_id, aggr), data in data_map.iteritems():
                 if aggr == 'avg':
-                    data[idx] = round(1.0 * grouped_values[value_id]['sum'] /
-                                      grouped_values[value_id]['count'], 2)
+                    if grouped_values[value_id]['count']:
+                        data[idx] = round(1.0 * grouped_values[value_id]['sum'] /
+                                          grouped_values[value_id]['count'], 2)
+                    else:
+                        data[idx] = None
                 else:
                     data[idx] = grouped_values[value_id][aggr]
 
