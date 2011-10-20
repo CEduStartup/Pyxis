@@ -33,10 +33,10 @@ class DataSourceModel(models.Model):
        (3, u'JSON'),
        (4, u'HTML'),
    )
-   tracker 	    = models.ForeignKey(TrackerModel)
+   tracker          = models.ForeignKey(TrackerModel)
    access_method    = models.SmallIntegerField(choices=ACCESS_METHODS, default=0)
    query            = models.CharField(max_length=60)
-   data_type	    = models.SmallIntegerField(choices=DATA_TYPES, default=0)
+   data_type        = models.SmallIntegerField(choices=DATA_TYPES, default=0)
 
 class ValueModel(models.Model):
    """ Value model.
