@@ -12,7 +12,34 @@
     }
     {% endautoescape %}
 
+    function check_period() {
+        if( $('#id_'+'{{ options.periods.html_name }}').val() == 'minute' ) {
+            $('#id_'+'{{ options.methods.html_name }}').attr('disabled', 'disabled');
+        }else{
+            $('#id_'+'{{ options.methods.html_name }}').removeAttr('disabled');
+        }
+    }
+
     $(document).ready(function() {
+        // Build help dialogs.
+        var dlg_ids = [
+            '{{ options.periods.html_name }}',
+            '{{ options.methods.html_name }}'
+        ];
+        for(var i=0; i<dlg_ids.length; i++) {
+            var d_id = dlg_ids[i];
+            $('#help-dlg-'+d_id).dialog({
+                autoOpen: false,
+                resizable: false
+            });
+            $('#help-for-'+d_id).click(function() {
+                $('#help-dlg-'+d_id).dialog('open');
+            });
+        }
+
+        $('#id_'+'{{ options.periods.html_name }}').change(check_period);
+        check_period();
+
         $(function() {
             $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker();
         });
@@ -22,6 +49,7 @@
         });
 
         build_chart(chart_series, '{{ options.types.value|default:"line" }}');
+
     });
 </script>
 
@@ -37,6 +65,14 @@
                 {{ options.periods.errors }}
                 {{ options.periods.label_tag }}
                 {{ options.periods }}
+                <span class="btn info small"
+                      id="help-for-{{ options.periods.html_name }}">?</span>
+                <div id="help-dlg-{{ options.periods.html_name }}"
+                     title="{{ options.periods.label }}" style="display:none;">
+                    {% autoescape off %}
+                    <p>{{ options.periods.help_text }}</p>
+                    {% endautoescape %}
+                </div>
             </div>
             <div class='span8'>
                 <div>
@@ -54,9 +90,17 @@
 
         <div class='row'>
             <div class='span8'>
-                {{ options.method.errors }}
+                {{ options.methods.errors }}
                 {{ options.methods.label_tag }}
                 {{ options.methods }}
+                <span class="btn info small"
+                      id="help-for-{{ options.methods.html_name }}">?</span>
+                <div id="help-dlg-{{ options.methods.html_name }}"
+                     title="{{ options.methods.label }}" style="display:none;">
+                    {% autoescape off %}
+                    <p>{{ options.methods.help_text }}</p>
+                    {% endautoescape %}
+                </div>
             </div>
             <div class='span8'>
                 {{ options.types.errors }}

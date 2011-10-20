@@ -9,6 +9,9 @@ class TrackerForm(ModelForm):
 class OptionsForm(Form):
 
     PERIOD_CHOICES = (
+        ('minute', 'Minute'),
+        ('5minutes', '5 Minutes'),
+        ('15minutes', '15 Minutes'),
         ('hour', 'Hour'),
         ('day', 'Day'),
         ('week', 'Week'),
@@ -17,10 +20,11 @@ class OptionsForm(Form):
     )
 
     METHOD_CHOICES = (
-        ('avg', 'AVG'),
-        ('summ', 'SUMM'),
-        ('min', 'MIN'),
-        ('max', 'MAX'),
+        ('avg', 'Average Value'),
+        ('sum', 'Summed-up Value'),
+        ('min', 'Minimal Value'),
+        ('max', 'Maximal Value'),
+        ('count', 'Count'),
     )
 
     TYPE_CHOICES = (
@@ -30,12 +34,24 @@ class OptionsForm(Form):
     )
 
     id = IntegerField(widget=HiddenInput())
-    periods = ChoiceField(label='Period', choices=PERIOD_CHOICES)
+    period_label = 'Minimal time interval'
+    help_text = """\
+The minimal time interval which will be displayed on chart.<br><br>
+It is not recommended to select interval based on `Minute` period for the data
+ranges greater than two days as there would be a lot of data to display."""
+    periods = ChoiceField(label=period_label, help_text=help_text,
+                          choices=PERIOD_CHOICES)
     start = DateField(label='Start', input_formats='%d/%m/%Y',
                       widget=TextInput(attrs=
                          {'placeholder': 'dd/mm/YYYY'}))
     end = DateField(label='End', input_formats='%d/%m/%Y',
                     widget=TextInput(attrs=
                        {'placeholder': 'dd/mm/YYYY'}))
-    methods = ChoiceField(label='Method', choices=METHOD_CHOICES)
+
+    help_text = """\
+Data aggregation method for the selected `Minimal time interval`.<br><br>
+We don't need aggregation method for `Minute` interval as data will be
+displayed on chart as is. Other intervals requires aggregation method."""
+    methods = ChoiceField(label='Aggregation Method', help_text=help_text,
+                          choices=METHOD_CHOICES)
     types = ChoiceField(label='Type', choices=TYPE_CHOICES, initial='line')
