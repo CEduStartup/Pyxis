@@ -1,7 +1,7 @@
 --- a/registration_form.html
 +++ b/registration_form.html
 @@ -1,18 +1,28 @@
--{% extends "frontend/layout.html" %}
+-{% extends "common/layout.html" %}
 +{% extends "registration/layout.html" %}
  
  {% block content %}

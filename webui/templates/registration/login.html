@@ -1,4 +1,4 @@
-{% extends "frontend/layout.html" %}
+{% extends "common/layout.html" %}
 
 {% block content %}
 <h1>User Login</h1> 
@@ -8,7 +8,7 @@ You already authorized
 
 <form method="post" action="">
 {% csrf_token %}
-{% include "accounts/submit_form_snippet.html" %}
+{% include "common/submit_form_snippet.html" %}
 <input type="submit" value="Login" class="btn primary">
 </form>
 
