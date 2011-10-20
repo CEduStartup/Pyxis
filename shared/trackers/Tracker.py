@@ -6,8 +6,9 @@ import time
 import traceback
 
 from config.init.trackers import sender
-from datasources import get_datasource, UnknownDatasourceError
-from datasources.Errors import BaseGrabError
+from shared.trackers.datasources.factory import get_datasource
+from shared.trackers.datasources.Errors import UnknownDatasourceError, \
+                                               BaseGrabError
 from shared.Parser import get_parser, ParserError
 
 
@@ -38,7 +39,7 @@ class Tracker(object):
                                      following structure: ::
 
                 {
-                  `access_method`: `str`. Describes protocol which should be
+                  `access_method`: `int`. Describes protocol which should be
                                           used to grab data (HTTP, XMLRPC,
                                           SOAP, etc.)
                   `query`: JSON encoded object. Required fields:
@@ -69,7 +70,7 @@ class Tracker(object):
         self.last_modified = 0
 
         self._datasources = None
-        self._parser = None
+        self._parsers = None
         self._raw_data = None
         self._clean_data = None
 
@@ -111,7 +112,6 @@ class Tracker(object):
             except UnknownDatasourceError, err:
                 # TODO: handle this error correctly.
                 print 'SOME ERROR', err
-                pass
             return datasource
 
         if isinstance(self._datasource_settings, dict):
@@ -125,31 +125,33 @@ class Tracker(object):
     def _grab_data(self):
         """Grab data from datasource.
         """
-        print self._create_datasources()
+        self._create_datasources()
 
-        for ds in self._datasources:
+        for datasource in self._datasources:
             try:
-                ds.grab_data()
+                datasource.grab_data()
             except BaseGrabError:
                 # Log this event.
+                print 'GRAB ERROR'
                 pass
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
         `values` attribute.
         """
-        for ds in self._datasources:
+        self._parsers = []
+        for datasource in self._datasources:
             try:
-                ds.get_raw_data()
+                parser = get_parser(datasource.datatype)
+                parser.initialize()
+                parser.parse(datasource.get_raw_data())
+                self._parsers.append(parser)
             except ParserError:
                 # TODO: we need to log this error and notify another components
                 # about it.
-                pass
+                print 'PARSER ERROR'
 
-        self._parser = get_parser(self.source_type)
-        self._parser.initialize()
-        self._parser.parse(self._raw_data)
-        self._clean_data = [self._parser.xpath(query)
+        self._clean_data = [self._parsers.xpath(query)
                             for query in self.queries]
 
     def _check_data(self):
