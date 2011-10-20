@@ -12,17 +12,6 @@ class db_adapter:
     def connect(self):
         raise RuntimeError('Abstract Method !')
 
-    def save_tracker(self, tracker):
-        """Save tracker into database.
-
-        :Parameters:
-            `tracker`: instance of shared/trackers.
-        """
-        raise RuntimeError('Abstract Method !')
-
-    def get_tracker(seld, tracker_id):
-        raise RuntimeError('Abstract Method !')
-
     def get_trackers(self, modified_since=None):
         raise RuntimeError('Abstract Method !')
 
@@ -32,19 +21,6 @@ class pgsql_adapter(db_adapter):
     def connect(self):
         self.connection = pgdb.connect(db.db_name, host=db.db_host,
             user=db.db_user, password=db.db_password)
-
-    def save_tracker(self, tracker):
-        cursor = self.connection.cursor()
-        sql = """\
-insert into trackers (tracker_id, name, description, source_type, data_type,
-interval) values(%s, '%s', '%s', %s, %s, %s)""" %(tracker.get_id(), tracker.name,
-tracker.description, tracker.source_type, tracker.data_type, tracker.interval)
-        cursor.execute(sql)
-        self.connection.commit()
-        cursor.close()
-
-    def get_tracker(seld, tracker_id):
-        pass
 
     def get_trackers(self, modified_since=None):
         cursor = self.connection.cursor()
@@ -66,13 +42,13 @@ class django_orm_adapter(db_adapter):
     def connect(self):
         pass
 
-    def get_tracker(seld, tracker_id):
-        pass
-
     def get_trackers(self, modified_since=None):
         """Return trackers modified since given time."""
         trackers = []
-        model_objects = TrackerModel.objects.all()
+        if modified_since is None:
+            model_objects = TrackerModel.objects.all()
+        else:
+            model_objects = TrackerModel.objects.filter(last_modified__gt=modified_since)
         for model_object in model_objects:
             trackers.append(self._tracker_from_model(model_object))
 
@@ -122,9 +98,6 @@ class TrackersService(SharedService):
         # Stub for now.
         data = self.db_adapter.get_trackers(modified_since=modified_since)
         return self.serialize(data)
-
-    def save_tracker(self, tracker):
-        self.db_adapter.save_tracker(pickle.loads(tracker))
 
 
 if __name__ == '__main__':

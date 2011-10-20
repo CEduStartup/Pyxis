@@ -24,13 +24,14 @@ class DataSourceModel(models.Model):
        db_table  = 'datasource'
 
    ACCESS_METHODS = (
-       (1, u'HTTP'), 
-       (2, u'SOAP'), 
+       (1, u'HTTP'),
+       (2, u'SOAP'),
    )
    DATA_TYPES = (
-       (1, u'XML'), 
-       (2, u'CSV'), 
-       (3, u'JSON'), 
+       (1, u'XML'),
+       (2, u'CSV'),
+       (3, u'JSON'),
+       (4, u'HTML'),
    )
    tracker 	    = models.ForeignKey(TrackerModel)
    access_method    = models.SmallIntegerField(choices=ACCESS_METHODS, default=0)
