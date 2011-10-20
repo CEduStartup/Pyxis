@@ -1,6 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from shared.trackers import DATA_TYPES, ACCESS_METHODS, VALUE_TYPES
+
+
+def _make_pretty(collection):
+    """Return a list with the structure compatible for Django `choice` option
+    e.g.::
+
+        ((el_id1, 'pretty_name1'), (el_id2, 'pretty_name2'), ...)
+
+    :Parameters:
+        - `collection`: a dictionary of the following structure: ::
+
+            {
+                `el_id`: {`el_pretty_name`: 'pretty', `el_internal_name`: 'name'},
+                ...
+            }
+    """
+    return ((k, v['pretty']) for k, v in collection.iteritems())
+
 
 class TrackerModel(models.Model):
     """ Tracker model.
@@ -18,37 +37,27 @@ class TrackerModel(models.Model):
 
 
 class DataSourceModel(models.Model):
-   """ Data Source model.
-   """
-   class  Meta:
-       db_table  = 'datasource'
+    """ Data Source model.
+    """
+    class  Meta:
+        db_table  = 'datasource'
 
-   ACCESS_METHODS = (
-       (1, u'HTTP'),
-       (2, u'SOAP'),
-   )
-   DATA_TYPES = (
-       (1, u'XML'),
-       (2, u'CSV'),
-       (3, u'JSON'),
-       (4, u'HTML'),
-   )
-   tracker          = models.ForeignKey(TrackerModel)
-   access_method    = models.SmallIntegerField(choices=ACCESS_METHODS, default=0)
-   query            = models.CharField(max_length=60)
-   data_type        = models.SmallIntegerField(choices=DATA_TYPES, default=0)
+    tracker          = models.ForeignKey(TrackerModel)
+    access_method    = models.SmallIntegerField(
+                          choices=_make_pretty(ACCESS_METHODS), default=0)
+    query            = models.CharField(max_length=60)
+    data_type        = models.SmallIntegerField(
+                          choices=_make_pretty(DATA_TYPES), default=0)
 
 class ValueModel(models.Model):
-   """ Value model.
-   """
-   class  Meta:
-       db_table  = 'value'
-   VALUE_TYPES = (
-       (1, u'Integer'),
-       (2, u'Float'),
-   )
+    """ Value model.
+    """
+    class  Meta:
+        db_table  = 'value'
 
-   data_source     = models.ForeignKey(DataSourceModel)
-   name            = models.CharField(max_length=60)
-   value_type      = models.SmallIntegerField(choices=VALUE_TYPES, default=1)
-   extraction_rule = models.CharField(max_length=200)
+    data_source     = models.ForeignKey(DataSourceModel)
+    name            = models.CharField(max_length=60)
+    value_type      = models.SmallIntegerField(
+       choices=_make_pretty(VALUE_TYPES), default=1)
+    extraction_rule = models.CharField(max_length=200)
+
