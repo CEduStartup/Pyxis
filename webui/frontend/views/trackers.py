@@ -35,18 +35,6 @@ def view(request, tracker_id):
     tracker.data = data
     return {'tracker': tracker, 'options': options}
 
-@login_required
-def add(request):
-    return form(request, TrackerModel(
-                                 #user=request.user
-                                 ))
-
-@login_required
-def edit(request, tracker_id):
-    return form(request, get_object_or_404(TrackerModel, pk=tracker_id,
-                                           #user=request.user
-                                           ))
-
 @csrf_protect
 @render_to('frontend/trackers/form.html')
 def form(request, tracker):
