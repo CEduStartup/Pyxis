@@ -2,17 +2,42 @@
 """
 
 import beanstalkc
+import pickle
 
-# This constant probably should be moved to settings.py
-# How long we can wait for information.
-TIMEOUT = 3
+from config import mq
+from shared.events import Event
+
+
+class EventManagerError(Exception):
+
+    """Base class for all EventManager errors.
+    """
+
+
+class EventSenderError(EventManagerError):
+
+    """Base class for all EventSender errors.
+    """
+
+
+class EventReceiverError(EventManagerError):
+
+    """Base class for all EventReciver errors.
+    """
+
+
+class UnserializableEvent(EventSenderError):
+
+    """Sender cannot serialize event.
+    """
+
 
 class EventManagerBase(object):
 
     """Base class for event sender and event receiver.
     """
 
-    def __init__(self, server_host, server_port, tubes=None):
+    def __init__(self, server_host=mq.queue_host, server_port=mq.queue_port):
         """Initialize event manager.
 
         :Parameters:
@@ -23,43 +48,11 @@ class EventManagerBase(object):
         """
         self._client = beanstalkc.Connection(host=server_host, port=server_port)
         self._client.connect()
-        if tubes is not None:
-            self.set_watching_tubes(tubes)
 
-    def get_tubes(self):
-        """Return a list of tubes which currently available.
+    def __del__(self):
+        """Destructor is responsible for safety connection closing.
         """
-        return self._client.tubes()
-
-## TODO: Move this to event receiver class.
-##
-##    def get_watching_tubes(self):
-##        """Return a list of tubes which are in watchlist.
-##        """
-##        return self._client.watching()
-##
-##    def set_watching_tubes(self, tubes):
-##        """Add tube(s) to watch list. All previous tubes will be removed.
-##
-##        :Parameters:
-##            - `tubes` string which contain a name of tube to watch for (of a
-##              list of strings).
-##        """
-##        current_tubes =set(self.get_watching_tubes())
-##
-##        if not isinstance(tubes, (list, tuple))
-##            new_tubes = set([tubes,])
-##        else:
-##            new_tubes = set(tubes)
-##
-##        to_delete = current_tubes.difference(new_tubes)
-##        to_add = new_tubes.difference(current_tubes)
-##
-##        for tube in to_delete:
-##            self._client.ignore(t)
-##
-##        for tube in to_add:
-##            self._client.watch(tube)
+        self._client.close()
 
 
 class EventSender(EventManagerBase):
@@ -67,27 +60,114 @@ class EventSender(EventManagerBase):
     """Used to send event to different tubes.
     """
 
-    def get_current_tube(self):
-        """Return a tube which is currently in use (to put event to).
-        """
-        return self._client.using()
-
-    def set_current_tube(self, tube):
-        """Set a tube to put event to.
+    def _create_event_obj(self, eid, **kwargs):
+        """Create an event and pass all required arguments.
 
         :Parameters:
-            - `tube`: string name of the tube.
-        """
-        if not tube in self.get_tubes():
-            # TODO: we need to handle this situation correctly.
-            pass
-        self._client.using(tube)
+            - `eid`: event ID.
+            - `kwargs`: additional arguments required for event.
 
-    def fire(event):
+        :Return:
+            An event object.
+        """
+        event_cls = Event.get_event(eid)
+        return event_cls(**kwargs)
+
+    def _serialize_event(self, event):
+        """Serialize an event to string using pickle module.
+
+        :Exception:
+            - `UnserializableEvent`: in case when the given event cannot be
+              serialized.
+        """
+        try:
+            return event.serialize()
+        except Event.EventSerializationError, err:
+            raise UnserializableEvent(str(err))
+
+    def _get_destination(self, eid, dest=None):
+        """Return a tuple with tubes suitable from event with the given `eid`.
+
+        :Parameters:
+            - `eid`: string with EID.
+            - `dest`: string (or list of strings) which contains tubes for
+              ivent. In case when it's None, default destinations for event
+              whith such `eid` will be returned.
+
+        :Exception:
+            - `NoSuchEventError`: in case when there is not event with such
+              `eid`.
+        """
+        res_dest = []
+        if dest is not None:
+            if isinstance(dest, str):
+                res_dest.append(dest)
+            elif isinstance(dest, (list, tuple)):
+                res_dest.extend(dest)
+        else:
+            res_dest.extend(Event.get_tubes(eid))
+
+        return res_dest
+
+    def fire(self, event, tubes=None, **kwargs):
         """Put event into current tube.
 
         :Parameters:
-            - `event`: an picklable object.
+            - `event`: an event id.
+            - `tubes`: a list of tubes to send the `event` to.
+            - `kwargs`: dictionary which contains all required parameters to
+              format log message.
         """
-        self._client.put(event)
+        event = self._create_event_obj(event, **kwargs)
+        serialized_event = self._serialize_event(event)
+        dest = self._get_destination(event.eid, tubes)
+
+        for tube in dest:
+            try:
+                self._client.use(tube)
+                self._client.put(serialized_event)
+            except (beanstalkc.UnexpectedResponse,
+                    beanstalkc.CommandFailed), err:
+                raise EventSenderError(str(err))
+
+
+def null_callback(event):
+    """Null event handler.
+    """
+    pass
+
+
+class EventReceiver(EventManagerBase):
+
+    """ Used to receive messages from a single tube.
+    This class is non thread safe.
+    """
+
+    def __init__(self, server_host='localhost', server_port=11300,
+                 tubes=('default',), callback=null_callback):
+        EventManagerBase.__init__(self, server_host, server_port)
+        self._callback = callback
+        self._tubes = tubes
+
+    def _subscribe(self):
+        """Set tubes to watch for.
+        """
+        self._client.ignore('default')
+        for tube in self._tubes:
+            self._client.watch(tube)
+
+    def dispatch(self):
+        """ Method that receive from message queue, restore and throw events to
+        subscribed callback.
+        """
+        self._subscribe()
+
+        while True:
+            # TODO: error handling
+            try:
+                job = self._client.reserve()
+                event = pickle.loads(job.body)
+                self._callback(event)
+            finally:
+                job.delete()
 
