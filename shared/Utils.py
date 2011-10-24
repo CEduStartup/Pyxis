@@ -114,6 +114,8 @@ def get_from_to_range(date_from=None, date_to=None, period='day',
     if date_to:
         ts_to = min(int(time.time()), time_round(str2time(date_to), period) + d)
     if date_from is None and date_to is None:
+        ts_to = int(time.time())
+        ts_from = time_round(ts_to - duration, period)
     if ts_from is None:
         ts_from = time_round(ts_to - duration, period)
     if ts_to is None:
