@@ -29,6 +29,9 @@ class TrackerModel(models.Model):
     class Admin:
         pass
 
+    def __unicode__(self):
+        return self.name
+
     user             = models.ForeignKey(User)
     name             = models.CharField(max_length=60)
     status           = models.PositiveIntegerField(default=0)
@@ -42,6 +45,9 @@ class DataSourceModel(models.Model):
     class  Meta:
         db_table  = 'datasource'
 
+    def __unicode__(self):
+        return self.query
+
     tracker          = models.ForeignKey(TrackerModel)
     access_method    = models.SmallIntegerField(
                           choices=_make_pretty(ACCESS_METHODS), default=0)
@@ -54,6 +60,9 @@ class ValueModel(models.Model):
     """
     class  Meta:
         db_table  = 'value'
+
+    def __unicode__(self):
+        return self.name
 
     data_source     = models.ForeignKey(DataSourceModel)
     name            = models.CharField(max_length=60)
