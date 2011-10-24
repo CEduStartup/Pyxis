@@ -10,6 +10,9 @@ from frontend.models import TrackerModel
 from frontend.forms import OptionsForm, TrackerForm
 from webui.util import render_to
 
+from pprint import pprint as pp
+
+@login_required
 @render_to('frontend/trackers/index.html')
 def index(request):
     trackers = TrackerModel.objects.all()
@@ -32,7 +35,7 @@ def view(request, tracker_id):
                                 )
     c = bjsonrpc.connect(settings.RPC_HOST, settings.RPC_PORT)
     data = c.call.get_tracker_data(1)
-    tracker.data = data
+    tracker.data = simplejson.dumps(data)
     return {'tracker': tracker, 'options': options}
 
 @csrf_protect

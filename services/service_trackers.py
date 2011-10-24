@@ -1,12 +1,13 @@
 # Service working with trackers.
 # All services are launched automatically by services/services_launcher.py.
 
-from services.service_base import SharedService
-from shared.trackers.Tracker import Tracker
-from frontend.models import *
+import base64
 import pickle
 import zlib
-import base64
+
+from frontend.models import TrackerModel
+from services.service_base import SharedService
+from shared.trackers.Tracker import Tracker
 
 
 class db_adapter:
@@ -16,27 +17,6 @@ class db_adapter:
 
     def get_trackers(self, modified_since=None):
         raise RuntimeError('Abstract Method !')
-
-
-class pgsql_adapter(db_adapter):
-    """Database adapter which gets data from PostgreSQL database."""
-    def connect(self):
-        self.connection = pgdb.connect(db.db_name, host=db.db_host,
-            user=db.db_user, password=db.db_password)
-
-    def get_trackers(self, modified_since=None):
-        cursor = self.connection.cursor()
-        cursor.execute('select * from trackers')
-        trackers_raw = cursor.fetchall()
-        tracker_objects = []
-        for (tracker_id, name, description, created, last_modified, status,
-             source_type, data_type, source, interval) in trackers_raw:
-            tracker = Tracker(tracker_id, source, source_type, '', interval,
-                              None)
-            tracker_objects.append(tracker)
-
-        cursor.close()
-        return tracker_objects
 
 
 class django_orm_adapter(db_adapter):
@@ -50,7 +30,8 @@ class django_orm_adapter(db_adapter):
         if modified_since is None:
             model_objects = TrackerModel.objects.all()
         else:
-            model_objects = TrackerModel.objects.filter(last_modified__gt=modified_since)
+            model_objects = \
+               TrackerModel.objects.filter(last_modified=modified_since)
         for model_object in model_objects:
             trackers.append(self._tracker_from_model(model_object))
 
@@ -61,21 +42,23 @@ class django_orm_adapter(db_adapter):
         DJango representation."""
         datasources = []
         for ds in model_object.datasourcemodel_set.all():
-            access_method = ds.access_method.name
-            data_type = ds.data_type.name
+            access_method = ds.access_method
+            data_type = ds.data_type
             query = ds.query
             values = []
             for value in ds.valuemodel_set.all():
                 value_dict = {'value_id': value.id,
                               'name': value.extraction_rule,
-                              'type': value.type}
+                              'type': value.value_type}
                 values.append(value_dict)
             datasource = {'access_method': access_method,
                           'query': query,
                           'data_type': data_type,
                           'values': values}
+            datasources.append(datasource)
 
-        return Tracker(model_object.id, model_object.refresh_interval, datasources)
+        return Tracker(model_object.id, model_object.refresh_interval,
+                       datasources)
 
 
 class TrackersService(SharedService):

@@ -2,151 +2,113 @@
 
 {% block content %}
 
- <script>
-var chart;
-$(document).ready(function() {
+<script>
+    {% autoescape off %}
+    var d = new Date();
+    var offset = d.getTimezoneOffset() * 60 * 1000;
+    var chart_series = {{ tracker.data }};
+    for(var i=0; i<chart_series.length; i++){
+       chart_series[i].pointStart -= offset;
+    }
+    {% endautoescape %}
 
-	$(function() {
-		$('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker();
-	});
-     
-   options = {
-		  chart: {
-		     renderTo: 'container',
-		     defaultSeriesType: '{{ options.types.value|default:"column" }}'
-		  },
-		  title: {
-		     text: 'Monthly Average Rainfall'
-		  },
-		  subtitle: {
-		     text: 'Source: WorldClimate.com'
-		  },
-		  xAxis: {
-		     categories: [
-		        'Jan', 
-		        'Feb', 
-		        'Mar', 
-		        'Apr', 
-		        'May', 
-		        'Jun', 
-		        'Jul', 
-		        'Aug', 
-		        'Sep', 
-		        'Oct', 
-		        'Nov', 
-		        'Dec'
-		     ]
-		  },
-		  yAxis: {
-		     min: 0,
-		     title: {
-		        text: 'Rainfall (mm)'
-		     }
-		  },
-		  legend: {
-		     layout: 'vertical',
-		     align: 'left',
-		     verticalAlign: 'top',
-		     x: 70,
-		     y: 0,
-		     floating: true,
-		     shadow: true
-		  },
-		  tooltip: {
-		     formatter: function() {
-		        return ''+
-		           this.x +': '+ this.y +' mm';
-		     }
-		  },
-		  plotOptions: {
-		     column: {
-		        pointPadding: 0.2,
-		        borderWidth: 0
-		     }
-		  },
-		  series: [{
-		     name: 'Tokyo',
-		     data: {{ tracker.data }}   
-		  }],
-		}
-	chart = new Highcharts.Chart(options);
+    function check_period() {
+        if( $('#id_'+'{{ options.periods.html_name }}').val() == 'minute' ) {
+            $('#id_'+'{{ options.methods.html_name }}').attr('disabled', 'disabled');
+        }else{
+            $('#id_'+'{{ options.methods.html_name }}').removeAttr('disabled');
+        }
+    }
 
-	$('#id_{{ options.types.html_name }}').change(function() {
-		render_chart(options, $('#id_{{ options.types.html_name }}').val());
-	});
-});
+    $(document).ready(function() {
+        // Build help dialogs.
+        var dlg_ids = [
+            '{{ options.periods.html_name }}',
+            '{{ options.methods.html_name }}'
+        ];
+        for(var i=0; i<dlg_ids.length; i++) {
+            var d_id = dlg_ids[i];
+            $('#help-dlg-'+d_id).dialog({
+                autoOpen: false,
+                resizable: false
+            });
+            $('#help-for-'+d_id).click(function() {
+                $('#help-dlg-'+d_id).dialog('open');
+            });
+        }
 
-	function update_chart() {
-		var values = {};
-		$.each($('#form').serializeArray(), function(i, field) {
-			values[field.name] = field.value;
-		});
+        $('#id_'+'{{ options.periods.html_name }}').change(check_period);
+        check_period();
 
-		$.ajax({ 
-			url: "/trackers/call", 
-			type: "POST", 
-			dataType: "json",
-			data: values,
-			success: function(data, lviv){ 
-				var tracker = {
-					'name': 'Lviv',
-					'data': data,
-				}
-				options.series.push(tracker);
-				render_chart(options, values['types']);
-			},
-		});
-	}
+        $(function() {
+            $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker();
+        });
 
-	function render_chart(config, type) {
-		config = config || options
-		type = type || 'line';
-		config.chart.defaultSeriesType = type;
-		chart = new Highcharts.Chart(config);
-		console.log(chart);
-	}
- </script>
+        $('#id_{{ options.types.html_name }}').change(function() {
+            render_chart(options, $('#id_{{ options.types.html_name }}').val());
+        });
+
+        build_chart(chart_series, '{{ options.types.value|default:"line" }}');
+
+    });
+</script>
 
 <h3>{{ tracker.name }}</h3>
 <div id="container" style="width: 100%; height: 400px"></div>
 
 <div id='options'>
-	<form id='form' action='trackers/' method='post'>
-		<input type='hidden' name='id' value='{{ tracker.id }}'>
-		{{ options.id }}
-		<div class='row'>
-			<div class='span8'>
-				{{ options.periods.errors }}
-				{{ options.periods.label_tag }}
-				{{ options.periods }}
-			</div>
-			<div class='span8'>
-				<div>
-					{{ options.start.errors }}
-					{{ options.start.label_tag }}
-					{{ options.start }}
-				</div>
-				<div>
-					{{ options.end.errors }}
-					{{ options.end.label_tag }}
-					{{ options.end }}
-				</div>
-			</div>
-		</div>
+    <form id='form' action='trackers/' method='post'>
+        <input type='hidden' name='id' value='{{ tracker.id }}'>
+        {{ options.id }}
+        <div class='row'>
+            <div class='span8'>
+                {{ options.periods.errors }}
+                {{ options.periods.label_tag }}
+                {{ options.periods }}
+                <span class="btn info small"
+                      id="help-for-{{ options.periods.html_name }}">?</span>
+                <div id="help-dlg-{{ options.periods.html_name }}"
+                     title="{{ options.periods.label }}" style="display:none;">
+                    {% autoescape off %}
+                    <p>{{ options.periods.help_text }}</p>
+                    {% endautoescape %}
+                </div>
+            </div>
+            <div class='span8'>
+                <div>
+                    {{ options.start.errors }}
+                    {{ options.start.label_tag }}
+                    {{ options.start }}
+                </div>
+                <div>
+                    {{ options.end.errors }}
+                    {{ options.end.label_tag }}
+                    {{ options.end }}
+                </div>
+            </div>
+        </div>
 
-		<div class='row'>
-			<div class='span8'>
-				{{ options.method.errors }}
-				{{ options.methods.label_tag }}
-				{{ options.methods }}
-			</div>
-			<div class='span8'>
-				{{ options.types.errors }}
-				{{ options.types.label_tag }}
-				{{ options.types }}
-			</div>
-		</div>
-	</from>
+        <div class='row'>
+            <div class='span8'>
+                {{ options.methods.errors }}
+                {{ options.methods.label_tag }}
+                {{ options.methods }}
+                <span class="btn info small"
+                      id="help-for-{{ options.methods.html_name }}">?</span>
+                <div id="help-dlg-{{ options.methods.html_name }}"
+                     title="{{ options.methods.label }}" style="display:none;">
+                    {% autoescape off %}
+                    <p>{{ options.methods.help_text }}</p>
+                    {% endautoescape %}
+                </div>
+            </div>
+            <div class='span8'>
+                {{ options.types.errors }}
+                {{ options.types.label_tag }}
+                {{ options.types }}
+            </div>
+        </div>
+    </from>
 </div>
 
 
