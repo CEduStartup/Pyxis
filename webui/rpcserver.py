@@ -13,10 +13,17 @@ class TrackersHandler(BaseHandler, TimeBasedData):
     def _shutdown(self):
         self.conn.disconnect()
 
-    def get_tracker_data(self, id, start=0, end=0, period=False, method=False):
+    def get_tracker_data(self, tracker_id, period, src_parms=None,
+                         date_from=None, date_to=None,
+                         periods_in_group=1):
+        #res = self.query(1, 'minute', date_from='2011-10-16', date_to='2011-10-19', periods_in_group=15,
+        #                 src_parms=(('1_2', 'min'), ('1_2', 'max'), ('1_2', 'avg'), ('1_1', 'min'), ('1_1', 'max'), ('1_1', 'avg')))
+        if not src_parms:
+            src_parms=(('1_2', 'min'), ('1_2', 'max'), ('1_2', 'avg'), ('1_1', 'min'), ('1_1', 'max'), ('1_1', 'avg'))
 
-        res = self.query(1, 'minute', date_from='2011-10-16', date_to='2011-10-19', periods_in_group=15,
-                       src_parms=(('1_2', 'min'), ('1_2', 'max'), ('1_2', 'avg'), ('1_1', 'min'), ('1_1', 'max'), ('1_1', 'avg')))
+        res = self.query(tracker_id, period, src_parms=src_parms,
+                         date_from=date_from, date_to=date_to,
+                         periods_in_group=periods_in_group)
         return res
 
 

@@ -32,11 +32,7 @@ function build_chart(data, chart_type) {
              shadow: true
           },
           tooltip: {
-            formatter: function() {
-              console.log(this);
-              return '<b>'+ this.series.name +'</b><br/>'+
-                     '"<b>' +Highcharts.dateFormat('%e %b %H:%M', this.x) +'</b>" '+ this.y;
-            }
+            formatter: tooltip_formatter
           },
           plotOptions: get_plot_options(chart_type),
           series: data
@@ -99,4 +95,37 @@ function get_plot_options(chart_type){
       }
     }
   }
+}
+
+var MINUTE = 60 * 1000;
+var HOUR   = MINUTE * 60;
+var DAY    = HOUR * 24;
+
+function tooltip_formatter(){
+  var period = $('#id_periods').val();
+  var text = '<b>' + this.series.name + ': ' + this.y + '</b><br/>';
+  if(period == 'minute'){
+    return text + 'Data for ' + Highcharts.dateFormat('%e %b %H:%M', this.x);
+  }
+  if(period == '5minutes' || period == '15minutes'){
+    var n = {'5minutes': 5, '15minutes': 15}[period];
+    return text + 'Data for ' + Highcharts.dateFormat('%e %b %H:%M', this.x) +
+        ' - ' + Highcharts.dateFormat('%H:%M', this.x + MINUTE * n);
+  }
+  if(period == 'hour'){
+    return text + 'Data for ' + Highcharts.dateFormat('%e %b %H:%M', this.x) +
+        ' - ' + Highcharts.dateFormat('%H:%M', this.x + MINUTE * n);
+  }
+  if(period == 'day'){
+    return text + 'Data for ' + Highcharts.dateFormat('%e %b %y', this.x);
+  }
+  if(period == 'week'){
+    return text + Highcharts.dateFormat('%a %e %b', this.x) +
+        ' - ' + Highcharts.dateFormat('%a %e %b %y', this.x + DAY * 7 - MINUTE);
+  }
+  if(period == 'month'){
+    return text + Highcharts.dateFormat('%B %Y', this.x);
+  }
+  return text += 'Data for ' + Highcharts.dateFormat('%Y', this.x);
+  console.log(period);
 }

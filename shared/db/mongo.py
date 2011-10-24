@@ -131,19 +131,25 @@ class TimeBasedData(object):
 
             - `date_to`: date to string in format `%Y-%m-%d %H:%M`;
         """
+        print '='*50
+        print tracker_id, period, src_parms, date_from, date_to, periods_in_group
+        print '='*50
         collection = self.db['data']
         selection_key = period
         if selection_key == 'minute':
             selection_key = 'raw'
+        elif selection_key == 'week':
+            selection_key = 'day'
         elif selection_key == 'month':
             selection_key = 'day'
-        ts_from, ts_to = get_from_to_range(date_from, date_to, period='day')
-        print 'for `day`:', get_date_str(ts_from, 'day'), get_date_str(ts_to, 'day')
-        res = collection.find({'tracker_id': tracker_id,
-                               'timestamp': {'$gte': ts_from, '$lt': ts_to}},
-                              [selection_key])
         ts_from, ts_to = get_from_to_range(date_from, date_to, period=period)
+        q_ts_from = time_round(ts_from, 'day')
+        q_ts_to = time_round(ts_to, 'day')
+        print 'for `day`:', get_date_str(ts_from, 'day'), get_date_str(ts_to, 'day')
         print 'for `%s`:' % period, get_date_str(ts_from, period), get_date_str(ts_to, period)
+        res = collection.find({'tracker_id': tracker_id,
+                               'timestamp': {'$gte': q_ts_from, '$lt': q_ts_to}},
+                              [selection_key])
         ts_keys = x_keys_time_based(ts_from, ts_to, period, periods_in_group)
         ts_keys.append(ts_to)
         print get_date_str(ts_keys[0], period), get_date_str(ts_keys[-1], period)
@@ -153,9 +159,10 @@ class TimeBasedData(object):
                 if int(timestamp) < ts_from or int(timestamp) >= ts_to:
                     continue
                 db_data[int(timestamp)] = values
-        min_ts = min(db_data.keys())
-        max_ts = max(db_data.keys())
-        print get_date_str(min_ts, period), get_date_str(max_ts, period)
+        if db_data:
+            min_ts = min(db_data.keys())
+            max_ts = max(db_data.keys())
+            print 'Data in DB:', get_date_str(min_ts, period), get_date_str(max_ts, period)
         groups = {}
         i = 0
         f, t = ts_keys[i], ts_keys[i+1]
