@@ -2,7 +2,8 @@ import pymongo
 import time
 
 from shared.Utils import rollup_periods, get_date_str, value_generator, \
-                         get_from_to_range, duration_in_seconds, time_round, ONE_MIN
+                         get_from_to_range, duration_in_seconds, time_round, \
+                         ONE_MINUTE, ONE_HOUR, ONE_DAY
 from random import randint
 
 from pprint import pprint as pp
@@ -30,15 +31,15 @@ class TimeBasedData(object):
         self.db['data'].create_index([('tracker_id', pymongo.ASCENDING),
                                       ('timestamp', pymongo.ASCENDING)])
 
-    def fill_test_data(self, trackers_count=1, xpaths_per_tracker=2,
+    def fill_test_data(self, tracker_id=1, value_ids=[],
                        date_from=None, date_to=None, duration_in_days=365):
         """Fill in the MongoDb with the test data.
 
         :Parameters:
 
-            - `trackers_count`: number of trackers to fill data;
+            - `tracker_id`: id of datasource group;
 
-            - `xpaths_per_tracker`: number of xpath for one tracker;
+            - `value_ids`: list of `value_id` related to this tracker;
 
             - `date_from`: date in format *%Y-%m-%d*;
 
@@ -51,15 +52,26 @@ class TimeBasedData(object):
         vg = value_generator(5)
         ts_from, ts_to = get_from_to_range(date_from, date_to, period='day',
                                            periods_count=duration_in_days)
-        ts = ts_from
-        while ts < ts_to:
-            for tracker_id in range(1, trackers_count+1):
-                values = {}
-                for i in range(1, xpaths_per_tracker+1):
-                    value_id = '%s_%s' % (tracker_id, i)
-                    values[value_id] = vg.next()
-                self.insert_raw_data(tracker_id, ts, values)
-            ts += ONE_MIN * randint(1, 15)
+        for value_id in value_ids:
+            value_id = str(value_id)
+            print '\n\nFilling db for %s' % value_id
+            ts = ts_from
+            while ts < ts_to:
+                insertions = 0
+                for i in range(24):
+                    has_data_in_hour = randint(0, 1)
+                    if not has_data_in_hour:
+                        continue
+                    j = 0
+                    while j < 60:
+                        values = {value_id: vg.next()}
+                        d = ts + i*ONE_HOUR + j*ONE_MINUTE
+                        self.insert_raw_data(tracker_id, d, values)
+                        j += randint(1, 20)
+                        insertions += 1
+                if insertions:
+                    print '\t%s < %s items' % (get_date_str(ts, 'day'), insertions)
+                ts += ONE_DAY
 
     def insert_raw_data(self, tracker_id, timestamp, data):
         """Inserts `data` to the MongoDB and aggregates data in `1hour` and
@@ -74,11 +86,11 @@ class TimeBasedData(object):
             - `data`: dictionary with values to insert in format
               { <value_id>: <value>, }
         """
-        day_ts = time_round(timestamp, 'day')
         if not 'data' in self.db.collection_names():
             self.db['data'].create_index([('tracker_id', pymongo.ASCENDING),
                                           ('timestamp', pymongo.ASCENDING)])
         collection = self.db['data']
+        day_ts = time_round(timestamp, 'day')
         res = collection.find_one({'tracker_id': tracker_id,
                                    'timestamp': day_ts})
         if res is None:
@@ -131,31 +143,39 @@ class TimeBasedData(object):
 
             - `date_to`: date to string in format `%Y-%m-%d %H:%M`;
         """
+        print '='*50
+        print tracker_id, period, src_parms, date_from, date_to, periods_in_group
+        print '='*50
         collection = self.db['data']
         selection_key = period
         if selection_key == 'minute':
             selection_key = 'raw'
+        elif selection_key == 'week':
+            selection_key = 'day'
         elif selection_key == 'month':
             selection_key = 'day'
-        ts_from, ts_to = get_from_to_range(date_from, date_to, period='day')
+        if period in ('minute', 'hour'):
+            ts_from, ts_to = get_from_to_range(date_from, date_to, period='day')
+        else:
+            ts_from, ts_to = get_from_to_range(date_from, date_to, period=period)
         print 'for `day`:', get_date_str(ts_from, 'day'), get_date_str(ts_to, 'day')
+        print 'for `%s`:' % period, get_date_str(ts_from, period), get_date_str(ts_to, period)
+        print 'for `minute`:', get_date_str(ts_from, 'minute'), get_date_str(ts_to, 'minute')
         res = collection.find({'tracker_id': tracker_id,
                                'timestamp': {'$gte': ts_from, '$lt': ts_to}},
                               [selection_key])
-        ts_from, ts_to = get_from_to_range(date_from, date_to, period=period)
-        print 'for `%s`:' % period, get_date_str(ts_from, period), get_date_str(ts_to, period)
         ts_keys = x_keys_time_based(ts_from, ts_to, period, periods_in_group)
         ts_keys.append(ts_to)
-        print get_date_str(ts_keys[0], period), get_date_str(ts_keys[-1], period)
         db_data = {}
         for item in res:
             for timestamp, values in item[selection_key].iteritems():
                 if int(timestamp) < ts_from or int(timestamp) >= ts_to:
                     continue
                 db_data[int(timestamp)] = values
-        min_ts = min(db_data.keys())
-        max_ts = max(db_data.keys())
-        print get_date_str(min_ts, period), get_date_str(max_ts, period)
+        if db_data:
+            min_ts = min(db_data.keys())
+            max_ts = max(db_data.keys())
+            print 'Data in DB:', get_date_str(min_ts, period), get_date_str(max_ts, period), len(db_data.keys())
         groups = {}
         i = 0
         f, t = ts_keys[i], ts_keys[i+1]
@@ -169,7 +189,7 @@ class TimeBasedData(object):
         ts_keys.pop()
         data_map = {}
         for value_id, aggr in src_parms:
-            data_map[(value_id, aggr)] = [None] * len(ts_keys)
+            data_map[(value_id, aggr)] = [0] * len(ts_keys)
         last_key = None
         tmp_vals = None
         for idx in sorted(groups):
@@ -204,17 +224,17 @@ class TimeBasedData(object):
                         data[idx] = round(1.0 * grouped_values[value_id]['sum'] /
                                           grouped_values[value_id]['count'], 2)
                     else:
-                        data[idx] = None
+                        data[idx] = 0
                 else:
-                    data[idx] = grouped_values[value_id][aggr]
+                    data[idx] = grouped_values[value_id][aggr] or 0
 
         tracker_data = []
         for (value_id, aggr), data in data_map.iteritems():
             tracker_data.append({
-                'name': '%s - %s' % (value_id, aggr),
+                'name': (int(value_id), aggr),
                 'data': data,
                 'pointInterval': duration_in_seconds[period]*periods_in_group * 1000,
-                'pointStart': ts_from * 1000,
+                'pointStart': (ts_from - time.timezone) * 1000,
             })
 
         return tracker_data

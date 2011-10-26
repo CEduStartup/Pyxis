@@ -2,10 +2,16 @@
 
 {% block content %}
 
+<style>
+  .popover .content {
+    padding-left: 22px;
+  }
+</style>
+
 <script>
     {% autoescape off %}
     var d = new Date();
-    var offset = d.getTimezoneOffset() * 60 * 1000;
+    var offset = 0 //d.getTimezoneOffset() * 60 * 1000;
     var chart_series = {{ tracker.data }};
     for(var i=0; i<chart_series.length; i++){
        chart_series[i].pointStart -= offset;
@@ -21,27 +27,19 @@
     }
 
     $(document).ready(function() {
-        // Build help dialogs.
-        var dlg_ids = [
-            '{{ options.periods.html_name }}',
-            '{{ options.methods.html_name }}'
-        ];
-        for(var i=0; i<dlg_ids.length; i++) {
-            var d_id = dlg_ids[i];
-            $('#help-dlg-'+d_id).dialog({
-                autoOpen: false,
-                resizable: false
-            });
-            $('#help-for-'+d_id).click(function() {
-                $('#help-dlg-'+d_id).dialog('open');
-            });
-        }
+        $("a[rel=popover]")
+          .popover({
+            offset: 10
+          })
+          .click(function(e) {
+            e.preventDefault()
+          })
 
         $('#id_'+'{{ options.periods.html_name }}').change(check_period);
         check_period();
 
         $(function() {
-            $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker();
+            $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker({ dateFormat: 'dd/mm/yy' });
         });
 
         $('#id_{{ options.types.html_name }}').change(function() {
@@ -57,22 +55,20 @@
 <div id="container" style="width: 100%; height: 400px"></div>
 
 <div id='options'>
-    <form id='form' action='trackers/' method='post'>
-        <input type='hidden' name='id' value='{{ tracker.id }}'>
-        {{ options.id }}
+    <form id='form' action='/trackers/view/{{ tracker.id }}/' method='post'>
+        {% csrf_token %}
+        <!--input type='hidden' name='tracker_id' value='{{ tracker.id }}'-->
+        {{ options.tracker_id }}
         <div class='row'>
             <div class='span8'>
                 {{ options.periods.errors }}
                 {{ options.periods.label_tag }}
                 {{ options.periods }}
-                <span class="btn info small"
-                      id="help-for-{{ options.periods.html_name }}">?</span>
-                <div id="help-dlg-{{ options.periods.html_name }}"
-                     title="{{ options.periods.label }}" style="display:none;">
-                    {% autoescape off %}
-                    <p>{{ options.periods.help_text }}</p>
-                    {% endautoescape %}
-                </div>
+                {% autoescape off %}
+                <a data-original-title="{{ options.periods.label }}"
+                   href="#" class="btn info small" rel="popover"
+                   data-content="{{ options.periods.help_text }}">?</a>
+                {% endautoescape %}
             </div>
             <div class='span8'>
                 <div>
@@ -93,20 +89,21 @@
                 {{ options.methods.errors }}
                 {{ options.methods.label_tag }}
                 {{ options.methods }}
-                <span class="btn info small"
-                      id="help-for-{{ options.methods.html_name }}">?</span>
-                <div id="help-dlg-{{ options.methods.html_name }}"
-                     title="{{ options.methods.label }}" style="display:none;">
-                    {% autoescape off %}
-                    <p>{{ options.methods.help_text }}</p>
-                    {% endautoescape %}
-                </div>
+                {% autoescape off %}
+                <a data-original-title="{{ options.methods.label }}"
+                   href="#" class="btn info small" rel="popover"
+                   data-content="{{ options.methods.help_text }}">?</a>
+                {% endautoescape %}
             </div>
             <div class='span8'>
                 {{ options.types.errors }}
                 {{ options.types.label_tag }}
                 {{ options.types }}
             </div>
+        </div>
+        <div class='well' style="padding: 14px 19px; margin-top: 15px;">
+            <button name="save_update" class="btn primary">Save &amp; Update</button>
+            <button name="update" class="btn primary">Update Cart</button>
         </div>
     </from>
 </div>

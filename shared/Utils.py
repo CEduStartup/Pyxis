@@ -2,8 +2,8 @@ import time
 import dateutil.parser
 from random import randint
 
-ONE_MIN = 60
-ONE_HOUR = ONE_MIN * 60
+ONE_MINUTE = 60
+ONE_HOUR = ONE_MINUTE * 60
 ONE_DAY  = ONE_HOUR * 24
 
 rollup_periods = ['minute', 'hour', 'day']
@@ -15,10 +15,11 @@ rollup_periods_display = {
 }
 
 duration_in_seconds = {
-    'minute'  : ONE_MIN,
-    'hour' : ONE_HOUR,
-    'day'  : ONE_DAY,
-    'month': ONE_DAY * 31,
+    'minute': ONE_MINUTE,
+    'hour'  : ONE_HOUR,
+    'day'   : ONE_DAY,
+    'week'  : ONE_DAY * 7,
+    'month' : ONE_DAY * 31,
 }
 
 time_formats = {
@@ -41,7 +42,11 @@ def value_generator(n):
 
 def time_round(ts, period='day'):
     t = time.localtime(ts)
-    if period == 'month':
+    if period == 'week':
+        ts = ts - ONE_DAY * t.tm_wday
+        t = time.localtime(ts)
+        t = (t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, -1, -1, -1)
+    elif period == 'month':
         t = (t.tm_year, t.tm_mon, 1, 0, 0, 0, -1, -1, -1)
     elif period == 'day':
         t = (t.tm_year, t.tm_mon, t.tm_mday, 0, 0, 0, -1, -1, -1)
@@ -68,6 +73,9 @@ def str2time(string):
 def get_date_str_month(ts):
     return time.strftime('%Y-%m', time.localtime(ts))
 
+def get_date_str_week(ts):
+    return time.strftime('%a %b %d', time.localtime(ts))
+
 def get_date_str_day(ts):
     return time.strftime('%Y-%m-%d', time.localtime(ts))
 
@@ -83,6 +91,7 @@ date_str_functions = {
     'minute' : get_date_str_minute,
     'hour'   : get_date_str_hour,
     'day'    : get_date_str_day,
+    'week'   : get_date_str_week,
     'month'  : get_date_str_month,
 }
 
@@ -102,8 +111,11 @@ def get_from_to_range(date_from=None, date_to=None, period='day',
     duration = d * periods_count
     if date_from:
         ts_from = time_round(str2time(date_from), period)
+        pt(ts_from)
     if date_to:
+        t = time.time()
         ts_to = min(int(time.time()), time_round(str2time(date_to), period) + d)
+        pt(ts_to)
     if date_from is None and date_to is None:
         ts_to = int(time.time())
         ts_from = time_round(ts_to - duration, period)
@@ -113,4 +125,12 @@ def get_from_to_range(date_from=None, date_to=None, period='day',
         ts_to = min(int(time.time()), ts_from + duration)
 
     return int(ts_from), int(ts_to)
+
+def pt(*ts):
+    """Prints timestamp in format %Y-%m-%d %H:%M"""
+    if not isinstance(ts, (list, tuple)):
+        ts = [ts]
+    for i in ts:
+        print time.strftime('%Y-%m-%d %H:%M', time.localtime(i)),
+    print
 
