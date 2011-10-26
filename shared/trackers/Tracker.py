@@ -117,9 +117,11 @@ class Tracker(object):
             return datasource
 
         if isinstance(self._datasource_settings, dict):
-            self._datasources = [create_datasource(self._datasource_settings),]
+            self._datasources = [(create_datasource(self._datasource_settings), 
+                                  self._datasource_settings)]
         else:
-            self._datasources = [create_datasource(setting) for setting in
+            self._datasources = [(create_datasource(settings), 
+                                  settings) for settings in
                                  self._datasource_settings]
 
         return len(self._datasources)
@@ -129,7 +131,7 @@ class Tracker(object):
         """
         self._create_datasources()
 
-        for datasource in self._datasources:
+        for datasource in map(lambda x: x[0], self._datasources):
             try:
                 datasource.grab_data()
             except BaseGrabError:
@@ -142,19 +144,23 @@ class Tracker(object):
         `values` attribute.
         """
         self._parsers = []
-        for datasource in self._datasources:
+        self._clean_data = {}
+        for (datasource, settings) in self._datasources:
             try:
-                parser = get_parser(datasource.datatype)
+                parser = get_parser(settings['datatype'])
                 parser.initialize()
                 parser.parse(datasource.get_raw_data())
                 self._parsers.append(parser)
+                
+                for value in self.settings['values']:
+                    _clean_data = self._parsers.xpath(value['extraction_rule']
+
             except ParserError:
                 # TODO: we need to log this error and notify another components
                 # about it.
                 print 'PARSER ERROR'
 
-        self._clean_data = [self._parsers.xpath(query)
-                            for query in self.queries]
+
 
     def _check_data(self):
         """Check if the data stored in `values` attribute has the same type as
