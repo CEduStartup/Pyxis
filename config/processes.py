@@ -31,7 +31,7 @@ class collector(process):
 class webui(process):
     pid = 'webui'
     command = 'python'
-    params = ['manage.py', 'runserver']
+    params = ['manage.py', 'runserver', '0.0.0.0:8000']
     #params = ['manage.py', 'runserver', '0.0.0.0:7777']
     cwd = '%s/webui/' % os.environ['PYXIS_ROOT']
 
