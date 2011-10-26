@@ -24,14 +24,18 @@ class django_orm_adapter(db_adapter):
     def connect(self):
         pass
 
-    def get_trackers(self, modified_since=None):
+    def get_trackers(self, modified_since=None, tracker_id=None):
         """Return trackers modified since given time."""
         trackers = []
-        if modified_since is None:
+        search_parms = {}
+        if modified_since is not None:
+            search_parms['last_modified'] = modified_since
+        if tracker_id is not None:
+            search_parms['id'] = tracker_id
+        if not search_parms:
             model_objects = TrackerModel.objects.all()
         else:
-            model_objects = \
-               TrackerModel.objects.filter(last_modified=modified_since)
+            model_objects = TrackerModel.objects.filter(**search_parms)
         for model_object in model_objects:
             trackers.append(self._tracker_from_model(model_object))
 
@@ -48,7 +52,8 @@ class django_orm_adapter(db_adapter):
             values = []
             for value in ds.valuemodel_set.all():
                 value_dict = {'value_id': value.id,
-                              'name': value.extraction_rule,
+                              'extraction_rule': value.extraction_rule,
+                              'name': value.name,
                               'type': value.value_type}
                 values.append(value_dict)
             datasource = {'access_method': access_method,
@@ -58,7 +63,7 @@ class django_orm_adapter(db_adapter):
             datasources.append(datasource)
 
         return Tracker(model_object.id, model_object.refresh_interval,
-                       datasources)
+                       datasources, tracker_name=model_object.name)
 
 
 class TrackersService(SharedService):

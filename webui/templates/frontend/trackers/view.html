@@ -11,7 +11,7 @@
 <script>
     {% autoescape off %}
     var d = new Date();
-    var offset = d.getTimezoneOffset() * 60 * 1000;
+    var offset = 0 //d.getTimezoneOffset() * 60 * 1000;
     var chart_series = {{ tracker.data }};
     for(var i=0; i<chart_series.length; i++){
        chart_series[i].pointStart -= offset;

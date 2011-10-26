@@ -5,6 +5,7 @@ from services.service_base import SharedService
 import types
 import gevent
 from gevent import monkey
+from shared.services.services_api import launcher_api
 
 
 def start_service(service_config):
@@ -42,9 +43,11 @@ def launch_services():
             else:
                 print 'Service disabled by administrator: %s' %service_config.description
 
+    launcher_api().connection.notify.process_ready('services')
     gevent.joinall(threads)
 
 
 if __name__ == '__main__':
     monkey.patch_all()
     launch_services()
+

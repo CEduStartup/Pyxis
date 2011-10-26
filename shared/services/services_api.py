@@ -6,6 +6,7 @@
 # trackers_api.method(<params>)
 
 from config.services import trackers as trackers_config
+from config.services import launcher as launcher_config
 from shared.trackers.Tracker import Tracker
 import bjsonrpc
 import zlib
@@ -37,6 +38,8 @@ class service_api_base:
                                            self.config.bind_port)
 
     def __getattr__(self, x):
+        if x == 'notify':
+            return self.connection.notify
         obj = method_wrapper()
         obj.method_name = x
         obj.connection = self.connection
@@ -46,6 +49,12 @@ class service_api_base:
 class trackers_api(service_api_base):
     """API for trackers stuff."""
     config = trackers_config
+
+
+class launcher_api(service_api_base):
+    """API for launcher."""
+    config = launcher_config
+
 
 
 if __name__ == '__main__':
