@@ -74,5 +74,6 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
 
         now = time.time()
         self.grab_spent_time = now-start_time
+        
+    def get_raw_data(self):
         return self.raw_data
-

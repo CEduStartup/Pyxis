@@ -40,7 +40,11 @@ class DatasourceCommon(object):
 
     @abstractmethod
     def grab_data(self):
-        """This method return raw data grabbed from the `self._target`.
+        """This method grabs data from the `self._target`.
         """
         pass
+        
+    @abstractmethod
+    def get_raw_data(self):
+        """This method returns grabbed raw data."""
 

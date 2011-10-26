@@ -1,34 +1,7 @@
-from shared.trackers.datasources.constants import HTTP_DATASOURCE
-
 import unittest
-import json
+from dummy_test_classes.datasources import SAMPLE_URI, SETTINGS, RESULT_DATA, \
+                                           DummyEventSender, DummyURLLib2
 
-SAMPLE_URI = 'http://service.com/resource'
-
-SETTINGS = {'access_method': HTTP_DATASOURCE,
-            'query': json.dumps({'URI': SAMPLE_URI})}
-
-RESULT_DATA = 'RAW_DATA_ENCODED'
-
-class DummyEventSender:
-    def fire(self, *args, **kwargs): pass
-
-class DummyURLLib2:
-    HTTPError, URLError = 1, 2
-    
-    class Reader:
-        code = 200
-        
-        def read(*args):
-            return RESULT_DATA
-    
-    @classmethod
-    def Request(*args, **kwargs):
-        pass
-        
-    @classmethod
-    def urlopen(*args, **kwargs):
-        return DummyURLLib2.Reader()
 
 class DatasourcesTest(unittest.TestCase):
     Orig_Event_Sender, Orig_urllib2 = None, None
@@ -53,7 +26,8 @@ class DatasourcesTest(unittest.TestCase):
     
     def test_grab_data(self):
         datasource = self.get_datasource(SETTINGS)
-        raw_data = datasource.grab_data()
+        datasource.grab_data()
+        raw_data = datasource.get_raw_data()
         self.assertEqual(raw_data, RESULT_DATA)
         self.assertEqual(datasource.response_code, 200)
     
