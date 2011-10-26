@@ -1,16 +1,22 @@
 import unittest
 from dummy_test_classes.datasources import SAMPLE_URI, XML_SETTINGS, RESULT_DATA, \
-                                           DummyEventSender, DummyURLLib2
+                                           DummyEventSender, DummyURLLib2, \
+                                           dummy_get_parser, \
+                                           XPATH1, XPATH_VALUES
 
 class TrackerTest(unittest.TestCase):
-    Orig_Event_Sender, Orig_urllib2 = None, None
-    get_datasource = None
+    Orig_Event_Sender, Orig_urllib2, Orig_get_parser = None, None, None
     
     def setUp(self):
         from shared.events import EventManager
         self.Orig_EventSender = EventManager.EventSender
         EventManager.EventSender = DummyEventSender
-
+        DummyEventSender.events = []
+        
+        from shared import Parser
+        Orig_get_parser = Parser.get_parser
+        Parser.get_parser = dummy_get_parser
+        
         global Tracker
         from shared.trackers.Tracker import Tracker
         
@@ -25,20 +31,18 @@ class TrackerTest(unittest.TestCase):
     def test_wrong_configuration(self):
         tracker = Tracker('tracker_id_1', 15, [], tracker_name='dummy')
         tracker.process()
-        try:
-            event = DummyEventSender.events.pop()
-            self.assertEquals(event[0], 'LOGGER.CRITICAL')
-        except IndexError:
-            self.fail('No event was sent')
     
     def test_process(self):
         tracker = Tracker('tracker_id_1', 15, XML_SETTINGS, tracker_name='dummy')
         tracker.process()     
-        print DummyEventSender.events   
-
+        self.assertEquals(tracker._clean_data, {1: XPATH_VALUES[XPATH1]})
+        
     def tearDown(self):
         from shared.events import EventManager
         EventManager.EventSender = self.Orig_EventSender
+
+        from shared import Parser
+        Parser.get_parser = self.Orig_get_parser
 
 
 tracker_tests = unittest.TestSuite()

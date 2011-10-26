@@ -110,7 +110,6 @@ class Tracker(object):
             """
             try:
                 datasource = get_datasource(settings_dict)
-                print datasource
             except UnknownDatasourceError, err:
                 # TODO: handle this error correctly.
                 print 'SOME ERROR', err
@@ -152,14 +151,15 @@ class Tracker(object):
                 parser.parse(datasource.get_raw_data())
                 self._parsers.append(parser)
                 
-                for value in self.settings['values']:
-                    _clean_data = self._parsers.xpath(value['extraction_rule']
+                for extract_value in settings['values']:
+                    value_result = parser.xpath(extract_value['extraction_rule'])
+                    self._clean_data[extract_value['value_id']] = value_result
 
             except ParserError:
+                print '!!!!'
                 # TODO: we need to log this error and notify another components
                 # about it.
                 print 'PARSER ERROR'
-
 
 
     def _check_data(self):

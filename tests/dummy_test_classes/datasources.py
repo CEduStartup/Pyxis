@@ -8,11 +8,41 @@ SAMPLE_URI = 'http://service.com/resource'
 SETTINGS = {'access_method': HTTP_DATASOURCE,
             'query': json.dumps({'URI': SAMPLE_URI})}
 
+XPATH1 = '//XPATH1'
+XPATH2 = '//XPATH2'
+
+XPATH_VALUES = {
+    XPATH1: 111,
+    XPATH2: 222
+}
+
 XML_SETTINGS = {'access_method': HTTP_DATASOURCE,
                 'query': json.dumps({'URI': SAMPLE_URI}),
-                'datatype': XML_DATA}
+                'datatype': XML_DATA,
+                'values': [{
+                    'value_id': 1,
+                    'type': 'int',
+                    'extraction_rule': XPATH1
+                }]}
 
 RESULT_DATA = 'RAW_DATA_ENCODED'
+
+def dummy_get_parser(data_type):
+    if data_type == XML_DATA:
+        return DummyXMLParser()
+    else:
+        raise Exception('Wrong data type')
+
+class DummyXMLParser:
+    def initialize(self):
+        pass
+    
+    def parse(self, xml):
+        if not xml == RESULT_DATA:
+            raise Exception('Wrong format')
+        
+    def xpath(self, xpath):
+        return XPATH_VALUES[xpath]
 
 class DummyEventSender:
     events = []
