@@ -14,7 +14,6 @@ import cPickle
 import base64
 import time
 
-
 class method_wrapper:
     """This class acts as a proxy which bypasses request to bjsonrpc server."""
     def __call__(self, *args, **kargs):

@@ -43,6 +43,7 @@ def launch_services():
             else:
                 print 'Service disabled by administrator: %s' %service_config.description
 
+
     launcher_api().connection.notify.process_ready('services')
     gevent.joinall(threads)
 
