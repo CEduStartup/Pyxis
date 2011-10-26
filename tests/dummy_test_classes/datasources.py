@@ -24,6 +24,15 @@ XML_SETTINGS = {'access_method': HTTP_DATASOURCE,
                     'type': 'int',
                     'extraction_rule': XPATH1
                 }]}
+                
+XML_SETTINGS_TWO_VALUES = {
+                'access_method': HTTP_DATASOURCE,
+                'query': json.dumps({'URI': SAMPLE_URI}),
+                'datatype': XML_DATA,
+                'values': [
+                    {'value_id': 1, 'type': 'int', 'extraction_rule': XPATH1}, 
+                    {'value_id': 2, 'type': 'int', 'extraction_rule': XPATH2}, 
+                ]}
 
 RESULT_DATA = 'RAW_DATA_ENCODED'
 

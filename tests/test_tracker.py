@@ -1,8 +1,8 @@
 import unittest
-from dummy_test_classes.datasources import SAMPLE_URI, XML_SETTINGS, RESULT_DATA, \
+from dummy_test_classes.datasources import SAMPLE_URI, XML_SETTINGS, XML_SETTINGS_TWO_VALUES, RESULT_DATA, \
                                            DummyEventSender, DummyURLLib2, \
                                            dummy_get_parser, \
-                                           XPATH1, XPATH_VALUES
+                                           XPATH1, XPATH2, XPATH_VALUES
 
 class TrackerTest(unittest.TestCase):
     Orig_Event_Sender, Orig_urllib2, Orig_get_parser = None, None, None
@@ -36,6 +36,12 @@ class TrackerTest(unittest.TestCase):
         tracker = Tracker('tracker_id_1', 15, XML_SETTINGS, tracker_name='dummy')
         tracker.process()     
         self.assertEquals(tracker._clean_data, {1: XPATH_VALUES[XPATH1]})
+    
+    def test_process_two_values(self):
+        tracker = Tracker('tracker_id_1', 15, XML_SETTINGS_TWO_VALUES, tracker_name='dummy')
+        tracker.process()
+        self.assertEquals(tracker._clean_data, {1: XPATH_VALUES[XPATH1], 
+                                                2: XPATH_VALUES[XPATH2]})
         
     def tearDown(self):
         from shared.events import EventManager
