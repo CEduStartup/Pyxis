@@ -29,8 +29,14 @@ class TrackerTest(unittest.TestCase):
         self.assertEquals(repr(tracker), '<Tracker tracker_id_1: `dummy` []>')
         
     def test_wrong_configuration(self):
-        tracker = Tracker('tracker_id_1', 15, [], tracker_name='dummy')
+        tracker = Tracker('tracker_id_1', 15, {'some wrong config': '11'}, tracker_name='dummy')
         tracker.process()
+        try:
+            error = DummyEventSender.events.pop()
+            self.assertEquals(error[0], 'LOGGER.CRITICAL')
+        except IndexError:
+            self.fail('Waiting for event')
+            
     
     def test_process(self):
         tracker = Tracker('tracker_id_1', 15, XML_SETTINGS, tracker_name='dummy')
