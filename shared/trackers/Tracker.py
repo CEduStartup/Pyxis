@@ -26,7 +26,8 @@ class Tracker(object):
     """
 
 
-    def __init__(self, tracker_id, refresh_interval, datasource_settings):
+    def __init__(self, tracker_id, refresh_interval, datasource_settings,
+                 tracker_name=None):
         """Initialize the tracker with valid configuration.
 
         :Parameters:
@@ -64,6 +65,7 @@ class Tracker(object):
 
         """
         self.tracker_id = tracker_id
+        self.name = tracker_name
         self.refresh_interval = refresh_interval
         self._datasource_settings = datasource_settings
 
@@ -191,4 +193,19 @@ class Tracker(object):
             sender.fire('LOGGER.CRITICAL', message=traceback.format_exc())
         finally:
             self.last_modified = time.time()
+
+    def __repr__(self):
+        return '<Tracker %s: `%s` %s>' % (self.tracker_id, self.name,
+                                          self._datasource_settings)
+    def get_values(self):
+        if isinstance(self._datasource_settings, dict):
+            ds = [self._datasource_settings,]
+        else:
+            ds = self._datasource_settings
+
+        values = {}
+        for d in ds:
+            for v in d['values']:
+                values[v['value_id']] = v
+        return values
 

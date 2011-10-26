@@ -26,6 +26,16 @@ class trackers(SharedServiceConfig):
     handler = 'TrackersService'
 
 
+class mongo_storage(SharedServiceConfig):
+    """Service which exports methods working with MongoDB"""
+    description = 'mongodb operations'
+    active = True
+    bind_host = '127.0.0.1'
+    bind_port = 8001
+    module = 'service_mongo_storage'
+    handler = 'MongoStorage'
+
+
 class test(SharedServiceConfig):
     """Test service."""
     description = 'test service'

@@ -35,6 +35,9 @@ class TrackerModel(models.Model):
     refresh_interval = models.PositiveIntegerField(default=3600)
     last_modified    = models.DateTimeField(auto_now=True, auto_now_add=True)
 
+    def __unicode__(self):
+        return '<TrackerModel %s: %s>' % (self.id, self.name)
+
 
 class DataSourceModel(models.Model):
     """ Data Source model.
@@ -60,4 +63,7 @@ class ValueModel(models.Model):
     value_type      = models.SmallIntegerField(
        choices=_make_pretty(VALUE_TYPES), default=1)
     extraction_rule = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return '<ValueModel %s: %s>' % (self.id, self.name)
 
