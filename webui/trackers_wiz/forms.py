@@ -7,6 +7,7 @@ from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import get_object_or_404
 
 from frontend.models import *
+from widgets import ValuePickerWidget
 
 from bootstrap.forms import BootstrapModelForm, Fieldset
 
