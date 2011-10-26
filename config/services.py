@@ -26,7 +26,6 @@ class trackers(SharedServiceConfig):
     handler = 'TrackersService'
 
 
-<<<<<<< HEAD
 class launcher(SharedServiceConfig):
     """This service is used by system launcher. it is not automatically created
     by services_launcher.py."""
@@ -36,7 +35,7 @@ class launcher(SharedServiceConfig):
     bind_port = 8999
     module = None
     handler = None
-=======
+
 class mongo_storage(SharedServiceConfig):
     """Service which exports methods working with MongoDB"""
     description = 'mongodb operations'
@@ -45,7 +44,6 @@ class mongo_storage(SharedServiceConfig):
     bind_port = 8001
     module = 'service_mongo_storage'
     handler = 'MongoStorage'
->>>>>>> e974317289de41ff8cd4e1946e1c53c68ae95e36
 
 
 class test(SharedServiceConfig):
