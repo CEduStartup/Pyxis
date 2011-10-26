@@ -32,7 +32,6 @@ class LogManager:
                event.msg)
             print log_msg
 
-
 if __name__ == '__main__':
     monkey.patch_all()
     LogManager(queue_host, queue_port).start()
