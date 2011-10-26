@@ -21,7 +21,7 @@ class trackers(SharedServiceConfig):
     description = 'trackers operations'
     active = True
     bind_host = '127.0.0.1'
-    bind_port = 8000
+    bind_port = 8002
     module = 'service_trackers'
     handler = 'TrackersService'
 

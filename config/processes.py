@@ -1,6 +1,5 @@
 # This file contains processes definition for system launcher.
 import os
-import settings
 
 
 class process:
