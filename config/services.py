@@ -26,6 +26,17 @@ class trackers(SharedServiceConfig):
     handler = 'TrackersService'
 
 
+class launcher(SharedServiceConfig):
+    """This service is used by system launcher. it is not automatically created
+    by services_launcher.py."""
+    description = 'System Launcher'
+    active = False
+    bind_host = '127.0.0.1'
+    bind_port = 8999
+    module = None
+    handler = None
+
+
 class test(SharedServiceConfig):
     """Test service."""
     description = 'test service'
