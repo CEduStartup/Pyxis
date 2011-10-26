@@ -10,6 +10,7 @@ from frontend.models import TrackerModel
 from frontend.forms import OptionsForm, TrackerForm
 from webui.util import render_to
 
+from config.services import mongo_storage
 from datetime import date, timedelta
 from pprint import pprint as pp
 
@@ -35,7 +36,6 @@ def view(request, tracker_id):
     else:
         today = date.today()
         yesterday = today - timedelta(days=1)
-        print yesterday, today
         options = OptionsForm({
             'tracker_id': tracker_id,
             'periods': 'hour',
@@ -43,9 +43,7 @@ def view(request, tracker_id):
             'start': yesterday.strftime('%d/%m/%Y'),
             'end': today.strftime('%d/%m/%Y'),
         })
-    print options.data
     period = options.data['periods']
-    print '------------', period
     periods_in_group = 1
     if period == '5minutes':
         period = 'minute'
@@ -63,11 +61,10 @@ def view(request, tracker_id):
         t = d.split('/')
         tmp.append('-'.join([t[2], t[1], t[0]]))
     start, end = tmp
-    print period
     tracker = get_object_or_404(TrackerModel, pk=tracker_id,
                                 #user=request.user
                                 )
-    c = bjsonrpc.connect(settings.RPC_HOST, settings.RPC_PORT)
+    c = bjsonrpc.connect(mongo_storage.bind_host, mongo_storage.bind_port)
     data = c.call.get_tracker_data(int(tracker_id), period, date_from=start,
               date_to=end, periods_in_group=periods_in_group)
     tracker.data = simplejson.dumps(data)

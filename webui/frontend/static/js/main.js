@@ -113,8 +113,9 @@ function tooltip_formatter(){
         ' - ' + Highcharts.dateFormat('%H:%M', this.x + MINUTE * n);
   }
   if(period == 'hour'){
+    console.log(this.x, this.x + MINUTE - 60);
     return text + 'Data for ' + Highcharts.dateFormat('%e %b %H:%M', this.x) +
-        ' - ' + Highcharts.dateFormat('%H:%M', this.x + MINUTE * n);
+        ' - ' + Highcharts.dateFormat('%H:%M', this.x + HOUR - MINUTE);
   }
   if(period == 'day'){
     return text + 'Data for ' + Highcharts.dateFormat('%e %b %y', this.x);
