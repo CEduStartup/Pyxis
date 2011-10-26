@@ -35,7 +35,12 @@ def run_processes():
     for process in processes:
         while(not dependent_processes_ready(process)):
             gevent.sleep(0.5)
-        executed_processes.append(subprocess.Popen([process.command, process.params]))
+        cmd = [process.command]
+        if isinstance(process.params, (list, tuple)):
+            cmd.extend(process.params)
+        else:
+            cmd.append(process.params)
+        executed_processes.append(subprocess.Popen(cmd, cwd=process.cwd))
 
 
 if __name__ == '__main__':

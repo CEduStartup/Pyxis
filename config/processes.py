@@ -1,11 +1,13 @@
 # This file contains processes definition for system launcher.
 import os
+import settings
 
 
 class process:
     pid = None
     command = None
     depends_on = []
+    cwd = None
 
 
 class services(process):
@@ -27,4 +29,16 @@ class collector(process):
     depends_on = [services]
 
 
-processes = (services(), logger(), collector())
+class webui(process):
+    pid = 'webui'
+    command = 'python'
+    params = ['manage.py', 'runserver']
+    #params = ['manage.py', 'runserver', '0.0.0.0:7777']
+    cwd = '%s/webui/' % os.environ['PYXIS_ROOT']
+
+processes = (
+    services,
+    logger,
+    webui,
+    #collector
+)
