@@ -36,7 +36,6 @@ class TrackerTest(unittest.TestCase):
             self.assertEquals(error[0], 'LOGGER.CRITICAL')
         except IndexError:
             self.fail('Waiting for event')
-            
     
     def test_process(self):
         tracker = Tracker('tracker_id_1', 15, XML_SETTINGS, tracker_name='dummy')
@@ -55,6 +54,9 @@ class TrackerTest(unittest.TestCase):
 
         from shared import Parser
         Parser.get_parser = self.Orig_get_parser
+        
+        if [event[0] for event in DummyEventSender.events if event[0] == 'LOGGER.CRITICAL']:
+            self.fail('LOGGER.CRITICAL event was sent')
 
 
 tracker_tests = unittest.TestSuite()
