@@ -47,7 +47,7 @@ MEDIA_URL = ''
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-#ADMIN_MEDIA_PREFIX = '/media/'
+ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'm_8a_z@_4*9+odt9b)pvfe!m7!cxphr(#u^+qk0urgx#+amcur'
@@ -80,19 +80,18 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'frontend',
-    'registration',
-    'accounts',
+    'registration'
 )
 
 # Django Registration
 ACCOUNT_ACTIVATION_DAYS = 2
 
 AUTH_USER_EMAIL_UNIQUE = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'pyxis.odmin@gmail.com'
-EMAIL_HOST_PASSWORD = 'ironport'
-EMAIL_USE_TLS = True
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'info@pyxis'
 
 STATIC_ROOT = '%s/frontend/static' % (os.getcwd(),)
@@ -102,7 +101,4 @@ STATIC_URL = '/static/'
 RPC_HOST = '127.0.0.1'
 RPC_PORT = 10123
 
-APPEND_SLASH = True
-
-LOGIN_REDIRECT_URL = '/'
-AUTH_PROFILE_MODULE = "accounts.UserProfile"
+APPEND_SLASH = False

@@ -2,6 +2,9 @@ from datetime import datetime
 from config.mq import queue_host, queue_port
 from shared.events.EventManager import EventReceiver
 from shared.events.Event import BaseEvent, LOGGER_TUBE
+from shared.services.services_api import launcher_api
+from gevent import monkey
+
 
 class LogManager:
 
@@ -29,10 +32,6 @@ class LogManager:
                event.msg)
             print log_msg
 
-
 if __name__ == '__main__':
+    monkey.patch_all()
     LogManager(queue_host, queue_port).start()
-
-
-
-
