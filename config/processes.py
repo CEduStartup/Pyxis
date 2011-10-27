@@ -31,13 +31,13 @@ class collector(process):
 class webui(process):
     pid = 'webui'
     command = 'python'
-    params = ['manage.py', 'runserver', '0.0.0.0:8000']
-    #params = ['manage.py', 'runserver', '0.0.0.0:7777']
+    params = ['manage.py', 'runserver', '0.0.0.0:%s' %
+              os.environ.get('WEBUI_PORT', 8000)]
     cwd = '%s/webui/' % os.environ['PYXIS_ROOT']
 
 processes = (
     services,
     logger,
     webui,
-    #collector
+    collector
 )
