@@ -1,7 +1,7 @@
 import unittest
 from dummy_test_classes.datasources import SAMPLE_URI, XML_SETTINGS, XML_SETTINGS_TWO_VALUES, RESULT_DATA, \
                                            DummyEventSender, DummyURLLib2, \
-                                           dummy_get_parser, \
+                                           dummy_get_parser, DummyStorage, \
                                            XPATH1, XPATH2, XPATH_VALUES
 
 class TrackerTest(unittest.TestCase):
@@ -30,6 +30,7 @@ class TrackerTest(unittest.TestCase):
         
     def test_wrong_configuration(self):
         tracker = Tracker('tracker_id_1', 15, {'some wrong config': '11'}, tracker_name='dummy')
+        tracker.set_storage(DummyStorage())
         tracker.process()
         try:
             error = DummyEventSender.events.pop()
@@ -38,16 +39,22 @@ class TrackerTest(unittest.TestCase):
             self.fail('Waiting for event')
     
     def test_process(self):
+        storage = DummyStorage()
         tracker = Tracker('tracker_id_1', 15, XML_SETTINGS, tracker_name='dummy')
-        tracker.process()     
-        self.assertEquals(tracker._clean_data, {1: XPATH_VALUES[XPATH1]})
+        tracker.set_storage(storage)
+        tracker.process() 
+        self.assertTrue('timestamp' in storage.data and storage.data['timestamp'] > 0)
+        self.assertEquals(storage.data['data'], {1: XPATH_VALUES[XPATH1]})
     
     def test_process_two_values(self):
+        storage = DummyStorage()
         tracker = Tracker('tracker_id_1', 15, XML_SETTINGS_TWO_VALUES, tracker_name='dummy')
+        tracker.set_storage(storage)
         tracker.process()
-        self.assertEquals(tracker._clean_data, {1: XPATH_VALUES[XPATH1], 
-                                                2: XPATH_VALUES[XPATH2]})
-        
+        self.assertTrue('timestamp' in storage.data and storage.data['timestamp'] > 0)
+        self.assertEquals(storage.data['data'], {1: XPATH_VALUES[XPATH1], 
+                                                 2: XPATH_VALUES[XPATH2]})
+                                                
     def tearDown(self):
         from shared.events import EventManager
         EventManager.EventSender = self.Orig_EventSender
@@ -56,6 +63,7 @@ class TrackerTest(unittest.TestCase):
         Parser.get_parser = self.Orig_get_parser
         
         if [event[0] for event in DummyEventSender.events if event[0] == 'LOGGER.CRITICAL']:
+            #print event
             self.fail('LOGGER.CRITICAL event was sent')
 
 

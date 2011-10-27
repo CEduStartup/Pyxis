@@ -22,6 +22,7 @@ class DatasourceCommon(object):
 
     __metaclass__ = ABCMeta
 
+    request_time = None
     grab_spent_time = None
     raw_data_size = None
     raw_data = None

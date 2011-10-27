@@ -58,6 +58,14 @@ class DummyEventSender:
 
     def fire(self, event_name, **params): 
         DummyEventSender.events.append((event_name, params))
+        
+class DummyStorage:
+    tracker = None
+    data = {}
+
+    def put(self, tracker, data):
+        self.tracker = tracker
+        self.data = data
 
 class DummyURLLib2:
     HTTPError, URLError = 1, 2
