@@ -226,6 +226,8 @@ class TimeBasedData(object):
                     else:
                         data[idx] = 0
                 else:
+                    if aggr == 'raw':
+                        aggr = 'sum'
                     data[idx] = grouped_values[value_id][aggr] or 0
 
         tracker_data = []

@@ -75,7 +75,8 @@ class TrackersService(SharedService):
         self.db_adapter = django_orm_adapter()
         self.db_adapter.connect()
 
-    def get_trackers(self, modified_since=None):
+    def get_trackers(self, modified_since=None,
+                           tracker_id=None):
         """Get list of trackers.
 
         :Parameters:
@@ -86,7 +87,8 @@ class TrackersService(SharedService):
               pickle module (use import pickle; pickle.loads(result) to unpickle)
         """
         # Stub for now.
-        data = self.db_adapter.get_trackers(modified_since=modified_since)
+        data = self.db_adapter.get_trackers(modified_since=modified_since,
+                                            tracker_id=tracker_id)
         return self.serialize(data)
 
 

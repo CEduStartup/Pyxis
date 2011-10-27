@@ -14,99 +14,120 @@
     var offset = 0 //d.getTimezoneOffset() * 60 * 1000;
     var chart_series = {{ tracker.data }};
     for(var i=0; i<chart_series.length; i++){
-       chart_series[i].pointStart -= offset;
+     chart_series[i].pointStart -= offset;
     }
     {% endautoescape %}
 
     function check_period() {
-        if( $('#id_'+'{{ options.periods.html_name }}').val() == 'minute' ) {
-            $('#id_'+'{{ options.methods.html_name }}').attr('disabled', 'disabled');
-        }else{
-            $('#id_'+'{{ options.methods.html_name }}').removeAttr('disabled');
-        }
+      if( $('#id_'+'{{ options.periods.html_name }}').val() == 'minute' ) {
+        $('.aggregated-data').attr('disabled', 'disabled');
+        $('.raw-data').removeAttr('disabled');
+      }else{
+        $('.aggregated-data').removeAttr('disabled');
+        $('.raw-data').attr('disabled', 'disabled');
+      }
     }
 
     $(document).ready(function() {
-        $("a[rel=popover]")
-          .popover({
-            offset: 10
-          })
-          .click(function(e) {
-            e.preventDefault()
-          })
+      $("a[rel=popover]")
+        .popover({
+          offset: 10
+        })
+        .click(function(e) {
+          e.preventDefault()
+        })
 
-        $('#id_'+'{{ options.periods.html_name }}').change(check_period);
-        check_period();
+      $('#id_'+'{{ options.periods.html_name }}').change(check_period);
+      check_period();
 
-        $(function() {
-            $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker({ dateFormat: 'dd/mm/yy' });
-        });
+      $(function() {
+        $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker({ dateFormat: 'dd/mm/yy' });
+      });
 
-        $('#id_{{ options.types.html_name }}').change(function() {
-            render_chart(options, $('#id_{{ options.types.html_name }}').val());
-        });
+      $('#id_{{ options.types.html_name }}').change(function() {
+        render_chart(options, $('#id_{{ options.types.html_name }}').val());
+      });
 
-        build_chart(chart_series, '{{ options.types.value|default:"line" }}');
+      build_chart(chart_series, '{{ options.types.value|default:"line" }}');
 
     });
 </script>
 
 <h3>{{ tracker.name }}</h3>
 <div id="container" style="width: 100%; height: 400px"></div>
+<form id='form' action='/trackers/view/{{ tracker.id }}/' method='post'>
+  {% csrf_token %}
+  {{ options.tracker_id }}
+  <div class="well">
+    <div class="row">
+      <div class="span3"><b>Values to display</b></div>
+      <div class="span12">
+        <div class="row">
+          <div class="span12" style="text-align: center;"><b>Aggregation Methods</b></div>
+        </div>
+        <div class="row">
+      {% for aggr, aggr_name in aggregation_methods %}
+          <div class="span2" style="text-align: center;"><b>{{ aggr_name }}</b></div>
+      {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% for value_id, value_name, methods in tracker_values %}
+    <div class="row">
+      <div class="span3">{{ value_name }}</div>
+      {% for aggr, aggr_name in aggregation_methods %}
+          <div class="span2" style="text-align: center;">
+            <input type="checkbox" name="display_values[{{ value_id }}][]"
+                   value="{{ aggr }}"
+        {% if aggr in methods %}
+                   checked="checked"
+        {% endif %}
+        {% if aggr == 'raw' %}
+                   class="raw-data"
+        {% else %}
+                   class="aggregated-data"
+        {% endif %}
+            >
+          </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class='row'>
+    <div class='span8'>
+      {{ options.periods.errors }}
+      {{ options.periods.label_tag }}
+      {{ options.periods }}
+      {% autoescape off %}
+      <a data-original-title="{{ options.periods.label }}"
+         href="#" class="btn info small" rel="popover"
+         data-content="{{ options.periods.help_text }}">?</a>
+      {% endautoescape %}
+    </div>
+    <div class='span8'>
+      {{ options.start.errors }}
+      {{ options.start.label_tag }}
+      {{ options.start }}
+    </div>
+  </div>
 
-<div id='options'>
-    <form id='form' action='/trackers/view/{{ tracker.id }}/' method='post'>
-        {% csrf_token %}
-        <!--input type='hidden' name='tracker_id' value='{{ tracker.id }}'-->
-        {{ options.tracker_id }}
-        <div class='row'>
-            <div class='span8'>
-                {{ options.periods.errors }}
-                {{ options.periods.label_tag }}
-                {{ options.periods }}
-                {% autoescape off %}
-                <a data-original-title="{{ options.periods.label }}"
-                   href="#" class="btn info small" rel="popover"
-                   data-content="{{ options.periods.help_text }}">?</a>
-                {% endautoescape %}
-            </div>
-            <div class='span8'>
-                <div>
-                    {{ options.start.errors }}
-                    {{ options.start.label_tag }}
-                    {{ options.start }}
-                </div>
-                <div>
-                    {{ options.end.errors }}
-                    {{ options.end.label_tag }}
-                    {{ options.end }}
-                </div>
-            </div>
-        </div>
-
-        <div class='row'>
-            <div class='span8'>
-                {{ options.methods.errors }}
-                {{ options.methods.label_tag }}
-                {{ options.methods }}
-                {% autoescape off %}
-                <a data-original-title="{{ options.methods.label }}"
-                   href="#" class="btn info small" rel="popover"
-                   data-content="{{ options.methods.help_text }}">?</a>
-                {% endautoescape %}
-            </div>
-            <div class='span8'>
-                {{ options.types.errors }}
-                {{ options.types.label_tag }}
-                {{ options.types }}
-            </div>
-        </div>
-        <div class='well' style="padding: 14px 19px; margin-top: 15px;">
-            <button name="save_update" class="btn primary">Save &amp; Update</button>
-            <button name="update" class="btn primary">Update Cart</button>
-        </div>
-    </from>
-</div>
+  <div class='row'>
+    <div class='span8'>
+      {{ options.types.errors }}
+      {{ options.types.label_tag }}
+      {{ options.types }}
+    </div>
+    <div class='span8'>
+      {{ options.end.errors }}
+      {{ options.end.label_tag }}
+      {{ options.end }}
+    </div>
+  </div>
+  <div class='well' style="padding: 14px 19px; margin-top: 15px;">
+    <button name="save_update" class="btn primary">Save &amp; Update</button>
+    <button name="update" class="btn primary">Update Cart</button>
+  </div>
+</form>
 
 
 <div style="margin-top: 100px; clear: both; cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div>

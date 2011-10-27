@@ -7,6 +7,7 @@
 
 from config.services import trackers as trackers_config
 from config.services import launcher as launcher_config
+from config.services import mongo_storage as mongo_storage_config
 from shared.trackers.Tracker import Tracker
 import bjsonrpc
 import zlib
@@ -54,7 +55,9 @@ class launcher_api(service_api_base):
     """API for launcher."""
     config = launcher_config
 
-
+class mongo_storage_api(service_api_base):
+    """API for launcher."""
+    config = mongo_storage_config
 
 if __name__ == '__main__':
     def get_trackers_test():
