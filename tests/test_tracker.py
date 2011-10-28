@@ -63,7 +63,7 @@ class TrackerTest(unittest.TestCase):
         Parser.get_parser = self.Orig_get_parser
         
         if [event[0] for event in DummyEventSender.events if event[0] == 'LOGGER.CRITICAL']:
-            #print event
+            print event
             self.fail('LOGGER.CRITICAL event was sent')
 
 
