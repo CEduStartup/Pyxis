@@ -50,7 +50,7 @@ class Tracker(object):
                              should be called to grab data.
                            - `params`: `dict` pairs of parameter name and
                              parameter value to pass them to `method_name
-                  `datatype`: `str`. Type of the data e.i. HTML, XML, CSV,
+                  `data_type`: `str`. Type of the data e.i. HTML, XML, CSV,
                               JSON, etc.
                   `values`: `list` of `dict` of the following structure: ::
 
@@ -147,7 +147,7 @@ class Tracker(object):
         self._clean_data = {}
         for (datasource, settings) in self._datasources:
             try:
-                parser = get_parser(settings['datatype'])
+                parser = get_parser(settings['data_type'])
                 parser.initialize()
                 parser.parse(datasource.get_raw_data())
                 self._parsers.append(parser)

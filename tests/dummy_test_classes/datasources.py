@@ -18,7 +18,7 @@ XPATH_VALUES = {
 
 XML_SETTINGS = {'access_method': HTTP_DATASOURCE,
                 'query': json.dumps({'URI': SAMPLE_URI}),
-                'datatype': XML_DATA,
+                'data_type': XML_DATA,
                 'values': [{
                     'value_id': 1,
                     'type': 'int',
@@ -28,7 +28,7 @@ XML_SETTINGS = {'access_method': HTTP_DATASOURCE,
 XML_SETTINGS_TWO_VALUES = {
                 'access_method': HTTP_DATASOURCE,
                 'query': json.dumps({'URI': SAMPLE_URI}),
-                'datatype': XML_DATA,
+                'data_type': XML_DATA,
                 'values': [
                     {'value_id': 1, 'type': 'int', 'extraction_rule': XPATH1}, 
                     {'value_id': 2, 'type': 'int', 'extraction_rule': XPATH2}, 
