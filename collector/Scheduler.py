@@ -61,10 +61,10 @@ class Scheduler(object):
             if cur_time < run_time:
                 self.tasks.put((run_time, tracker))
                 gevent.sleep(
-                   min(time-cur_time, config.scheduler_maximum_sleep))
+                   min(time.time()-cur_time, config.scheduler_maximum_sleep))
                 continue
             self.to_run.put(tracker)
-            self.tasks.put((run_time + tracker.interval, tracker))
+            self.tasks.put((run_time + tracker.refresh_interval, tracker))
 
     def get_run_queue_size(self):
         return self.to_run.qsize()
