@@ -1,3 +1,6 @@
+## Run Pyxis.
+##
+## This program uses configuration from config/processes.py
 import subprocess
 import time
 import os
@@ -31,11 +34,14 @@ def dependent_processes_ready(process):
 
 
 def run_processes():
+    threads = []
     executed_processes = []
     for process in processes:
         while(not dependent_processes_ready(process)):
             gevent.sleep(0.5)
         executed_processes.append(subprocess.Popen([process.command, process.params]))
+        threads.append(gevent.spawn(executed_processes[-1].wait))
+    return threads
 
 
 if __name__ == '__main__':
@@ -46,6 +52,5 @@ if __name__ == '__main__':
     pythonpath_dirs.append('%s/webui' %os.environ['PYXIS_ROOT'])
     os.environ['PYTHONPATH'] = ':'.join(pythonpath_dirs)
     monkey.patch_all()
-    threads = [LauncherInfo.start()]
-    run_processes()
+    threads = [LauncherInfo.start()] + run_processes()
     gevent.joinall(threads)
