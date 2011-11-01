@@ -35,9 +35,17 @@ class webui(process):
               os.environ.get('WEBUI_PORT', 8000)]
     cwd = '%s/webui/' % os.environ['PYXIS_ROOT']
 
+class generator(process):
+    pid = 'generator'
+    command = 'python'
+    params = ['manage.py', 'runserver', '0.0.0.0:%s' %
+              os.environ.get('GENERATOR_PORT', 9999)]
+    cwd = '%s/testdata/' % os.environ['PYXIS_ROOT']
+
 processes = (
     services,
     logger,
     webui,
+    generator,
     collector
 )
