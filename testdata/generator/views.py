@@ -20,10 +20,8 @@ html_template = """
 xml_template = """
 <data>
   <temperature>
-    <city id="testdata">
-      <temperature>
-        %(value)s
-      </temperature>
+    <city id="lviv">
+      <temperature val=%(value)s/>
     </city>
   </temperature>
 </data>"""
