@@ -5,21 +5,32 @@ from django.shortcuts import get_object_or_404
 
 from frontend.models import *
 
-class TrackerNameForm(forms.ModelForm):
+from bootstrap.forms import BootstrapModelForm, Fieldset
+
+class TrackerNameForm(BootstrapModelForm):
     class Meta:
         model = TrackerModel
         fields = ('name', 'refresh_interval', 'status') 
+        layout = (
+            Fieldset('General tracker information', 'name', 'refresh_interval', 'status', ),
+        )
 
-class DataSourceForm(forms.ModelForm):
+
+class DataSourceForm(BootstrapModelForm):
     class Meta:
         model = DataSourceModel
         fields = ('access_method', 'query', 'data_type')
+        layout = (
+            Fieldset('Specify datasources', 'access_method', 'query', 'data_type', ),
+        )
 
-
-class ValueForm(forms.ModelForm):
+class ValueForm(BootstrapModelForm):
     class Meta:
         model = ValueModel
         fields = ('name', 'value_type', 'extraction_rule') 
+        layout = (
+            Fieldset('Specify values location', 'name', 'value_type', 'extraction_rule', ),
+        )
 
 class TrackerWizard(FormWizard):
     def get_template(self, step):
