@@ -27,7 +27,7 @@ class Storage:
     def _process_queue(self):
         while(True):
             (tracker, data) = self.to_store_queue.get()
-            self._write_to_db(tracker, data)
+            self._write_to_db(tracker.get_id(), data['timestamp'], data['data'])
 
     def get_store_queue_size(self):
         return self.to_store_queue.qsize()
@@ -61,6 +61,6 @@ class MongoDBStorage(Storage, TimeBasedData):
             - `data`: dictionary with values to insert in format
               { <value_id>: <value>, }
         """
-        self.insert_raw_data(self, tracker_id, timestamp, data)
+        self.insert_raw_data(tracker_id, timestamp, data)
 
 storage_types = {'mongodb': MongoDBStorage}

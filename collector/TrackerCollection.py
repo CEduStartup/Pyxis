@@ -24,7 +24,7 @@ class TrackerCollection:
                 update_interval = None
             else:
                 # TODO: move this to configuration.
-                update_interval = 5
+                update_interval = None #5 due to some problems we should use non by now
 
             updated_trackers = \
                self._trackers_api.get_trackers(modified_since=update_interval)
