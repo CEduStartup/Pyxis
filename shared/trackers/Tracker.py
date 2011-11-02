@@ -6,11 +6,11 @@ import time
 import traceback
 
 from config.init.trackers import sender
+from shared.trackers import VALUE_TYPES
 from shared.trackers.datasources.factory import get_datasource
 from shared.trackers.datasources.Errors import UnknownDatasourceError, \
                                                BaseGrabError
 from shared.Parser import get_parser, ParserError
-
 
 class Tracker(object):
 
@@ -56,8 +56,7 @@ class Tracker(object):
 
                               {
                                 `value_id`: `int` unique ID of the value.
-                                `type`: `str`. A rule to validate value.
-                                        Currently `int` or `float`.
+                                `type`: `int`. A rule to validate value.
                                 `extraction_rule`: `str`. XPATH, JSONPATH,
                                                    regexp, etc.
                               }
@@ -154,14 +153,16 @@ class Tracker(object):
                 
                 for extract_value in settings['values']:
                     value_result = parser.xpath(extract_value['extraction_rule'])
-                    self._clean_data[extract_value['value_id']] = value_result
+                    cast_func = VALUE_TYPES[extract_value['type']]['cast']
+                    if value_result and len(value_result):
+                        self._clean_data[extract_value['value_id']] = cast_func(value_result[0])
 
             except ParserError, e:
                 # TODO: we need to log this error and notify another components
                 # about it.
                 sender.fire('LOGGER.CRITICAL', message='Parsing error for tracker %s' % self.tracker_id)
 
-    def _check_data(self):
+    def _validate_data(self):
         """Check if the data stored in `values` attribute has the same type as
         it was requested by the user.
         """
@@ -190,7 +191,7 @@ class Tracker(object):
         try:
             self._grab_data()
             self._parse_data()
-            self._check_data()
+            self._validate_data()
             self._save_data()
         except BaseGrabError, err:
             self._process_datasource_exception(err)

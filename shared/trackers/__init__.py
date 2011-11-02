@@ -16,6 +16,6 @@ DATA_TYPES = {
 
 # This constant describes available value types.
 VALUE_TYPES = {
-   1: {'pretty': u'Integer', 'name': 'int'},
-   2: {'pretty': u'Float', 'name': 'float'},
+   1: {'pretty': u'Integer', 'name': 'int', 'cast': lambda x: int(float(x)) },
+   2: {'pretty': u'Float', 'name': 'float', 'cast': float},
 }

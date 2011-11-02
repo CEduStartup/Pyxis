@@ -67,7 +67,7 @@ def str2time(string):
         d = dateutil.parser.parse(string)
         return time.mktime(d.timetuple())
     except:
-        msg = '`%s` s not known time format`.'
+        msg = '`%s` s not known time format`.' % string
         raise ValueError(msg)
 
 def get_date_str_month(ts):

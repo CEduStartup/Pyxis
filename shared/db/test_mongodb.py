@@ -1,5 +1,5 @@
 from pymongo.connection import Connection
-from shared.db.mongo import TimeBasedData
+from shared.db.mongo_storage import TimeBasedData
 from config import storage
 
 

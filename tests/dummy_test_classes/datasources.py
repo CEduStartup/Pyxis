@@ -21,7 +21,7 @@ XML_SETTINGS = {'access_method': HTTP_DATASOURCE,
                 'data_type': XML_DATA,
                 'values': [{
                     'value_id': 1,
-                    'type': 'int',
+                    'type': 1,
                     'extraction_rule': XPATH1
                 }]}
                 
@@ -30,8 +30,8 @@ XML_SETTINGS_TWO_VALUES = {
                 'query': json.dumps({'URI': SAMPLE_URI}),
                 'data_type': XML_DATA,
                 'values': [
-                    {'value_id': 1, 'type': 'int', 'extraction_rule': XPATH1}, 
-                    {'value_id': 2, 'type': 'int', 'extraction_rule': XPATH2}, 
+                    {'value_id': 1, 'type': 1, 'extraction_rule': XPATH1}, 
+                    {'value_id': 2, 'type': 1, 'extraction_rule': XPATH2}, 
                 ]}
 
 RESULT_DATA = 'RAW_DATA_ENCODED'
@@ -51,7 +51,7 @@ class DummyXMLParser:
             raise Exception('Wrong format')
         
     def xpath(self, xpath):
-        return XPATH_VALUES[xpath]
+        return [XPATH_VALUES[xpath]]
 
 class DummyEventSender:
     events = []
