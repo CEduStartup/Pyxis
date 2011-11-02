@@ -156,12 +156,10 @@ class Tracker(object):
                     value_result = parser.xpath(extract_value['extraction_rule'])
                     self._clean_data[extract_value['value_id']] = value_result
 
-            except ParserError:
-                print '!!!!'
+            except ParserError, e:
                 # TODO: we need to log this error and notify another components
                 # about it.
-                print 'PARSER ERROR'
-
+                sender.fire('LOGGER.CRITICAL', message='Parsing error for tracker %s' % self.tracker_id)
 
     def _check_data(self):
         """Check if the data stored in `values` attribute has the same type as
@@ -174,14 +172,14 @@ class Tracker(object):
     def _save_data(self):
         """Save data to storage.
         """
+        sender.fire('LOGGER.DEBUG', message='Save data: %s %s' % (self.tracker_id, self._clean_data))
         self.storage.put(self, {'timestamp': self._datasources[0][0].request_time, #by now we are taking time only from 1st DS 
                                 'data':      self._clean_data})
 
     def _process_datasource_exception(self, err):
         # TODO: process exception here
-        print 'ERROR', err
         sender.fire('LOGGER.DEBUG',
-                    message='DATASOURCE EXCEPTION %s' % (type(err),))
+                    message='DATASOURCE EXCEPTION %s %s' % (type(err), err))
 
     def process(self):
         """Main logic of the tracker.

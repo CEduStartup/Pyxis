@@ -29,8 +29,6 @@ class TrackerCollection:
             updated_trackers = \
                self._trackers_api.get_trackers(modified_since=update_interval)
 
-            print len(updated_trackers)
-
             for tracker in updated_trackers:
                 tracker.storage = self.storage
                 track_id = tracker.get_id()

@@ -74,6 +74,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
 
         now = time.time()
         self.grab_spent_time = now - self.request_time
+        sender.fire('LOGGER.INFO', message='Processed [%d] "%s" in %.2f secs.' % (self.response_code, self._target, self.grab_spent_time))
         
     def get_raw_data(self):
         return self.raw_data

@@ -132,7 +132,6 @@ class TimeBasedData(object):
                     if values[value_id]['max'] < value:
                         values[value_id]['max'] = value
         if res is None:
-            print doc
             collection.save(doc)
         else:
             collection.update({'_id': doc['_id']}, doc, True)
