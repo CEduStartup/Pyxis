@@ -12,7 +12,7 @@ import StringIO
 from lxml import etree
 from lxml.html import soupparser
 
-from .trackers.data_types import XML_DATA, HTML_DATA, JSON_DATA
+from shared.trackers import XML_DATA_TYPE, HTML_DATA_TYPE, JSON_DATA_TYPE
 
 # Determine how many tags will be parser before return control to gevent()
 ELEMENTS_IN_ROUND = 50
@@ -270,13 +270,13 @@ class GHTMLParser(HTMLParser):
 # Maps datatype to parser class which can handle it.
 _PARSER_TYPES_MAPPING = {
     'plain': {
-        XML_DATA: XMLParser,
-        HTML_DATA: HTMLParser,
+        XML_DATA_TYPE: XMLParser,
+        HTML_DATA_TYPE: HTMLParser,
     },
 
     'gevent_safe': {
-        XML_DATA: GXMLParser,
-        HTML_DATA: GHTMLParser,
+        XML_DATA_TYPE: GXMLParser,
+        HTML_DATA_TYPE: GHTMLParser,
     }
 }
 
