@@ -47,8 +47,8 @@ def view(request, tracker_id):
         options = OptionsForm(request.POST)
         options.is_valid()
         tracker_id = options.cleaned_data['tracker_id']
-        start = options.cleaned_data['start'].strftime('%d/%m/%Y')
-        end = options.cleaned_data['end'].strftime('%d/%m/%Y')
+        start = options.cleaned_data['start'].strftime('%Y-%m-%d')
+        end = options.cleaned_data['end'].strftime('%Y-%m-%d')
     else:
         today = date.today()
         yesterday = today - timedelta(days=1)

@@ -1,3 +1,4 @@
+import os
 import time
 import dateutil.parser
 from random import randint
@@ -134,3 +135,6 @@ def pt(*ts):
         print time.strftime('%Y-%m-%d %H:%M', time.localtime(i)),
     print
 
+
+def port_randomizer():
+    return os.getuid() % 997
