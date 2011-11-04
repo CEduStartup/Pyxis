@@ -75,13 +75,8 @@ def view(request, tracker_id):
     tmp = []
 
     trackers_client = trackers_api()
-    tracker_config = trackers_client.get_trackers(tracker_id=tracker_id)
-    tracker_model = get_object_or_404(TrackerModel, pk=tracker_id,
-                                      #user=request.user
-    )
-    values = {}
-    for tracker in tracker_config:
-        values.update(tracker.get_values())
+    tracker = trackers_client.get_trackers(tracker_id=tracker_id)[0]
+    values = tracker.get_values()
     values_id_name_list = []
     for value_id, item in values.items():
         values_id_name_list.append([value_id, item['name']])
@@ -92,8 +87,12 @@ def view(request, tracker_id):
         display_values = simplejson.loads(force_unicode(display_values))
     else:
         display_values = {}
+    default_aggr = 'avg'
+    if options.data['periods'] == 'minute':
+        default_aggr = 'raw'
+    if not display_values:
         for value_id in values:
-            display_values[str(value_id)] = ['avg', 'raw']
+            display_values[str(value_id)] = [default_aggr]
     for row in values_id_name_list:
         value_id = str(row[0])
         row.append(display_values.get(value_id, []))
@@ -111,8 +110,8 @@ def view(request, tracker_id):
         value_name = values[value_id]
         aggr_method = aggr_map.get(aggr, '')
         row['name'] = '%s Value for %s' % (aggr_method, value_name)
-    tracker_model.data = simplejson.dumps(data)
-    return {'tracker': tracker_model, 'options': options,
+    tracker.data = simplejson.dumps(data)
+    return {'tracker': tracker, 'options': options,
             'tracker_values': values_id_name_list,
             'aggregation_methods': aggregation_methods}
 
