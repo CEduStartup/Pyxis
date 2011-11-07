@@ -72,6 +72,14 @@ class TimeBasedData(object):
                 if insertions:
                     print '\t%s < %s items' % (get_date_str(ts, 'day'), insertions)
                 ts += ONE_DAY
+                
+    def ensure_string_keys(self, data):
+        """ Returns data with keys, which are string types. """
+        result = {}
+        for value_id in data:
+            result[str(value_id)] = data[value_id]
+        return result
+
 
     def insert_raw_data(self, tracker_id, timestamp, data):
         """Inserts `data` to the MongoDB and aggregates data in `1hour` and
@@ -103,7 +111,8 @@ class TimeBasedData(object):
             }
         else:
             doc = res
-        doc['raw'][str(timestamp)] = data
+        data = self.ensure_string_keys(data)
+        doc['raw'][str(int(timestamp))] = data # we should use 'validators' conception in this
         for period in ('hour', 'day'):
             ts = str(time_round(timestamp, period))
             if not ts in doc[period]:

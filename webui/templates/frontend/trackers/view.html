@@ -55,7 +55,7 @@
 
 <h3>{{ tracker.name }}</h3>
 <div id="container" style="width: 100%; height: 400px"></div>
-<form id='form' action='/trackers/view/{{ tracker.id }}/' method='post'>
+<form id='form' action='/trackers/view/{{ tracker.tracker_id }}/' method='post'>
   {% csrf_token %}
   {{ options.tracker_id }}
   <div class="well">
@@ -132,5 +132,5 @@
 
 <div style="margin-top: 100px; clear: both; cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div>
 <br/>
-<a href="/trackers/edit/{{ tracker.id }}">Edit</a> | <a href="/trackers/">Back to list</a>
+<a href="/trackers/edit/{{ tracker.tracker_id }}">Edit</a> | <a href="/trackers/">Back to list</a>
 {% endblock content %}

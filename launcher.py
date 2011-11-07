@@ -46,7 +46,7 @@ def run_processes():
         else:
             cmd.append(process.params)
         executed_processes.append(subprocess.Popen(cmd, cwd=process.cwd))
-        threads.append(gevent.spawn(executed_processes[-1].wait))
+        #threads.append(gevent.spawn(executed_processes[-1].wait))
     return threads
 
 
