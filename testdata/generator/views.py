@@ -21,7 +21,7 @@ xml_template = """
 <data>
   <temperature>
     <city id="lviv">
-      <temperature val=%(value)s/>
+      <temperature val="%(value)s"/>
     </city>
   </temperature>
 </data>"""
@@ -30,7 +30,7 @@ xml_template = """
 def calculate_next_value(function):
     def sin():
         """Sin(time.current)."""
-        return math.sin(time.time()/10000) * 100
+        return math.sin(time.time()/1000) * 100
     # Add your time functions here.
 
     # Add your time functions here.

@@ -15,7 +15,8 @@ from services.service_base import SharedService
 ready_processes = []
 
 # This tiny BJsonRPC server, which receives notification from processes when
-# they're ready.
+# they're ready. We need, because we have dependent processes - for example,
+# Collector reuires shared services and logger.
 class LauncherInfo(SharedService):
     config = launcher_config
     # Methods your service export.
