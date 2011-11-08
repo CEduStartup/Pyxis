@@ -8,12 +8,11 @@ def value_picker():
     return locals()
 
 @register.inclusion_tag('frontend/templatetags/value_picker/xml_picker_node.html')
-def xml_picker_node(node, generator):
+def xml_picker_node(node):
     node_name = node.tag
     node_value = node.text
     nodes = node.getchildren()
     attributes = node.items()
-    node_id = 'tree_node_%s' % (generator.get_id(),)
     node_xpath = node.getroottree().getpath(node)
     return locals()
 

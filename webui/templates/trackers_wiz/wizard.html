@@ -1,5 +1,18 @@
 {% extends 'frontend/layout.html' %}
 
+
+{% block add_js %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/value_picker.js"></script>
+{% endblock add_js %}
+
+
+{% block add_css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/value_picker.css">
+{% endblock add_css %}
+
+
 {% block content %}
 
 <form action='' method='POST'>

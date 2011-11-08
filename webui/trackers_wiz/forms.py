@@ -7,6 +7,7 @@ from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import get_object_or_404
 
 from frontend.models import *
+from shared.trackers.datasources.factory import get_datasource
 from widgets import ValuePickerWidget
 
 from bootstrap.forms import BootstrapModelForm, Fieldset
@@ -33,12 +34,23 @@ class DataSourceForm(ModelForm):
         )
 
     def clean(self):
+        cleaned_data = self.cleaned_data
         query = {}
-        query['method_name'] = self.cleaned_data['method_name']
-        query['parms'] = self.cleaned_data['parms']
-        query['uri'] = self.cleaned_data['uri']
-        self.cleaned_data['query'] = simplejson.dumps(query)
-        return self.cleaned_data
+        query['method_name'] = cleaned_data['method_name']
+        query['parms'] = cleaned_data['parms']
+        query['uri'] = cleaned_data['uri']
+        cleaned_data['query'] = simplejson.dumps(query)
+        try:
+            datasource = get_datasource(cleaned_data)
+            raw_data = datasource.grab_data()
+        except ResponseHTTPError:
+            raise forms.ValidationError('Address "%s" cannot be opened due to server error.' % (query['uri'],))
+        except ResponseURLError:
+            raise forms.ValidationError('Address "%s" cannot be opened.' % (query['uri'],))
+        except ResponseGeventTimeout:
+            raise forms.ValidationError('Timeout on address "%s".' % (query['uri'],))
+        cleaned_data['grabbed_data'] = raw_data
+        return cleaned_data
 
 class ValueForm(ModelForm):
     class Meta:
@@ -47,6 +59,8 @@ class ValueForm(ModelForm):
         layout = (
             Fieldset('Specify values location', 'name', 'value_type', 'extraction_rule', ),
         )
+
+    extraction_rule = forms.CharField(widget=ValuePickerWidget())
 
 class TrackerWizard(FormWizard):
     def get_template(self, step):
@@ -78,7 +92,6 @@ class TrackerWizard(FormWizard):
         tracker.refresh_interval = form_list[0].cleaned_data['refresh_interval']
         tracker.status = form_list[0].cleaned_data['status']
         data_source.access_method = form_list[1].cleaned_data['access_method']
-
         data_source.query = form_list[1].cleaned_data['query']
         data_source.data_type = form_list[1].cleaned_data['data_type']
         value.name = form_list[2].cleaned_data['name']
@@ -89,4 +102,11 @@ class TrackerWizard(FormWizard):
         data_source.save()
         value.save()
         return HttpResponseRedirect('/trackers/')
+
+    def parse_params(self, request, *args, **kwargs):
+        current_step = self.determine_step(request, *args, **kwargs)
+        if request.method == 'POST' and current_step == 1:
+            form = self.get_form(current_step, request.POST)
+            if form.is_valid():
+                self.initial[(current_step + 1)]['grabbed_data'] = form.cleaned_data['grabbed_data']
 

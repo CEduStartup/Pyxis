@@ -1,17 +1,17 @@
 {% load value_picker %}
-<div class="tree_element" id="{{ node_id }}">
+<div class="tree_element">
   <div class="tree_element_title">
     &lt;<span class="tree_element_tag_name">{{ node_name }}</span>{% for attribute in attributes %}
       <span class="tree_element_attribute value_picker_selectable" xpath="{{ node_xpath }}@{{ attribute.0 }}">{% xml_picker_attribute attribute %}</span>{% endfor %}&gt;
   </div>
-  <div class="tree_element_content" id="{{ node_id }}_content">
+  <div class="tree_element_content">
     {% if node_value %}
       <div class="tree_element_text value_picker_selectable" xpath="{{ node_xpath }}/text()">
         {{ node_value }}
       </div>
     {% endif %}
     {% for node in nodes %}
-      {% xml_picker_node node generator %}
+      {% xml_picker_node node %}
     {% endfor %}
   </div>
   <div class="tree_element_footer">
