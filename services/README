@@ -1,0 +1,10 @@
+This directory contains shared services definition.
+
+All shared services are run under bjsonrpc+gevent. To add a new shared service:
+1. Create module in this directory with service class derived from SharedService
+   inside.
+2. Add entry for your service to $ROOT_DIR/config/services.py
+3. Add API class for your service to $ROOT_DIR/shared/services/services_api.py
+
+Please see service_example.py for example.
+

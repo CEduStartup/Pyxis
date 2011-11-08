@@ -16,15 +16,15 @@ User trackers are here:
 {% for tracker in trackers %}
 <tr>
 	<td><a href="/trackers/view/{{ tracker.id }}">{{ tracker.name }}</a></td>
-	<td>{{ tracker.url }}</td>
-	<td>{{ tracker.interval }}</td>
-	<td>{{ tracker.get_type }}</td>
-	<td>{{ tracker.get_status }}</td>
-	<td><a href="/trackers/edit/{{ tracker.id }}">Edit</a></td>
+	<td>{{ tracker.query }}</td>
+	<td>{{ tracker.refresh_interval }}</td>
+	<td>{{ tracker.data_source.data_type }}</td>
+	<td>{{ tracker.status }}</td>
+	<td><a href="/trackerwiz/edit/{{ tracker.id }}">Edit</a></td>
 </tr>
 {% endfor %}
 </table>
 
-<a href="/trackers/add">Add new tracker</a>
+<a href="/trackerwiz/add">Add new tracker</a>
 
 {% endblock content %}
