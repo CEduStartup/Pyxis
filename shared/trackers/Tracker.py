@@ -66,7 +66,7 @@ class Tracker(object):
         self.tracker_id = tracker_id
         self.name = tracker_name
         self.refresh_interval = refresh_interval
-        self._datasource_settings = datasource_settings
+        self.datasource_settings = datasource_settings
         self.storage = None
 
         self.last_modified = 0
@@ -112,16 +112,16 @@ class Tracker(object):
                 datasource = get_datasource(settings_dict)
             except UnknownDatasourceError, err:
                 # TODO: handle this error correctly.
-                print 'SOME ERROR', err
+                print 'DATASOURCE ERROR', err
             return datasource
 
-        if isinstance(self._datasource_settings, dict):
-            self._datasources = [(create_datasource(self._datasource_settings), 
-                                  self._datasource_settings)]
+        if isinstance(self.datasource_settings, dict):
+            self._datasources = [(create_datasource(self.datasource_settings),
+                                  self.datasource_settings)]
         else:
-            self._datasources = [(create_datasource(settings), 
+            self._datasources = [(create_datasource(settings),
                                   settings) for settings in
-                                 self._datasource_settings]
+                                 self.datasource_settings]
 
         return len(self._datasources)
 
@@ -136,7 +136,6 @@ class Tracker(object):
             except BaseGrabError:
                 # Log this event.
                 print 'GRAB ERROR'
-                pass
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
@@ -150,17 +149,20 @@ class Tracker(object):
                 parser.initialize()
                 parser.parse(datasource.get_raw_data())
                 self._parsers.append(parser)
-                
+
                 for extract_value in settings['values']:
-                    value_result = parser.xpath(extract_value['extraction_rule'])
+                    value_result = parser.xpath(
+                       extract_value['extraction_rule'])
                     cast_func = VALUE_TYPES[extract_value['type']]['cast']
                     if value_result and len(value_result):
-                        self._clean_data[extract_value['value_id']] = cast_func(value_result[0])
+                        self._clean_data[extract_value['value_id']] = \
+                           cast_func(value_result[0])
 
             except ParserError, e:
                 # TODO: we need to log this error and notify another components
                 # about it.
-                sender.fire('LOGGER.CRITICAL', message='Parsing error for tracker %s' % self.tracker_id)
+                sender.fire('LOGGER.CRITICAL', message=
+                            'Parsing error for tracker %s' % self.tracker_id)
 
     def _validate_data(self):
         """Check if the data stored in `values` attribute has the same type as
@@ -173,9 +175,12 @@ class Tracker(object):
     def _save_data(self):
         """Save data to storage.
         """
-        sender.fire('LOGGER.DEBUG', message='Save data: %s %s' % (self.tracker_id, self._clean_data))
-        self.storage.put(self, {'timestamp': self._datasources[0][0].request_time, #by now we are taking time only from 1st DS 
-                                'data':      self._clean_data})
+        sender.fire('LOGGER.DEBUG', message='Save data: %s %s' %
+                                    (self.tracker_id, self._clean_data))
+        # Currently we process only first datasource.
+        self.storage.put(self,
+                         {'timestamp': self._datasources[0][0].request_time,
+                          'data':      self._clean_data})
 
     def _process_datasource_exception(self, err):
         # TODO: process exception here
@@ -206,12 +211,12 @@ class Tracker(object):
 
     def __repr__(self):
         return '<Tracker %s: `%s` %s>' % (self.tracker_id, self.name,
-                                          self._datasource_settings)
+                                          self.datasource_settings)
     def get_values(self):
-        if isinstance(self._datasource_settings, dict):
-            ds = [self._datasource_settings,]
+        if isinstance(self.datasource_settings, dict):
+            ds = [self.datasource_settings,]
         else:
-            ds = self._datasource_settings
+            ds = self.datasource_settings
 
         values = {}
         for d in ds:

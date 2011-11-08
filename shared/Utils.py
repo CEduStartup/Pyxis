@@ -24,9 +24,10 @@ duration_in_seconds = {
 }
 
 time_formats = {
-    'minute'  : '%Y-%m-%d %H:%M',
-    'hour' : '%Y-%m-%d %H',
-    'day'  : '%Y-%m-%d',
+    'second': '%Y-%m-%d %H:%M:%S',
+    'minute': '%Y-%m-%d %H:%M',
+    'hour': '%Y-%m-%d %H',
+    'day': '%Y-%m-%d',
     'month': '%Y-%m',
 }
 
@@ -70,6 +71,27 @@ def str2time(string):
     except:
         msg = '`%s` s not known time format`.' % string
         raise ValueError(msg)
+
+def time2str(time_val, output_format='second'):
+    """Convert float time value to string.
+
+    :Parameters:
+        - `time_val`: float. As returned by `time.time()`
+        - `output_format`: string. One of the following: 'second', 'minute',
+          'hour', 'day', 'month', or format string to pass to
+          `time.strftime()`.
+
+    :Return:
+        - string with time.
+    """
+    if output_format in time_formats:
+        output_format = time_formats[output_format]
+
+    # TODO: I actually don't know what we need to use `localtime()` or
+    # `gmtime()`.
+    time_tuple = time.localtime(time_val)
+
+    return time.strftime(output_format, time_tuple)
 
 def get_date_str_month(ts):
     return time.strftime('%Y-%m', time.localtime(ts))

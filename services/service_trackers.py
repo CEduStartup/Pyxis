@@ -8,6 +8,7 @@ import zlib
 from frontend.models import TrackerModel
 from services.service_base import SharedService
 from shared.trackers.Tracker import Tracker
+from shared import Utils
 
 
 class db_adapter:
@@ -29,7 +30,7 @@ class django_orm_adapter(db_adapter):
         trackers = []
         search_parms = {}
         if modified_since is not None:
-            search_parms['last_modified'] = modified_since
+            search_parms['last_modified__gte'] = Utils.time2str(modified_since)
         if tracker_id is not None:
             search_parms['id'] = tracker_id
         if not search_parms:
