@@ -50,7 +50,7 @@ class Tracker(object):
                              should be called to grab data.
                            - `params`: `dict` pairs of parameter name and
                              parameter value to pass them to `method_name
-                  `datatype`: `str`. Type of the data e.i. HTML, XML, CSV,
+                  `data_type`: `str`. Type of the data e.i. HTML, XML, CSV,
                               JSON, etc.
                   `values`: `list` of `dict` of the following structure: ::
 
@@ -68,6 +68,7 @@ class Tracker(object):
         self.name = tracker_name
         self.refresh_interval = refresh_interval
         self._datasource_settings = datasource_settings
+        self.storage = None
 
         self.last_modified = 0
 
@@ -146,7 +147,7 @@ class Tracker(object):
         self._clean_data = {}
         for (datasource, settings) in self._datasources:
             try:
-                parser = get_parser(settings['datatype'])
+                parser = get_parser(settings['data_type'])
                 parser.initialize()
                 parser.parse(datasource.get_raw_data())
                 self._parsers.append(parser)
@@ -173,8 +174,8 @@ class Tracker(object):
     def _save_data(self):
         """Save data to storage.
         """
-        # TODO: store data to the storage.
-        pass
+        self.storage.put(self, {'timestamp': self._datasources[0][0].request_time, #by now we are taking time only from 1st DS 
+                                'data':      self._clean_data})
 
     def _process_datasource_exception(self, err):
         # TODO: process exception here
@@ -199,6 +200,10 @@ class Tracker(object):
             sender.fire('LOGGER.CRITICAL', message=traceback.format_exc())
         finally:
             self.last_modified = time.time()
+
+    def set_storage(self, storage):
+        """ Attaches storages to current tracker. """
+        self.storage = storage
 
     def __repr__(self):
         return '<Tracker %s: `%s` %s>' % (self.tracker_id, self.name,

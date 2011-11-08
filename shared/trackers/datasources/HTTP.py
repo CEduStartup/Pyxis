@@ -51,7 +51,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
         self._target = query['URI']
 
     def grab_data(self):
-        start_time = time.time()
+        self.request_time = time.time()
         try:
             with gevent.Timeout(tracker_thread_timeout):
                 request = urllib2.Request(self._target)
@@ -73,7 +73,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
             raise ResponseGeventTimeout()
 
         now = time.time()
-        self.grab_spent_time = now-start_time
+        self.grab_spent_time = now - self.request_time
         
     def get_raw_data(self):
         return self.raw_data
