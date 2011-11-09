@@ -32,3 +32,12 @@ pymongo
 lxml
 BeautifulSoup
 beanstalkc (client)
+
+Usage
+=====
+1. export PYTHONPATH=`./build_python_path.py`
+2. generate some data and run test server (optional):
+   a. testdata/manage.py trackers_erase - to erase current database trackers configuration
+   b. testdata/manage.py trackers_generate http://HOST:PORT/ NUM_OF_TRACKERS - to generate some test trackers
+   c. testdata/manage.py runserver 0.0.0.0:PORT
+3. python launcher.py to start the system
