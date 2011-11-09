@@ -10,11 +10,15 @@ class TrackerForm(ModelForm):
         model = TrackerModel
         exclude = ('id', 'user', 'values_count', 'status')
 
+class MultipleField(MultipleChoiceField):
+    def valid_value(self, value):
+        return True
+
 
 class DictBasedWidget(Widget):
 
     def value_from_datadict(self, data, files, name):
-        name_regexp = re.compile('^%s\[(\d+)\]\[\]$' % name)
+        name_regexp = re.compile('^%s\[(\d+)\]$' % name)
         new_value = {}
         for key, value in data.iteritems():
             m = name_regexp.match(key)
@@ -51,7 +55,7 @@ class OptionsForm(Form):
         ('line', 'Line'),
     )
 
-    tracker_id = IntegerField(widget=HiddenInput())
+    tracker_ids = MultipleField()
     display_values = CharField(widget=DictBasedWidget())
     period_label = 'Minimal time interval'
     help_text = """\
@@ -61,10 +65,12 @@ ranges greater than two days as there would be a lot of data to display."""
     periods = ChoiceField(label=period_label, help_text=help_text,
                           choices=PERIOD_CHOICES)
     start = DateField(label='Start', input_formats=['%d/%m/%Y'],
-                      widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY'}),
+                      widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
+                                              'readonly': True}),
                       required=False)
     end = DateField(label='End', input_formats=['%d/%m/%Y'],
-                    widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY'}),
+                    widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
+                                            'readonly': True}),
                     required=False)
 
     help_text = """\

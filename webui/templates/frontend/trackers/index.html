@@ -15,7 +15,7 @@ User trackers are here:
 </tr>
 {% for tracker in trackers %}
 <tr>
-	<td><a href="/trackers/view/{{ tracker.id }}">{{ tracker.name }}</a></td>
+	<td><a href="/trackers/view/{{ tracker.id }}/">{{ tracker.name }}</a></td>
 	<td>{{ tracker.query }}</td>
 	<td>{{ tracker.refresh_interval }}</td>
 	<td>{{ tracker.data_source.data_type }}</td>
