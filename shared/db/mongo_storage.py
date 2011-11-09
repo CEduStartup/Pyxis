@@ -73,6 +73,14 @@ class TimeBasedData(object):
                     print '\t%s < %s items' % (get_date_str(ts, 'day'), insertions)
                 ts += ONE_DAY
 
+    def ensure_string_keys(self, data):
+        """ Returns data with keys, which are string types. """
+        result = {}
+        for value_id in data:
+            result[str(value_id)] = data[value_id]
+        return result
+
+
     def insert_raw_data(self, tracker_id, timestamp, data):
         """Inserts `data` to the MongoDB and aggregates data in `1hour` and
         `day` periods.
@@ -103,7 +111,8 @@ class TimeBasedData(object):
             }
         else:
             doc = res
-        doc['raw'][str(timestamp)] = data
+        data = self.ensure_string_keys(data)
+        doc['raw'][str(int(timestamp))] = data # we should use 'validators' conception in this
         for period in ('hour', 'day'):
             ts = str(time_round(timestamp, period))
             if not ts in doc[period]:
@@ -183,13 +192,13 @@ class TimeBasedData(object):
             while not (f <= ts < t):
                 i += 1
                 f, t = ts_keys[i], ts_keys[i+1]
-            if not i in groups:
-                groups[i] = []
-            groups[i].append(ts)
+            if not f in groups:
+                groups[f] = []
+            groups[f].append(ts)
         ts_keys.pop()
         data_map = {}
         for value_id, aggr in src_parms:
-            data_map[(value_id, aggr)] = [0] * len(ts_keys)
+            data_map[(value_id, aggr)] = []
         last_key = None
         tmp_vals = None
         for idx in sorted(groups):
@@ -221,22 +230,21 @@ class TimeBasedData(object):
             for (value_id, aggr), data in data_map.iteritems():
                 if aggr == 'avg':
                     if grouped_values[value_id]['count']:
-                        data[idx] = round(1.0 * grouped_values[value_id]['sum'] /
-                                          grouped_values[value_id]['count'], 2)
-                    else:
-                        data[idx] = 0
+                        data.append([idx, round(1.0 * grouped_values[value_id]['sum'] /
+                                          grouped_values[value_id]['count'],
+                                                2)])
                 else:
                     if aggr == 'raw':
                         aggr = 'sum'
-                    data[idx] = grouped_values[value_id][aggr] or 0
+                    data.append([idx, grouped_values[value_id][aggr]])
 
         tracker_data = []
         for (value_id, aggr), data in data_map.iteritems():
             tracker_data.append({
                 'name': (int(value_id), aggr),
                 'data': data,
-                'pointInterval': duration_in_seconds[period]*periods_in_group * 1000,
-                'pointStart': (ts_from - time.timezone) * 1000,
+                'pointInterval': duration_in_seconds[period]*periods_in_group,
+                'pointStart': (ts_from - time.timezone),
             })
 
         return tracker_data

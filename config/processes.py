@@ -1,5 +1,6 @@
 # This file contains processes definition for system launcher.
 import os
+from shared.Utils import port_randomizer
 
 
 class process:
@@ -32,7 +33,7 @@ class webui(process):
     pid = 'webui'
     command = 'python'
     params = ['manage.py', 'runserver', '0.0.0.0:%s' %
-              os.environ.get('WEBUI_PORT', 8000)]
+              (8000 + port_randomizer(),)]
     cwd = '%s/webui/' % os.environ['PYXIS_ROOT']
 
 processes = (

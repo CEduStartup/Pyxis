@@ -1,7 +1,7 @@
 import datetime
 import random
 import re
-import sha
+import hashlib
 
 from django.conf import settings
 from django.db import models
@@ -10,9 +10,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 
-
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
-
+sha = hashlib.sha256
 
 class RegistrationManager(models.Manager):
     """

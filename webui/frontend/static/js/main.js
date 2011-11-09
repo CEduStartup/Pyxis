@@ -1,75 +1,72 @@
-var chart;
+var MINUTE = 60 * 1000;
+var HOUR   = MINUTE * 60;
+var DAY    = HOUR * 24;
 
-function build_chart(data, chart_type) {
-   options = {
+var chart, options;
+
+function default_config(chart_type) {
+    return {
           chart: {
              renderTo: 'container',
              defaultSeriesType: chart_type,
-             zoomType: 'x'
+             zoomType: 'xy'
           },
           title: {
-             text: 'Monthly Average Rainfall'
-          },
-          subtitle: {
-             text: 'Source: WorldClimate.com'
+             text: ''
           },
           xAxis: {
             type: 'datetime'
-            //categories: x_cats
           },
           yAxis: {
              title: {
-                text: 'Rainfall (mm)'
+                text: ''
              }
           },
           legend: {
-             layout: 'vertical',
-             align: 'left',
-             verticalAlign: 'top',
-             x: 70,
-             y: 0,
-             floating: true,
-             shadow: true
           },
           tooltip: {
             formatter: tooltip_formatter
           },
           plotOptions: get_plot_options(chart_type),
-          series: data
-        }
-
-    chart = new Highcharts.Chart(options);
+          series: []
+    }
 };
 
 function update_chart() {
-    var values = {};
-    $.each($('#form').serializeArray(), function(i, field) {
-        values[field.name] = field.value;
-    });
+    var data = $('#form').serialize();
 
     $.ajax({
-        url: "/trackers/call",
+        url: "/trackers/get_data_to_display",
         type: "POST",
         dataType: "json",
-        data: values,
+        data: data,
         success: function(data, lviv){
-            var tracker = {
-                'name': 'Lviv',
-                'data': data,
+            var d = new Date();
+            var offset = d.getTimezoneOffset() * 60 * 1000;
+            for(var i=0; i<data.length; i++){
+              data[i].pointStart *= 1000;
+              data[i].pointStart -= offset;
+              data[i].pointInterval *= 1000;
+              for(var j=0; j<data[i].data.length; j++){
+                data[i].data[j][0] *= 1000;
+                data[i].data[j][0] -= offset;
+              }
             }
-            options.series.push(tracker);
-            render_chart(options);
+            var chart_type = $('#id_types').val();
+            var config = default_config(chart_type);
+            config.series = data;
+            render_chart(config, chart_type);
+            options = config;
         },
     });
 }
 
 function render_chart(config, type) {
-    config = config || options
+    config = config || options;
     type = type || 'line';
     config.plotOptions = get_plot_options(type);
     config.chart.defaultSeriesType = type;
     chart = new Highcharts.Chart(config);
-    console.log(chart);
 }
 
 function get_plot_options(chart_type){
@@ -97,10 +94,6 @@ function get_plot_options(chart_type){
   }
 }
 
-var MINUTE = 60 * 1000;
-var HOUR   = MINUTE * 60;
-var DAY    = HOUR * 24;
-
 function tooltip_formatter(){
   var period = $('#id_periods').val();
   var text = '<b>' + this.series.name + ': ' + this.y + '</b><br/>';
@@ -113,7 +106,6 @@ function tooltip_formatter(){
         ' - ' + Highcharts.dateFormat('%H:%M', this.x + MINUTE * n);
   }
   if(period == 'hour'){
-    console.log(this.x, this.x + MINUTE - 60);
     return text + 'Data for ' + Highcharts.dateFormat('%e %b %H:%M', this.x) +
         ' - ' + Highcharts.dateFormat('%H:%M', this.x + HOUR - MINUTE);
   }
@@ -128,5 +120,4 @@ function tooltip_formatter(){
     return text + Highcharts.dateFormat('%B %Y', this.x);
   }
   return text += 'Data for ' + Highcharts.dateFormat('%Y', this.x);
-  console.log(period);
 }

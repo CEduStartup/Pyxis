@@ -1,11 +1,9 @@
-from shared.trackers.datasources.constants import HTTP_DATASOURCE
-from shared.trackers.data_types import XML_DATA
+from shared.trackers import HTTP_ACCESS_METHOD, XML_DATA_TYPE
 import json
-
 
 SAMPLE_URI = 'http://service.com/resource'
 
-SETTINGS = {'access_method': HTTP_DATASOURCE,
+SETTINGS = {'access_method': HTTP_ACCESS_METHOD,
             'query': json.dumps({'URI': SAMPLE_URI})}
 
 XPATH1 = '//XPATH1'
@@ -16,28 +14,28 @@ XPATH_VALUES = {
     XPATH2: 222
 }
 
-XML_SETTINGS = {'access_method': HTTP_DATASOURCE,
+XML_SETTINGS = {'access_method': HTTP_ACCESS_METHOD,
                 'query': json.dumps({'URI': SAMPLE_URI}),
-                'data_type': XML_DATA,
+                'data_type': XML_DATA_TYPE,
                 'values': [{
                     'value_id': 1,
-                    'type': 'int',
+                    'type': 1,
                     'extraction_rule': XPATH1
                 }]}
                 
 XML_SETTINGS_TWO_VALUES = {
-                'access_method': HTTP_DATASOURCE,
+                'access_method': HTTP_ACCESS_METHOD,
                 'query': json.dumps({'URI': SAMPLE_URI}),
-                'data_type': XML_DATA,
+                'data_type': XML_DATA_TYPE,
                 'values': [
-                    {'value_id': 1, 'type': 'int', 'extraction_rule': XPATH1}, 
-                    {'value_id': 2, 'type': 'int', 'extraction_rule': XPATH2}, 
+                    {'value_id': 1, 'type': 1, 'extraction_rule': XPATH1}, 
+                    {'value_id': 2, 'type': 1, 'extraction_rule': XPATH2}, 
                 ]}
 
 RESULT_DATA = 'RAW_DATA_ENCODED'
 
 def dummy_get_parser(data_type):
-    if data_type == XML_DATA:
+    if data_type == XML_DATA_TYPE:
         return DummyXMLParser()
     else:
         raise Exception('Wrong data type')
@@ -51,7 +49,7 @@ class DummyXMLParser:
             raise Exception('Wrong format')
         
     def xpath(self, xpath):
-        return XPATH_VALUES[xpath]
+        return [XPATH_VALUES[xpath]]
 
 class DummyEventSender:
     events = []

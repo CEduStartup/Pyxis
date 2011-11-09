@@ -15,7 +15,8 @@ from services.service_base import SharedService
 ready_processes = []
 
 # This tiny BJsonRPC server, which receives notification from processes when
-# they're ready.
+# they're ready. We need, because we have dependent processes - for example,
+# Collector reuires shared services and logger.
 class LauncherInfo(SharedService):
     config = launcher_config
     # Methods your service export.
@@ -45,7 +46,7 @@ def run_processes():
         else:
             cmd.append(process.params)
         executed_processes.append(subprocess.Popen(cmd, cwd=process.cwd))
-        threads.append(gevent.spawn(executed_processes[-1].wait))
+        #threads.append(gevent.spawn(executed_processes[-1].wait))
     return threads
 
 

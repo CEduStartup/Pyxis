@@ -6,17 +6,14 @@
   .popover .content {
     padding-left: 22px;
   }
+  input[readonly], input[disabled]{
+    cursor: default;
+  }
 </style>
 
 <script>
-    {% autoescape off %}
-    var d = new Date();
-    var offset = 0 //d.getTimezoneOffset() * 60 * 1000;
-    var chart_series = {{ tracker.data }};
-    for(var i=0; i<chart_series.length; i++){
-     chart_series[i].pointStart -= offset;
-    }
-    {% endautoescape %}
+    var dates;
+    var dateFormat = 'dd/mm/yy';
 
     function check_period() {
       if( $('#id_'+'{{ options.periods.html_name }}').val() == 'minute' ) {
@@ -26,6 +23,15 @@
         $('.aggregated-data').removeAttr('disabled');
         $('.raw-data').attr('disabled', 'disabled');
       }
+    }
+
+    function selectDate(selectedDate, inst){
+      var ctrl = inst.input[0];
+      var option = ctrl.id == "id_start" ? "minDate" : "maxDate",
+          instance = $( ctrl ).data( "datepicker" ),
+          date = $.datepicker.parseDate(dateFormat,
+            selectedDate, instance.settings );
+      dates.not( ctrl ).datepicker( "option", option, date );
     }
 
     $(document).ready(function() {
@@ -41,23 +47,30 @@
       check_period();
 
       $(function() {
-        $('#id_{{ options.start.html_name}}, #id_{{ options.end.html_name}}').datepicker({ dateFormat: 'dd/mm/yy' });
+        dates = $( "#id_start, #id_end" ).datepicker({
+          dateFormat: dateFormat,
+          onSelect: selectDate
+        });
+        dates.each(function(i){
+          var date = $( this ).val();
+          selectDate(date, $( this ).data('datepicker'));
+        });
       });
 
       $('#id_{{ options.types.html_name }}').change(function() {
         render_chart(options, $('#id_{{ options.types.html_name }}').val());
       });
 
-      build_chart(chart_series, '{{ options.types.value|default:"line" }}');
-
+      update_chart();
     });
 </script>
 
 <h3>{{ tracker.name }}</h3>
 <div id="container" style="width: 100%; height: 400px"></div>
-<form id='form' action='/trackers/view/{{ tracker.id }}/' method='post'>
+<form id='form' action='/trackers/view/{{ tracker.tracker_id }}/' method='post'>
   {% csrf_token %}
   {{ options.tracker_id }}
+  <input type="hidden" name="tracker_ids" value="{{ tracker.tracker_id }}">
   <div class="well">
     <div class="row">
       <div class="span3"><b>Values to display</b></div>
@@ -77,7 +90,7 @@
       <div class="span3">{{ value_name }}</div>
       {% for aggr, aggr_name in aggregation_methods %}
           <div class="span2" style="text-align: center;">
-            <input type="checkbox" name="display_values[{{ value_id }}][]"
+            <input type="checkbox" name="display_values[{{ value_id }}]"
                    value="{{ aggr }}"
         {% if aggr in methods %}
                    checked="checked"
@@ -124,13 +137,13 @@
     </div>
   </div>
   <div class='well' style="padding: 14px 19px; margin-top: 15px;">
-    <button name="save_update" class="btn primary">Save &amp; Update</button>
-    <button name="update" class="btn primary">Update Cart</button>
+    <!--div name="save_update" class="btn primary">Save &amp; Update</div-->
+    <div name="update" class="btn primary" onclick="update_chart();">Update Chart</div>
   </div>
 </form>
 
 
-<div style="margin-top: 100px; clear: both; cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div>
+<!--div style="margin-top: 100px; clear: both; cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div-->
 <br/>
-<a href="/trackers/edit/{{ tracker.id }}">Edit</a> | <a href="/trackers/">Back to list</a>
+<a href="/trackers/edit/{{ tracker.tracker_id }}">Edit</a> | <a href="/trackers/">Back to list</a>
 {% endblock content %}
