@@ -127,7 +127,6 @@ class Tracker(object):
 
         for datasource in map(lambda x: x[0], self._datasources):
             datasource.grab_data()
-
             sender.fire('TRACKER.GRAB.SUCCESS', tracker_id=self.tracker_id)
 
 
