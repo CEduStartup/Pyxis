@@ -8,8 +8,7 @@ import traceback
 from config.init.trackers import sender
 from shared.trackers import VALUE_TYPES
 from shared.trackers.datasources.factory import get_datasource
-from shared.trackers.datasources.Errors import UnknownDatasourceError, \
-                                               BaseGrabError
+from shared.trackers.datasources.Errors import BaseGrabError
 from shared.Parser import get_parser, ParserError
 
 class Tracker(object):
@@ -108,11 +107,7 @@ class Tracker(object):
                 - datasource instance.
 
             """
-            try:
-                datasource = get_datasource(settings_dict)
-            except UnknownDatasourceError, err:
-                # TODO: handle this error correctly.
-                print 'DATASOURCE ERROR', err
+            datasource = get_datasource(settings_dict)
             return datasource
 
         if isinstance(self.datasource_settings, dict):
@@ -131,11 +126,11 @@ class Tracker(object):
         self._create_datasources()
 
         for datasource in map(lambda x: x[0], self._datasources):
-            try:
-                datasource.grab_data()
-            except BaseGrabError:
-                # Log this event.
-                print 'GRAB ERROR'
+            datasource.grab_data()
+
+            sender.fire('TRACKER.GRAB.SUCCESS', tracker_id=self.tracker_id)
+
+
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
@@ -183,9 +178,13 @@ class Tracker(object):
                           'data':      self._clean_data})
 
     def _process_datasource_exception(self, err):
-        # TODO: process exception here
-        sender.fire('LOGGER.DEBUG',
-                    message='DATASOURCE EXCEPTION %s %s' % (type(err), err))
+        """Process grab errors.
+
+        :Parameters:
+            - `err`: an instance of execption.
+        """
+        sender.fire('TRACKER.GRAB.FAILURE', tracker_id=self.tracker_id,
+                    error_details=str(err))
 
     def process(self):
         """Main logic of the tracker.
@@ -200,7 +199,7 @@ class Tracker(object):
             self._save_data()
         except BaseGrabError, err:
             self._process_datasource_exception(err)
-        except Exception:
+        except Exception, err:
             sender.fire('LOGGER.CRITICAL', message=traceback.format_exc())
         finally:
             self.last_modified = time.time()
