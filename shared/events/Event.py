@@ -4,8 +4,8 @@
 import pickle
 import time
 
+from config.mq import LOGGER_TUBE
 
-LOGGER_TUBE = 'LOGGER_TUBE'
 
 class EventError(Exception):
 

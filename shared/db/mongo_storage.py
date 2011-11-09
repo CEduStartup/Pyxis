@@ -72,7 +72,7 @@ class TimeBasedData(object):
                 if insertions:
                     print '\t%s < %s items' % (get_date_str(ts, 'day'), insertions)
                 ts += ONE_DAY
-                
+
     def ensure_string_keys(self, data):
         """ Returns data with keys, which are string types. """
         result = {}
@@ -192,13 +192,13 @@ class TimeBasedData(object):
             while not (f <= ts < t):
                 i += 1
                 f, t = ts_keys[i], ts_keys[i+1]
-            if not i in groups:
-                groups[i] = []
-            groups[i].append(ts)
+            if not f in groups:
+                groups[f] = []
+            groups[f].append(ts)
         ts_keys.pop()
         data_map = {}
         for value_id, aggr in src_parms:
-            data_map[(value_id, aggr)] = [0] * len(ts_keys)
+            data_map[(value_id, aggr)] = []
         last_key = None
         tmp_vals = None
         for idx in sorted(groups):
@@ -230,22 +230,21 @@ class TimeBasedData(object):
             for (value_id, aggr), data in data_map.iteritems():
                 if aggr == 'avg':
                     if grouped_values[value_id]['count']:
-                        data[idx] = round(1.0 * grouped_values[value_id]['sum'] /
-                                          grouped_values[value_id]['count'], 2)
-                    else:
-                        data[idx] = 0
+                        data.append([idx, round(1.0 * grouped_values[value_id]['sum'] /
+                                          grouped_values[value_id]['count'],
+                                                2)])
                 else:
                     if aggr == 'raw':
                         aggr = 'sum'
-                    data[idx] = grouped_values[value_id][aggr] or 0
+                    data.append([idx, grouped_values[value_id][aggr]])
 
         tracker_data = []
         for (value_id, aggr), data in data_map.iteritems():
             tracker_data.append({
                 'name': (int(value_id), aggr),
                 'data': data,
-                'pointInterval': duration_in_seconds[period]*periods_in_group * 1000,
-                'pointStart': (ts_from - time.timezone) * 1000,
+                'pointInterval': duration_in_seconds[period]*periods_in_group,
+                'pointStart': (ts_from - time.timezone),
             })
 
         return tracker_data
