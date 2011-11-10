@@ -22,8 +22,9 @@ class Tracker(object):
         - `last_modified`: time (in seconds) of last modification.
         - `values_to_get`: a list of XPATH or other queries for parser.
         - `values`: a list of parsed values.
+        - `_deleted`: bool. `True` if tracker marked for deletion otherwise
+          `False`
     """
-
 
     def __init__(self, tracker_id, refresh_interval, datasource_settings,
                  tracker_name=None):
@@ -74,6 +75,8 @@ class Tracker(object):
         self._parsers = None
         self._raw_data = None
         self._clean_data = None
+        self._deleted = False
+
 
     def get_id(self):
         """Return a string with unique tracker ID.
@@ -129,6 +132,17 @@ class Tracker(object):
             datasource.grab_data()
 
             sender.fire('TRACKER.GRAB.SUCCESS', tracker_id=self.tracker_id)
+
+    def set_deleted(self):
+        """Mark tracker as `deleted`, so scheduler will not process it.
+        """
+        self._deleted = True
+
+    def is_deleted(self):
+        """Return `True` if the tracker was marked for deletion, ptherwise
+        return `False`.
+        """
+        return self._deleted
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
@@ -207,8 +221,10 @@ class Tracker(object):
         self.storage = storage
 
     def __repr__(self):
-        return '<Tracker %s: `%s` %s>' % (self.tracker_id, self.name,
-                                          self.datasource_settings)
+        return '<Tracker %s: `%s` `refresh_interval`: %s %s>' % \
+           (self.tracker_id, self.name, self.refresh_interval,
+            self.datasource_settings)
+
     def get_values(self):
         if isinstance(self.datasource_settings, dict):
             ds = [self.datasource_settings,]
@@ -220,4 +236,11 @@ class Tracker(object):
             for v in d['values']:
                 values[v['value_id']] = v
         return values
+
+    def update_settings(self, tracker_obj):
+        """Update tracker configuration from another tracker object.
+        """
+        self.name = tracker_obj.name
+        self.refresh_interval = tracker_obj.refresh_interval
+        self.datasource_settings = tracker_obj.datasource_settings
 

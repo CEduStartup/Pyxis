@@ -24,19 +24,22 @@ class Scheduler(object):
 
     # Thread pool.
     pool = None
+
     # All currently active tasks.
     tasks = None
+
     # Tasks that already scheduled and will be executed as soon as free pool
     # slot appear.
     to_run = None
-    # Tasks that would be deleted as soon as it will be tried to schedule.
-    to_remove = None
+
+    # All trackers that our system processing.
+    _trackers = None
 
     def __init__(self):
         self.tasks = PriorityQueue()
         self.to_run = Queue()
-        self.to_remove = set()
         self.pool = Pool(config.parallel_threads_num)
+        self._trackers = {}
 
     def _run_tasks(self):
         """The main purpose of this method is to take tasks from to_run and
@@ -54,9 +57,12 @@ class Scheduler(object):
         """
         while True:
             run_time, tracker = self.tasks.get()
-            if tracker.get_id() in self.to_remove:
-                self.to_remove.remove(tracker.get_id())
+
+            # This tracker was marked for deletion, so we just pop it from
+            # queue.
+            if tracker.is_deleted():
                 continue
+
             cur_time = _get_int_time()
             if cur_time < run_time:
                 self.tasks.put((run_time, tracker))
@@ -70,10 +76,39 @@ class Scheduler(object):
         return self.to_run.qsize()
 
     def add_tracker(self, tracker):
+        """Add tracker to scheduler.
+        You can use this method to update tracker configuration.
+
+        If the tracker with such id is already present than its configuration
+        will be updated (and tracker will be rescheduled if `refresh_interval`
+        changed).
+        """
+        t_id = tracker.tracker_id
+
+        # Check if such tracker is already in scheduler.
+        if t_id in self._trackers:
+            curr_tracker =  self._trackers[t_id]
+
+            # Tracker is present but refresh_interval is changed, so we need to
+            # delete tracker from scheduler and reschedule it.
+            if (tracker.refresh_interval != curr_tracker.refresh_interval):
+                self.remove_tracker(tracker)
+
+            # `refresh_interval` is not chnaged so we can update configuration
+            # without rescheduling.
+            else:
+                curr_tracker.update_settings(tracker)
+                return
+
+        self._trackers[tracker.tracker_id] = tracker
         self.tasks.put((_get_int_time(), tracker))
 
     def remove_tracker(self, tracker):
-        self.to_remove.add(tracker)
+        """Remove tracker from scheduler.
+        """
+        t_id = tracker.tracker_id
+        self._trackers[t_id].set_deleted()
+        del self._trackers[t_id]
 
     def start(self):
         gevent.spawn(self._run_tasks)
