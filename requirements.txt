@@ -10,4 +10,5 @@ bjsonrpc
 Django
 psycopg2
 python-dateutil # ensure to use 1.5 version for 2.x python!
+tornadio2 # use git clone https://github.com/MrJoes/tornadio2 && sudo python setup.py install
 

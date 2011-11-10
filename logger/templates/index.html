@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Logger Monitor</title>
+    <script src="http://code.jquery.com/jquery-1.7.min.js"></script>
+    <script src="/static/js/socket.io.js"></script>
+  </head>
+  <body>
+    <div id="status"></div>
+    <h1>Logger</h1>
+    <div id="logger"></div>
+    <script type="text/javascript">
+    $(function() {
+      $('div#status').text('loaded');
+      
+      var sock = io.connect('/');
+      sock.on('log', function(data) {
+        $('div#logger').append(data.msg);
+      });
+      sock.emit('connected', {});
+    });
+    </script>
+  </body>
+</html>
