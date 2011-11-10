@@ -1,7 +1,8 @@
-from django.db import models
+from django.db.models import *
 from django.contrib.auth.models import User
 
 from shared.trackers import DATA_TYPES, ACCESS_METHODS, VALUE_TYPES
+from shared.Utils import PERIOD_CHOICES, METHOD_CHOICES, TYPE_CHOICES
 
 
 def _make_pretty(collection):
@@ -21,7 +22,7 @@ def _make_pretty(collection):
     return ((k, v['pretty']) for k, v in collection.iteritems())
 
 
-class TrackerModel(models.Model):
+class TrackerModel(Model):
     """ Tracker model.
     """
     class Meta:
@@ -29,40 +30,61 @@ class TrackerModel(models.Model):
     class Admin:
         pass
 
-    user             = models.ForeignKey(User)
-    name             = models.CharField(max_length=60)
-    status           = models.PositiveIntegerField(default=0)
-    refresh_interval = models.PositiveIntegerField(default=3600)
-    last_modified    = models.DateTimeField(auto_now=True, auto_now_add=True)
+    user             = ForeignKey(User)
+    name             = CharField(max_length=60)
+    status           = PositiveIntegerField(default=0)
+    refresh_interval = PositiveIntegerField(default=3600)
+    last_modified    = DateTimeField(auto_now=True, auto_now_add=True)
 
     def __unicode__(self):
         return '<TrackerModel %s: %s>' % (self.id, self.name)
 
+class ViewModel(Model):
+    """ View model.
+    """
+    class Meta:
+        db_table = 'view'
+    class Admin:
+        pass
 
-class DataSourceModel(models.Model):
+    view_name        = CharField(max_length=60, null=False, blank=False)
+    view_description = TextField(null=True, blank=True)
+    start            = DateField(null=False, blank=False)
+    end              = DateField(null=False, blank=False)
+    periods          = CharField(choices=PERIOD_CHOICES, max_length=15,
+                                 null=False, blank=False)
+    types            = CharField(choices=TYPE_CHOICES, max_length=15,
+                                 null=False, blank=False)
+    trackers         = TextField(null=False, blank=False)
+
+    def __unicode__(self):
+        return '<ViewModel %s: %s>' % (self.id, self.view_name)
+
+
+class DataSourceModel(Model):
     """ Data Source model.
     """
     class  Meta:
         db_table  = 'datasource'
 
-    tracker          = models.ForeignKey(TrackerModel)
-    access_method    = models.SmallIntegerField(
+    tracker          = ForeignKey(TrackerModel)
+    access_method    = SmallIntegerField(
                           choices=_make_pretty(ACCESS_METHODS), default=0)
-    query            = models.TextField()
-    data_type        = models.SmallIntegerField(
+    query            = TextField()
+    data_type        = SmallIntegerField(
                           choices=_make_pretty(DATA_TYPES), default=0)
 
-class ValueModel(models.Model):
+class ValueModel(Model):
     """ Value model.
     """
     class  Meta:
         db_table  = 'value'
 
-    data_source     = models.ForeignKey(DataSourceModel)
-    name            = models.CharField(max_length=60)
-    value_type      = models.SmallIntegerField(
+    data_source     = ForeignKey(DataSourceModel)
+    name            = CharField(max_length=60)
+    value_type      = SmallIntegerField(
        choices=_make_pretty(VALUE_TYPES), default=1)
-    extraction_rule = models.CharField(max_length=200)
+    extraction_rule = CharField(max_length=200)
 
     def __unicode__(self):
         return '<ValueModel %s: %s>' % (self.id, self.name)

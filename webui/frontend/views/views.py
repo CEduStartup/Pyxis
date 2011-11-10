@@ -1,0 +1,73 @@
+import simplejson
+
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from django.utils.encoding import force_unicode
+from frontend.models import ViewModel
+from frontend.forms import OptionsForm, ViewForm
+from webui.util import render_to
+
+# TODO: Investigate if we real need it
+from shared.services.services_api import mongo_storage_api, \
+                                         trackers_api
+from shared.Utils import METHOD_CHOICES
+
+
+@login_required
+@render_to('frontend/views/index.html')
+def index(request):
+    views = ViewModel.objects.all()
+    return {'views': views}
+
+@login_required
+@render_to('frontend/trackers/view.html')
+def view(request, id):
+    view = ViewModel.objects.get(pk=id)
+
+    trackers = simplejson.loads(force_unicode(view.trackers))
+    # TODO: Hardcode only for ONE trackers
+    tracker_id = trackers.popitem()[0]
+
+    trackers_client = trackers_api()
+    tracker = trackers_client.get_trackers(tracker_id=tracker_id)[0]
+    print tracker
+    values = tracker.get_values()
+    values_id_name_list = []
+    for value_id, item in values.items():
+        values_id_name_list.append([value_id, item['name']])
+    values_id_name_list.sort()
+    values = dict(values_id_name_list)
+
+    options = OptionsForm({
+        'tracker_id': tracker_id,
+        'periods': view.periods,
+        'types': view.types,
+        'start': view.start,
+        'end': view.end,
+    })
+
+    return {'tracker': tracker, 'options': options,
+            'tracker_values': values_id_name_list,
+            'aggregation_methods': METHOD_CHOICES}
+
+@login_required
+@csrf_protect
+def save(request):
+    view = ViewForm(request.POST)
+    if view.is_valid():
+        instance = view.save(commit=False)
+        instance.trackers = view.cleaned_data['trackers']
+        instance.save()
+        response_data = {'success': True}
+    else:
+        response_data = {'success': False, 'errors': view.errors}
+
+    return HttpResponse(simplejson.dumps(response_data), mimetype='application/javascript')
+
+@login_required
+def delete(request, id):
+    view = ViewModel.objects.get(pk=id)
+    view.delete()
+    return redirect('/views/')

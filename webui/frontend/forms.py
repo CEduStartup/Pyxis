@@ -1,7 +1,9 @@
 import simplejson
 
 from django.forms import *
-from models import TrackerModel
+from django.utils.encoding import force_unicode
+from models import TrackerModel, ViewModel
+from shared.Utils import PERIOD_CHOICES, METHOD_CHOICES, TYPE_CHOICES
 
 import re
 
@@ -29,32 +31,6 @@ class DictBasedWidget(Widget):
 
 
 class OptionsForm(Form):
-
-    PERIOD_CHOICES = (
-        ('minute', 'Minute'),
-        ('5minutes', '5 Minutes'),
-        ('15minutes', '15 Minutes'),
-        ('hour', 'Hour'),
-        ('day', 'Day'),
-        ('week', 'Week'),
-        ('month', 'Month'),
-        ('year', 'Year'),
-    )
-
-    METHOD_CHOICES = (
-        ('avg', 'Average Value'),
-        ('sum', 'Summed-up Value'),
-        ('min', 'Minimal Value'),
-        ('max', 'Maximal Value'),
-        ('count', 'Count'),
-    )
-
-    TYPE_CHOICES = (
-        ('area', 'Area'),
-        ('column', 'Bar'),
-        ('line', 'Line'),
-    )
-
     tracker_ids = MultipleField()
     display_values = CharField(widget=DictBasedWidget())
     period_label = 'Minimal time interval'
@@ -80,3 +56,18 @@ displayed on chart as is. Other intervals requires aggregation method."""
     methods = ChoiceField(label='Aggregation Method', help_text=help_text,
                           choices=METHOD_CHOICES, required=False)
     types = ChoiceField(label='Chart Type', choices=TYPE_CHOICES, initial='line')
+
+class ViewForm(ModelForm):
+    display_values = CharField(widget=DictBasedWidget())
+    class Meta:
+        model = ViewModel
+        fields = ('view_name', 'view_description', 'periods', 'types',
+                  'start', 'end')
+
+    def clean(self):
+        display_values = simplejson.loads(self.cleaned_data['display_values'])
+        if not display_values:
+            self._errors['trackers'] = 'Trackers do not exist'
+        self.cleaned_data['trackers'] = self.cleaned_data['display_values']
+        del self.cleaned_data['display_values']
+        return self.cleaned_data

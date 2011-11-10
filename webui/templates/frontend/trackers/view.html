@@ -34,6 +34,31 @@
       dates.not( ctrl ).datepicker( "option", option, date );
     }
 
+    function save_view(submit) {
+        var submit = submit || 0;
+        if (submit) {
+            var data = $('#form').serialize();
+            console.log('data: ', data);
+
+            $.ajax({
+                url: "/views/save",
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function(data){
+                    console.log('Success: ', data)
+                },
+            });
+
+            $('#view_form').fadeOut(500);
+
+            console.log(data);
+        }
+        else {
+            $('#view_form').fadeIn(300);
+        }
+    }
+
     $(document).ready(function() {
       $("a[rel=popover]")
         .popover({
@@ -71,6 +96,7 @@
   {% csrf_token %}
   {{ options.tracker_id }}
   <input type="hidden" name="tracker_ids" value="{{ tracker.tracker_id }}">
+  <input type="hidden" name="tracker_names" value="{{ tracker.name }}">
   <div class="well">
     <div class="row">
       <div class="span3"><b>Values to display</b></div>
@@ -136,9 +162,14 @@
       {{ options.end }}
     </div>
   </div>
-  <div class='well' style="padding: 14px 19px; margin-top: 15px;">
-    <!--div name="save_update" class="btn primary">Save &amp; Update</div-->
+  <div class='well' style="padding: 14px 19px; margin-top: 15px; text-align: center;">
     <div name="update" class="btn primary" onclick="update_chart();">Update Chart</div>
+    <div name="save_view" class="btn primary" onclick="save_view();">Save View</div>
+  </div>
+  <div class='well' style="padding: 14px 19px; margin-top: 15px; text-align: center; display: none;" id="view_form">
+    <input type='text' name='view_name' id='view_name'><br />
+    <input type='text' name='view_description' id='view_description'><br />
+    <div class="btn primary" onclick="save_view(1);">Submit</div>
   </div>
 </form>
 
