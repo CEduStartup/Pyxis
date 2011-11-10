@@ -317,7 +317,7 @@ class LoggerCriticalEvent(LoggerEvent):
 
 # Configuration changes events.
 
-class TrackerConfigEvent(BaseEvent):
+class TrackerConfigEvent(BaseLogEvent, BaseEvent):
 
     """Base class for all events which indicate about changes in tracker
     configuration.
@@ -325,6 +325,8 @@ class TrackerConfigEvent(BaseEvent):
 
     required_attr = ['tracker_id']
     eid = 'CONFIG.TRACKER'
+    msg = 'Tracker %(tracker_id)s configuration event.'
+    level = 'info'
 
 
 class NewTrackerAddedEvent(TrackerConfigEvent):
@@ -334,6 +336,7 @@ class NewTrackerAddedEvent(TrackerConfigEvent):
     """
 
     eid = 'CONFIG.TRACKER.ADDED'
+    msg = 'Tracker %(tracker_id)s added.'
 
 
 class TrackerConfigChangedEvent(TrackerConfigEvent):
@@ -343,6 +346,7 @@ class TrackerConfigChangedEvent(TrackerConfigEvent):
     """
 
     eid = 'CONFIG.TRACKER.CHANGED'
+    msg = 'Tracker %(tracker_id)s was updated.'
 
 
 # Maps event EID to event class. You need to update this mapping each time you
@@ -372,8 +376,8 @@ _EID_EVENT_MAPPING = {
 # Defines a list of suitable tubes for each EID. You need to update this
 _EID_TUBE_MAPPING = {
     # Tracker config changes events.
-    NewTrackerAddedEvent.eid: (COLLECTOR_TUBE,),
-    TrackerConfigChangedEvent.eid: (COLLECTOR_TUBE,),
+    NewTrackerAddedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
+    TrackerConfigChangedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
 
     # Collector events.
     CollectorServiceStartedEvent.eid: (LOGGER_TUBE,),
