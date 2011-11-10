@@ -130,8 +130,6 @@ class Tracker(object):
 
             sender.fire('TRACKER.GRAB.SUCCESS', tracker_id=self.tracker_id)
 
-
-
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
         `values` attribute.
@@ -184,7 +182,7 @@ class Tracker(object):
             - `err`: an instance of execption.
         """
         sender.fire('TRACKER.GRAB.FAILURE', tracker_id=self.tracker_id,
-                    error_details=str(err))
+                    error_details=str(err.reason))
 
     def process(self):
         """Main logic of the tracker.
