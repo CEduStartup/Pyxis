@@ -7,4 +7,8 @@ import os
 queue_host = 'localhost'
 queue_port = 11300
 
-LOGGER_TUBE = 'LOGGER_TUBE_%s' % (os.environ['LOGNAME'],)
+_suffix = os.environ['LOGNAME']
+
+LOGGER_TUBE = 'LOGGER_TUBE_%s' % (_suffix,)
+COLLECTOR_TUBE = 'COLLECTOR_TUBE_%s' % (_suffix,)
+
