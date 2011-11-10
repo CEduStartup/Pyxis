@@ -71,6 +71,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
                                                   % self._target)
             raise ResponseGeventTimeout()
 
+        sender.fire('LOGGER.DEBUG', message='Processed "%s" with [%d]"' % (self._target, self.response_code))
         now = time.time()
         self.grab_spent_time = now - self.request_time
 
