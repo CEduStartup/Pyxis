@@ -7,6 +7,33 @@ ONE_MINUTE = 60
 ONE_HOUR = ONE_MINUTE * 60
 ONE_DAY  = ONE_HOUR * 24
 
+PERIOD_CHOICES = (
+    ('minute', 'Minute'),
+    ('5minutes', '5 Minutes'),
+    ('15minutes', '15 Minutes'),
+    ('hour', 'Hour'),
+    ('day', 'Day'),
+    ('week', 'Week'),
+    ('month', 'Month'),
+    ('year', 'Year'),
+)
+
+METHOD_CHOICES = (
+    ('avg', 'Average'),
+    ('sum', 'Summed-up'),
+    ('min', 'Minimal'),
+    ('max', 'Maximal'),
+    ('count', 'Count'),
+    ('raw', 'As Is'),
+)
+
+TYPE_CHOICES = (
+    ('area', 'Area'),
+    ('column', 'Bar'),
+    ('line', 'Line'),
+)
+
+
 rollup_periods = ['minute', 'hour', 'day']
 rollup_periods_display = {
     'minute': '1 minute',
