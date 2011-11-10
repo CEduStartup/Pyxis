@@ -48,6 +48,8 @@ def view(request, id):
         'end': view.end,
     })
 
+    print '!!!!!!!!!!!!\n\n ', values_id_name_list, '\n!!!!!!!!\n\n'
+
     return {'tracker': tracker, 'options': options,
             'tracker_values': values_id_name_list,
             'aggregation_methods': METHOD_CHOICES}
