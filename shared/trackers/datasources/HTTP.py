@@ -65,7 +65,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
         except urllib2.URLError, err:
             sender.fire('LOGGER.WARNING', message='URLError for %s: %s' %
                                                   (self._target, err.reason))
-            raise ResponseURLError(err)
+            raise ResponseURLError(err.reason)
         except gevent.Timeout, err:
             sender.fire('LOGGER.WARNING', message='URL Gevent timeout - %s'
                                                   % self._target)
