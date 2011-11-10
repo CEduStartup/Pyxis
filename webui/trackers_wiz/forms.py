@@ -88,7 +88,6 @@ class TrackerWizard(FormWizard):
             eid = 'CONFIG.TRACKER.CHANGED'
 
         sender = SimpleEventSender()
-        print eid
         sender.fire(eid, tracker_id=tracker.id)
 
         return HttpResponseRedirect('/trackers/')
