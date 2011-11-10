@@ -3,6 +3,7 @@ from django.http import HttpResponse
 import sqlite3
 import math
 import time
+import random
 
 
 html_template = """
@@ -41,11 +42,13 @@ def calculate_next_value(function):
 def html(request, function):
     next_value = calculate_next_value(function)
     result_html = html_template %{'value': next_value}
+    gevent.sleep(random.random())
     return HttpResponse(result_html)
 
 
 def xml(request, function):
     next_value = calculate_next_value(function)
     result_xml = xml_template %{'value': next_value}
+    gevent.sleep(random.random())
     return HttpResponse(result_xml)
 
