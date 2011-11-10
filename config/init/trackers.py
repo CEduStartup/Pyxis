@@ -2,10 +2,10 @@
 """
 
 from config.mq import queue_host, queue_port, COLLECTOR_TUBE
-from shared.events.EventManager import EventSender
+from shared.events.EventManager import GEventSender
 from shared.events.GEventDispatcher import GEventDispatcher
 
-sender = EventSender()
+sender = GEventSender()
 
 # Events dispatcher object for collector.
 event_dispatcher = GEventDispatcher(queue_host, queue_port, (COLLECTOR_TUBE,))

@@ -56,14 +56,8 @@ class EventManagerBase(object):
         self._client.close()
 
 
-class EventSender(EventManagerBase):
-    queue = None
+class SimpleEventSender(EventManagerBase):
 
-    def __init__(self, *args, **kwargs):
-        EventManagerBase.__init__(self, *args, **kwargs)
-        self.queue = Queue()
-        gevent.spawn(self.process_queue)
-        
     """Used to send event to different tubes.
     """
 
@@ -128,9 +122,45 @@ class EventSender(EventManagerBase):
         event = self._create_event_obj(event, **kwargs)
         serialized_event = self._serialize_event(event)
         dest = self._get_destination(event.eid, tubes)
+
+        for tube in dest:
+            try:
+                self._client.use(tube)
+                self._client.put(serialized_event)
+            except (beanstalkc.UnexpectedResponse,
+                    beanstalkc.CommandFailed), err:
+                raise EventSenderError(str(err))
+
+
+class GEventSender(SimpleEventSender):
+
+    """An EventSender compatible with gevent.
+    """
+
+    queue = None
+
+    def __init__(self, *args, **kwargs):
+        SimpleEventSender.__init__(self, *args, **kwargs)
+        self.queue = Queue()
+        gevent.spawn(self.process_queue)
+
+    def fire(self, event, tubes=None, **kwargs):
+        """Put event into current tube.
+
+        :Parameters:
+            - `event`: an event id.
+            - `tubes`: a list of tubes to send the `event` to.
+            - `kwargs`: dictionary which contains all required parameters to
+              format log message.
+        """
+        event = self._create_event_obj(event, **kwargs)
+        serialized_event = self._serialize_event(event)
+        dest = self._get_destination(event.eid, tubes)
         self.queue.put((serialized_event, dest))
 
     def process_queue(self):
+        """Send events from queue to consumers.
+        """
         while True:
             (serialized_event, dest) = self.queue.get()
             for tube in dest:

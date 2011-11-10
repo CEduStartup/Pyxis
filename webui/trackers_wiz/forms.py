@@ -7,7 +7,7 @@ from frontend.models import *
 
 from bootstrap.forms import BootstrapModelForm, Fieldset
 
-from shared.events.EventManager import EventSender
+from shared.events.EventManager import SimpleEventSender
 
 class TrackerNameForm(BootstrapModelForm):
     class Meta:
@@ -87,7 +87,8 @@ class TrackerWizard(FormWizard):
         else:
             eid = 'CONFIG.TRACKER.CHANGED'
 
-        sender = EventSender()
+        sender = SimpleEventSender()
+        print eid
         sender.fire(eid, tracker_id=tracker.id)
 
         return HttpResponseRedirect('/trackers/')

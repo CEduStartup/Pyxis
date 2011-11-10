@@ -42,7 +42,6 @@ class GEventDispatcher(EventDispatcher):
         self._subscribers = []
 
     def _dispatch_event(self, event):
-        print type(event)
         for tag in event.tags:
             listeners = self._subscriptions.get(tag, [])
             for listener in listeners:
