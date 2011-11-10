@@ -163,9 +163,8 @@ class EventReceiver(EventManagerBase):
         self._subscribe()
 
         while True:
-            # TODO: error handling
+            job = self._client.reserve()
             try:
-                job = self._client.reserve()
                 event = pickle.loads(job.body)
                 self._callback(event)
             finally:

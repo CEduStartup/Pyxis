@@ -125,8 +125,8 @@ class BaseEvent:
         """
         try:
             return pickle.dumps(self)
-        except pickle.PicklingError, e:
-            raise EventSerializationError(str(e))
+        except pickle.PicklingError, err:
+            raise EventSerializationError(str(err))
 
 
 class BaseLogEvent(BaseEvent):
@@ -151,7 +151,6 @@ class BaseLogEvent(BaseEvent):
             self.msg = self.msg % state
 
         BaseEvent.__setstate__(self, state)
-
 
 
 # Collector events.
@@ -195,6 +194,7 @@ class CollectorServiceStartedEvent(CollectorSuccessEvent):
 
     eid = 'COLLECTOR.SERVICE_STARTED.SUCCESS'
     msg = 'Service "%(srv_name)s" started succesfully.'
+
 
 # Tracker events.
 
@@ -315,6 +315,8 @@ class LoggerCriticalEvent(LoggerEvent):
     level = 'crit'
 
 
+# Configuration changes events.
+
 class TrackerConfigEvent(BaseEvent):
 
     """Base class for all events which indicate about changes in tracker
@@ -323,6 +325,7 @@ class TrackerConfigEvent(BaseEvent):
 
     required_attr = ['tracker_id']
     eid = 'CONFIG.TRACKER'
+
 
 class NewTrackerAddedEvent(TrackerConfigEvent):
 
