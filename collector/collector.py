@@ -1,3 +1,5 @@
+from gevent import monkey; monkey.patch_all()
+
 import sys
 import traceback
 
@@ -9,7 +11,6 @@ from gevent.backdoor import BackdoorServer
 from Scheduler import Scheduler
 from storage import storage_types
 from TrackerCollection import TrackerCollection
-
 
 storage = None
 tracker_collection = None

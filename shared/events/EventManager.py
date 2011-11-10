@@ -6,7 +6,8 @@ import pickle
 
 from config import mq
 from shared.events import Event
-
+from gevent.queue import Queue
+import gevent
 
 class EventManagerError(Exception):
 
@@ -56,7 +57,13 @@ class EventManagerBase(object):
 
 
 class EventSender(EventManagerBase):
+    queue = None
 
+    def __init__(self, *args, **kwargs):
+        EventManagerBase.__init__(self, *args, **kwargs)
+        self.queue = Queue()
+        gevent.spawn(self.process_queue)
+        
     """Used to send event to different tubes.
     """
 
@@ -121,14 +128,18 @@ class EventSender(EventManagerBase):
         event = self._create_event_obj(event, **kwargs)
         serialized_event = self._serialize_event(event)
         dest = self._get_destination(event.eid, tubes)
+        self.queue.put((serialized_event, dest))
 
-        for tube in dest:
-            try:
-                self._client.use(tube)
-                self._client.put(serialized_event)
-            except (beanstalkc.UnexpectedResponse,
+    def process_queue(self):
+        while True:
+            (serialized_event, dest) = self.queue.get()
+            for tube in dest:
+                try:
+                    self._client.use(tube)
+                    self._client.put(serialized_event)
+                except (beanstalkc.UnexpectedResponse,
                     beanstalkc.CommandFailed), err:
-                raise EventSenderError(str(err))
+                    raise EventSenderError(str(err))
 
 
 def null_callback(event):
