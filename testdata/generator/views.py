@@ -42,11 +42,9 @@ def calculate_next_value(function, divider):
     functions = {'sin': sin}
     return functions[function]()
 
-
 def html(request, function):
     next_value = calculate_next_value(function)
     result_html = html_template %{'value': next_value}
-#    gevent.sleep(random.random()*2)
     time.sleep(random.random())
     return HttpResponse(result_html)
 
@@ -54,14 +52,13 @@ def html(request, function):
 def xml(request, function):
     next_value = calculate_next_value(function)
     result_xml = xml_template %{'value': next_value}
-#    gevent.sleep(random.random()*2)
     time.sleep(random.random())
     return HttpResponse(result_xml)
 
+
 def value(request, format, function, divider):
     next_value = calculate_next_value(function, int(divider or 100))
-#    gevent.sleep(random.random()*2)
-    time.sleep(random.random())
+    time.sleep(random.random()*2)
     return HttpResponse(
         TEMPLATES[format] % {'value': next_value}
     )
