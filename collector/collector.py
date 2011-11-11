@@ -1,5 +1,4 @@
-from gevent import monkey; monkey.patch_all()
-
+import gevent.monkey; gevent.monkey.patch_all()
 import sys
 import traceback
 
@@ -39,8 +38,8 @@ def run():
     """Implement main logic.
     """
     _start_srv(storage, 'storage')
-    _start_srv(tracker_collection, 'tracker_collection')
     _start_srv(scheduler, 'scheduler')
+    _start_srv(tracker_collection, 'tracker_collection')
 
 def handle_command_line_args():
     # TODO: This is bad. If we wand to use command line arguments we need to use
