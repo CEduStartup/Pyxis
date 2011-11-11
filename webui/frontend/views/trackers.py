@@ -67,8 +67,6 @@ def view(request, tracker_id=None):
     for row in values_id_name_list:
         value_id = str(row[0])
         row.append(display_values.get(value_id, []))
-    print 'Tracker: ', tracker
-    print 'Tracker_values: ', values_id_name_list
     return {'tracker': tracker, 'options': options,
             'tracker_values': values_id_name_list,
             'aggregation_methods': METHOD_CHOICES}
@@ -91,7 +89,6 @@ def enable(request):
 def get_data_to_display(request):
     trackers_client = trackers_api()
     mongo_client = mongo_storage_api()
-
     options = OptionsForm(request.POST)
     options.is_valid()
     start = options.cleaned_data['start'].strftime('%Y-%m-%d')

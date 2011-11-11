@@ -32,23 +32,31 @@ def view(request, id):
 
     trackers_client = trackers_api()
     tracker = trackers_client.get_trackers(tracker_id=tracker_id)[0]
-    print tracker
     values = tracker.get_values()
-    values_id_name_list = []
-    for value_id, item in values.items():
-        values_id_name_list.append([value_id, item['name']])
-    values_id_name_list.sort()
-    values = dict(values_id_name_list)
 
     options = OptionsForm({
         'tracker_id': tracker_id,
         'periods': view.periods,
         'types': view.types,
-        'start': view.start,
-        'end': view.end,
+        'start': view.start.strftime('%d/%m/%Y'),
+        'end': view.end.strftime('%d/%m/%Y'),
     })
 
-    print '!!!!!!!!!!!!\n\n ', values_id_name_list, '\n!!!!!!!!\n\n'
+    values_id_name_list = []
+    for value_id, item in values.items():
+        values_id_name_list.append([value_id, item['name']])
+    values_id_name_list.sort()
+    values = dict(values_id_name_list)
+    display_values = {}
+    default_aggr = 'avg'
+    if options.data['periods'] == 'minute':
+        default_aggr = 'raw'
+    if not display_values:
+        for value_id in values:
+            display_values[str(value_id)] = [default_aggr]
+    for row in values_id_name_list:
+        value_id = str(row[0])
+        row.append(display_values.get(value_id, []))
 
     return {'tracker': tracker, 'options': options,
             'tracker_values': values_id_name_list,
