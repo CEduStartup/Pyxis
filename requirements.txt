@@ -9,5 +9,5 @@ BeautifulSoup
 bjsonrpc
 Django
 psycopg2
-python-dateutil # ensure to use 1.5 version for 2.x python!
+python-dateutil==1.5 # ensure to use 1.5 version for 2.x python!
 South
