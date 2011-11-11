@@ -1,23 +1,15 @@
 {% extends 'frontend/layout.html' %}
 
-
-{% block add_js %}
+{% block extrahead %}
     {{ block.super }}
-    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/value_picker.js"></script>
-{% endblock add_js %}
-
-
-{% block add_css %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/value_picker.css">
-{% endblock add_css %}
-
+    {{ form.media }}
+{% endblock extrahead %}
 
 {% block content %}
 
 <form action='' method='POST'>
 {% csrf_token %}
-<table>
+<table class="tracker_wizard_table">
     {% ifequal step 2 %}
         <p>You're almost done!</p>
     {% endifequal %}

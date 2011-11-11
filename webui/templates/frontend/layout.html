@@ -10,15 +10,12 @@
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/modules/exporting.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-twipsy.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-popover.js"></script>
-    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/highcharts.js"></script>
-    {% block add_js %}
-    {% endblock add_js %}
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/bootstrap.css">
-    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/style.css">
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/main.css">
-    {% block add_css %}
-    {% endblock add_css %}
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/style.css">
+    {% block extrahead %}
+    {% endblock extrahead %}
     <meta charset="utf-8">
 </head>
 <body>

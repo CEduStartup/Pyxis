@@ -7,6 +7,7 @@ from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import get_object_or_404
 
 from frontend.models import *
+from shared.trackers.datasources.Errors import ResponseHTTPError, ResponseURLError, ResponseGeventTimeout
 from shared.trackers.datasources.factory import get_datasource
 from widgets import ValuePickerWidget
 
@@ -34,25 +35,29 @@ class DataSourceForm(ModelForm):
         )
 
     def clean(self):
-        cleaned_data = self.cleaned_data
+        cleaned_data = super(DataSourceForm, self).clean()
         query = {}
-        query['method_name'] = cleaned_data['method_name']
-        query['parms'] = cleaned_data['parms']
-        query['uri'] = cleaned_data['uri']
+        query['method_name'] = cleaned_data.get('method_name', '')
+        query['parms'] = cleaned_data.get('parms', '')
+        query['uri'] = cleaned_data.get('uri', '')
         cleaned_data['query'] = simplejson.dumps(query)
         try:
             datasource = get_datasource(cleaned_data)
-            raw_data = datasource.grab_data()
+            datasource.grab_data()
+            grabbed_data = datasource.get_raw_data()
         except ResponseHTTPError:
             raise forms.ValidationError('Address "%s" cannot be opened due to server error.' % (query['uri'],))
         except ResponseURLError:
             raise forms.ValidationError('Address "%s" cannot be opened.' % (query['uri'],))
         except ResponseGeventTimeout:
             raise forms.ValidationError('Timeout on address "%s".' % (query['uri'],))
-        cleaned_data['grabbed_data'] = raw_data
+        except ValueError:
+            raise forms.ValidationError('Wrong datasource configuration.')
+        cleaned_data['grabbed_data'] = grabbed_data
         return cleaned_data
 
 class ValueForm(ModelForm):
+    extraction_rule = forms.CharField(widget=ValuePickerWidget)
     class Meta:
         model = ValueModel
         fields = ('name', 'value_type', 'extraction_rule')
@@ -103,10 +108,21 @@ class TrackerWizard(FormWizard):
         value.save()
         return HttpResponseRedirect('/trackers/')
 
+    def get_form(self, step=None, data=None):
+        form = super(TrackerWizard, self).get_form(step, data)
+        current_step = int(step)
+        if current_step == 2:
+            form.fields['extraction_rule'].widget.attrs['grabbed_data'] = \
+               self.initial[current_step].get('grabbed_data')
+            form.fields['extraction_rule'].widget.attrs['data_type'] = \
+               self.initial[current_step].get('data_type')
+        return form
+
     def parse_params(self, request, *args, **kwargs):
         current_step = self.determine_step(request, *args, **kwargs)
         if request.method == 'POST' and current_step == 1:
             form = self.get_form(current_step, request.POST)
             if form.is_valid():
                 self.initial[(current_step + 1)]['grabbed_data'] = form.cleaned_data['grabbed_data']
+                self.initial[(current_step + 1)]['data_type'] = form.cleaned_data['data_type']
 

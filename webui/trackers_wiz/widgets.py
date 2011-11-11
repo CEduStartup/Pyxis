@@ -1,29 +1,26 @@
 from django.forms import Widget
 from django.forms.util import flatatt
+from django.template.loader import render_to_string
 
 from shared.Parser import get_parser
-from shared.trackers.datasources import get_datasource
-
-from util import render_to
+from shared.trackers import DATA_TYPES
+from shared.trackers.datasources.factory import get_datasource
+from shared.trackers.data_types import XML_DATA, HTML_DATA, JSON_DATA
 
 class ValuePickerWidget(Widget):
 
+    class Media:
+        css = {'all': ('css/value_picker.css',)}
+        js = ('js/value_picker.js',)
+
     input_type = 'text'
+    templates_name = 'trackers_wiz/widgets/%s_picker.html'
 
     def render(self, name, value, attrs=None):
-        data_type = 1
-        if attrs:
-            data_type = attrs.get('data_type', 1)
-        if data_type == 1:
-            render_func = self.render_xml
-"""        elif data_type == 2:
-            render_func = self.render_csv
-        elif data_type == 3:
-            render_func = self.render_json
-        elif data_type == 4:
-            render_func = self.render_html"""
-        else:
-            render_func = lambda c: 'Data type not supported.'
+        data_type = self.attrs['data_type']
+        content = self.attrs['grabbed_data']
+        del self.attrs['data_type']
+        del self.attrs['grabbed_data']
 
         render_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
         if value is None:
@@ -31,25 +28,16 @@ class ValuePickerWidget(Widget):
         else:
             render_attrs['value'] = value
 
-        datasource = get_datasource(datasource_dict)
-        datasource.initialize()
-        return render_func(datasource.grab_data(), render_attrs)
+        if data_type == None:
+            output = ''
+        else:
+            parser = get_parser(data_type, gevent_safe=False)
+            parser.initialize()
+            parser.parse(content)
+            output = render_to_string(
+               self.templates_name % (DATA_TYPES[data_type]['name'],),
+               {'node': parser.get_parsed(), 'attrs': flatatt(render_attrs),
+                'input_type': attrs['id']})
 
-    @render_to('trackers_wiz/widgets/xml_picker.html')
-    def render_xml(self, content, attrs):
-        parser = get_parser(gevent_safe=False)
-        parser.initialize()
-        parser.parse(content)
-        return {'node': parser._etree_dom,
-                'attrs': flatatt(attrs),
-                'input_id': attrs['id']}
-
-    def render_csv(self, content, attrs):
-        pass
-
-    def render_json(self, content, attrs):
-        pass
-
-    def render_html(self, content, attrs):
-        pass
+        return output
 

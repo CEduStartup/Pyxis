@@ -1,10 +1,14 @@
 {% load value_picker %}
-<input {{ attrs }}>
-{% xml_picker_node node %}
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('.value_picker_selectable').click(function () {
-            $('#{{ input_id }}').attr('value', $(this).attr('xpath'));
+<div id="value_picker">
+    {% autoescape off %}
+    <input {{ attrs }}>
+    {% endautoescape %}
+    {% xml_picker_node node %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.value_picker_selectable').click(function () {
+                $('#value_picker input').attr('value', $(this).attr('xpath'));
+            });
         });
-    });
-</script>
+    </script>
+</div>

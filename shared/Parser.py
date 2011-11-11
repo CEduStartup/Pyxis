@@ -132,6 +132,11 @@ class BaseParser(object):
         """Inner implementation of the parser.
         """
 
+    @abc.abstractmethod
+    def get_parsed(self):
+        """Getter for parsed data.
+        """
+
 
 class GBeautifulSoupParser(BeautifulSoup.BeautifulSoup):
 
@@ -203,6 +208,11 @@ class XMLParser(BaseParser):
             # errors.
             log = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
             raise ParserSyntaxError(details=str(log))
+
+    def get_parsed(self):
+        """Getter for DOM tree of XML.
+        """
+        return self._etree_dom
 
     def xpath(self, xpath_str, cast=None):
         """Return information from XML using XPath.
