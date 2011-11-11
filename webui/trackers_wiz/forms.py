@@ -22,20 +22,20 @@ class TrackerNameForm(ModelForm):
 class DataSourceForm(ModelForm):
     method_name = forms.CharField(max_length=100, required=False)
     parms = forms.CharField(max_length=100, required=False)
-    uri = forms.URLField(required=True)
+    URI = forms.URLField(required=True)
     class Meta:
         model = DataSourceModel
         fields = ('access_method', 'data_type')
         layout = (
             Fieldset('Specify datasources', 'access_method', 'method_name',
-            'parms', 'uri', 'data_type', ),
+            'parms', 'URI', 'data_type', ),
         )
 
     def clean(self):
         query = {}
         query['method_name'] = self.cleaned_data['method_name']
         query['parms'] = self.cleaned_data['parms']
-        query['uri'] = self.cleaned_data['uri']
+        query['URI'] = self.cleaned_data['URI']
         self.cleaned_data['query'] = simplejson.dumps(query)
         return self.cleaned_data
 

@@ -22,14 +22,14 @@ def _make_initial(tracker):
 
     method_name = query.get('method_name', '')
     parms = query.get('parms', '')
-    uri = query.get('uri', '')
+    URI = query.get('URI', '')
 
     return {
          0: {'name': tracker.name, 'id': tracker.id,
              'status': tracker.status,
              'refresh_interval': tracker.refresh_interval},
          1: {'data_type': data_source.data_type, 'parms': parms,
-             'method_name': method_name, 'uri': uri,
+             'method_name': method_name, 'URI': URI,
              'access_method': data_source.access_method},
          2: {'value_type': value.value_type , 'name': value.name,
              'extraction_rule': value.extraction_rule},

@@ -65,7 +65,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
         except urllib2.URLError, err:
             sender.fire('LOGGER.WARNING', message='URLError for %s: %s' %
                                                   (self._target, err.reason))
-            raise ResponseURLError(err)
+            raise ResponseURLError(err.reason)
         except gevent.Timeout, err:
             sender.fire('LOGGER.WARNING', message='URL Gevent timeout - %s'
                                                   % self._target)
@@ -73,6 +73,8 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
 
         now = time.time()
         self.grab_spent_time = now - self.request_time
+        sender.fire('LOGGER.DEBUG', message='Processed "%s" with [%d] in %.2fsecs"' % (
+            self._target, self.response_code, self.grab_spent_time))
 
     def get_raw_data(self):
         return self.raw_data

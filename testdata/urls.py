@@ -14,7 +14,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     # url(r'^admin/', include(admin.site.urls)),
-    (r'^generator/html/(?P<function>\w+)/$', 'generator.views.html'),
-    (r'^generator/xml/(?P<function>\w+)/$', 'generator.views.xml'),
+    (r'^generator/(?P<format>html|xml)/(?P<function>\w+)/(?P<divider>\d*)$', 'generator.views.value'),
     (r'^generator/reset$', 'generator.views.reset')
 )
