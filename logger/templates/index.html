@@ -4,6 +4,7 @@
     <title>Logger Monitor</title>
     <script src="http://code.jquery.com/jquery-1.7.min.js"></script>
     <script src="/static/js/socket.io.js"></script>
+    <link href="/static/css/main.css" rel="stylesheet">
   </head>
   <body>
     <div id="status"></div>
@@ -15,10 +16,16 @@
       
       var sock = io.connect('/');
       sock.on('log', function(data) {
-        $('div#logger').append(data.msg);
+        $('div#logger').prepend('<div>' + data.msg + '</div>');
       });
       sock.emit('connected', {});
     });
     </script>
+    <div id="log_msg_template" class='log_event'>
+      <span class="log_time">11.11.2011 11:11:11</span>
+      <span class="log_type">DEBUG</span>
+      <span class="log_level">DEBUG</span>
+      <span class="log_message">Just a message</span>
+    </div>
   </body>
 </html>

@@ -56,7 +56,7 @@ class EventManagerBase(object):
         self._client.close()
 
 
-class SimpleEventSender(EventManagerBase):
+class EventSender(EventManagerBase):
 
     """Used to send event to different tubes.
     """
@@ -132,7 +132,7 @@ class SimpleEventSender(EventManagerBase):
                 raise EventSenderError(str(err))
 
 
-class GEventSender(SimpleEventSender):
+class GEventSender(EventSender):
 
     """An EventSender compatible with gevent.
     """
@@ -197,6 +197,17 @@ class EventReceiver(EventManagerBase):
         for tube in self._tubes:
             self._client.watch(tube)
 
+    def get_next_event(self):
+        """Reads and return next event from queue or None."""
+        job = self._client.reserve()
+        event = None
+        try:
+            event = pickle.loads(job.body)
+        finally:
+            if job:
+                job.delete()
+        return event
+
     def dispatch(self):
         """ Method that receive from message queue, restore and throw events to
         subscribed callback.
@@ -204,10 +215,7 @@ class EventReceiver(EventManagerBase):
         self._subscribe()
 
         while True:
-            job = self._client.reserve()
-            try:
-                event = pickle.loads(job.body)
+            event = self.get_next_event()
+            if event:
                 self._callback(event)
-            finally:
-                job.delete()
 
