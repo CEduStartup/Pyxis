@@ -40,9 +40,10 @@ class EventCallback(object):
     
     def __call__(self):
         try:
-            event = self.queue.get_nowait()
-            for conn in LoggerConnection.connections:
-                conn.emit('log', msg=event.msg)        
+            while True:
+                event = self.queue.get_nowait()
+                for conn in LoggerConnection.connections:
+                    conn.emit('log', msg=event.msg)        
         except Queue.Empty:
             pass
     
