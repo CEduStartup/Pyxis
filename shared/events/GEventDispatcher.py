@@ -9,7 +9,8 @@ dispatcher = EventDispatcher(host, port, 'consumer')
 # Subscribe with callback
 dispatcher.subscribe([TrackerEvent], some_func_1)
 # Subscribe without callback
-tracker_finished_subscr = dispatcher.subscribe([TrackerSuccessEvent, TrackerFailureEvent])
+tracker_finished_subscr = dispatcher.subscribe([TrackerSuccessEvent,
+                                                TrackerFailureEvent])
 
 # Subscriptions with callback are handled in dispatcher main loop.
 gevent.spawn(dispatcher.dispatch)
@@ -23,7 +24,7 @@ while True:
 
 from gevent.queue import Queue
 
-from EventDispatcher import EventDispatcher
+from shared.events.EventDispatcher import EventDispatcher
 
 
 class GEventDispatcher(EventDispatcher):
@@ -42,7 +43,8 @@ class GEventDispatcher(EventDispatcher):
 
     def _dispatch_event(self, event):
         for tag in event.tags:
-            for listener in self._listeners[tag]:
+            listeners = self._subscriptions.get(tag, [])
+            for listener in listeners:
                 if isinstance(listener, Queue):
                     listener.put(event)
                 else:
@@ -62,7 +64,7 @@ class GEventDispatcher(EventDispatcher):
         EventDispatcher.subscribe(self, events, callback)
 
         subscriber_id = len(self._subscribers)
-        self._subscribers.append(queue)
+        self._subscribers.append(callback)
 
         return subscriber_id
 

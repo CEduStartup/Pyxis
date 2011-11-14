@@ -1,39 +1,65 @@
-from __future__ import with_statement
+"""This module provide man functionality to deal with trackers pool.
+"""
 
 import gevent
 
-from tracker import Tracker
-from config.collector import trackers_refresh_interval
+from config.init.trackers import event_dispatcher
+from shared.services.services_api import trackers_api
+
 
 class TrackerCollection:
 
-    trackers = None
+    """This class is responsible for adding new trackers to the scheduler and
+    updating configuration of existing trackers.
+    """
+
     scheduler = None
 
     def __init__(self, scheduler, storage=None):
         self.scheduler = scheduler
         self.storage = storage
-        self.trackers = {}
+
+        self._trackers_api = None
+
+    def _config_changes_handler(self, trackre_changed_event):
+        """Handle tracker configuration changes.
+        """
+        tracker = self._trackers_api.get_trackers(
+                                tracker_id=trackre_changed_event.tracker_id)[0]
+        tracker.set_storage(self.storage)
+        self.scheduler.add_tracker(tracker)
 
     def _tracker_updater(self):
-        while True:
-            with open('trackers.pyxis', 'r') as fl:
-                old_trackers = set(self.trackers.keys())
-                for line in fl:
-                    key, interval, source = map(int, line.split())
-                    if key in old_trackers:
-                        self.trackers[key].set_interval(interval)
-                        self.trackers[key].set_source(source)
-                        old_trackers.remove(key)
-                    else:
-                        self.trackers[key] = Tracker(key, storage=self.storage)
-                        self.trackers[key].set_interval(interval)
-                        self.trackers[key].set_source(source)
-                        self.scheduler.add_tracker(self.trackers[key])
-                for tracker in old_trackers:
-                    self.scheduler.remove_tracker(tracker)
-            gevent.sleep(trackers_refresh_interval)
+        """Manage trackers queue.
+        Add new trackers and update trackers configuration in case when it
+        changed.
+        """
+        event_dispatcher.subscribe(
+           ['CONFIG.TRACKER.ADDED', 'CONFIG.TRACKER.CHANGED'],
+           self._config_changes_handler)
+
+        gevent.spawn(event_dispatcher.dispatch)
+
+    def _initialize(self):
+        """Perform all required initialization.
+        """
+        self._trackers_api = trackers_api()
+
+    def _load_trackers(self):
+        """This method is responsible for loading all trackers into scheduler
+        when the system is starting.
+        """
+        updated_trackers = \
+           self._trackers_api.get_trackers(modified_since=None)
+
+        for tracker in updated_trackers:
+            tracker.set_storage(self.storage)
+            self.scheduler.add_tracker(tracker)
 
     def start(self):
-        gevent.spawn(self._tracker_updater)
+        """Start main method in separate thread.
+        """
+        self._initialize()
+        self._load_trackers()
+        self._tracker_updater()
 

@@ -1,5 +1,13 @@
+# Ubuntu users please make sure that the following packages are installed:
+# libxml2-dev, libxslt-dev, python-dev, libevent-dev, libpg-dev
 beanstalkc
+PyYAML
 gevent
 pymongo
 lxml
 BeautifulSoup
+bjsonrpc
+Django
+psycopg2
+python-dateutil==1.5 # ensure to use 1.5 version for 2.x python!
+South

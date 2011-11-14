@@ -6,7 +6,8 @@ import pickle
 
 from config import mq
 from shared.events import Event
-
+from gevent.queue import Queue
+import gevent
 
 class EventManagerError(Exception):
 
@@ -37,7 +38,7 @@ class EventManagerBase(object):
     """Base class for event sender and event receiver.
     """
 
-    def __init__(self, server_host=mq.QUEUE_HOST, server_port=mq.QUEUE_PORT):
+    def __init__(self, server_host=mq.queue_host, server_port=mq.queue_port):
         """Initialize event manager.
 
         :Parameters:
@@ -55,7 +56,7 @@ class EventManagerBase(object):
         self._client.close()
 
 
-class EventSender(EventManagerBase):
+class SimpleEventSender(EventManagerBase):
 
     """Used to send event to different tubes.
     """
@@ -131,6 +132,46 @@ class EventSender(EventManagerBase):
                 raise EventSenderError(str(err))
 
 
+class GEventSender(SimpleEventSender):
+
+    """An EventSender compatible with gevent.
+    """
+
+    queue = None
+
+    def __init__(self, *args, **kwargs):
+        SimpleEventSender.__init__(self, *args, **kwargs)
+        self.queue = Queue()
+        gevent.spawn(self.process_queue)
+
+    def fire(self, event, tubes=None, **kwargs):
+        """Put event into current tube.
+
+        :Parameters:
+            - `event`: an event id.
+            - `tubes`: a list of tubes to send the `event` to.
+            - `kwargs`: dictionary which contains all required parameters to
+              format log message.
+        """
+        event = self._create_event_obj(event, **kwargs)
+        serialized_event = self._serialize_event(event)
+        dest = self._get_destination(event.eid, tubes)
+        self.queue.put((serialized_event, dest))
+
+    def process_queue(self):
+        """Send events from queue to consumers.
+        """
+        while True:
+            (serialized_event, dest) = self.queue.get()
+            for tube in dest:
+                try:
+                    self._client.use(tube)
+                    self._client.put(serialized_event)
+                except (beanstalkc.UnexpectedResponse,
+                    beanstalkc.CommandFailed), err:
+                    raise EventSenderError(str(err))
+
+
 def null_callback(event):
     """Null event handler.
     """
@@ -163,9 +204,8 @@ class EventReceiver(EventManagerBase):
         self._subscribe()
 
         while True:
-            # TODO: error handling
+            job = self._client.reserve()
             try:
-                job = self._client.reserve()
                 event = pickle.loads(job.body)
                 self._callback(event)
             finally:

@@ -1,0 +1,30 @@
+{% extends 'frontend/layout.html' %}
+
+{% block content %}
+
+User trackers are here:
+
+<table width="100%" border="1">
+<tr>
+	<th>Tracker name</th>
+	<th>Tracker source URL</th>
+	<th>Interval</th>
+	<th>Type</th>
+	<th>Status</th>
+	<th></th>
+</tr>
+{% for tracker in trackers %}
+<tr>
+	<td><a href="/trackers/view/{{ tracker.id }}/">{{ tracker.name }}</a></td>
+	<td>{{ tracker.query }}</td>
+	<td>{{ tracker.refresh_interval }}</td>
+	<td>{{ tracker.data_source.data_type }}</td>
+	<td>{{ tracker.status }}</td>
+	<td><a href="/trackerwiz/edit/{{ tracker.id }}">Edit</a></td>
+</tr>
+{% endfor %}
+</table>
+
+<a href="/trackerwiz/add">Add new tracker</a>
+
+{% endblock content %}

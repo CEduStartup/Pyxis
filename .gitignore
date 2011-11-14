@@ -3,3 +3,5 @@
 ~*
 *.swp
 .*
+*.pid
+cscope.out

@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <title>{% block title %}Pyxis - Welcome{% endblock title %}</title>
+    {% load static %}{% get_static_prefix as STATIC_PREFIX %}
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/main.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/highcharts.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/modules/exporting.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-twipsy.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-popover.js"></script>
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/bootstrap.css">
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/style.css">
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/main.css">
+    <meta charset="utf-8">
+</head>
+<body>
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="container-fluid">
+          <a class="brand" href="/">Pyxis</a>
+          <ul class="nav">
+            <li><a href="/trackers/">Trackers</a></li>
+            <li><a href="/views">Views</a></li>
+          </ul>
+          {% if user.is_authenticated %}
+          <p class="pull-right">
+            Logged in as
+            <a href="/users/profile/">
+              {% if user.get_full_name %}
+                {{user.get_full_name}}
+              {% else %}
+                {{ user }}
+              {% endif %}
+            </a>
+            <a href="/accounts/logout/">Log out</a>
+          </p>
+          {% else %}
+          <p class="pull-right">&nbsp;|&nbsp;<a href="/accounts/register/">Register</a></p>
+          <form action="/accounts/login/" class="pull-right" method="POST">
+            {% csrf_token %}
+            <input name="username" class="input-small" type="text" placeholder="Username">
+            <input name="password" class="input-small" type="password" placeholder="Password">
+            <button class="btn primary" type="submit">Sign in</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="width: 940px;">
+
+      <div class="content">
+        {% block content %}
+        {% endblock content %}
+      </div>
+
+      <footer>
+        <p style="text-align: left;">&copy; Pyxis 2011</p>
+      </footer>
+
+    </div>
+
+</body>
+</html>

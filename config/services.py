@@ -1,6 +1,8 @@
 # This file contains shared services definition.
 # Services logic are defined in services dir.
 
+from shared.Utils import port_randomizer
+
 class SharedServiceConfig:
     # Service description.
     description = None
@@ -21,9 +23,29 @@ class trackers(SharedServiceConfig):
     description = 'trackers operations'
     active = True
     bind_host = '127.0.0.1'
-    bind_port = 8000
+    bind_port = 8002 + port_randomizer()
     module = 'service_trackers'
     handler = 'TrackersService'
+
+
+class launcher(SharedServiceConfig):
+    """This service is used by system launcher. it is not automatically created
+    by services_launcher.py."""
+    description = 'System Launcher'
+    active = False
+    bind_host = '127.0.0.1'
+    bind_port = 8999 + port_randomizer()
+    module = None
+    handler = None
+
+class mongo_storage(SharedServiceConfig):
+    """Service which exports methods working with MongoDB"""
+    description = 'mongodb operations'
+    active = True
+    bind_host = '127.0.0.1'
+    bind_port = 8001 + port_randomizer()
+    module = 'service_mongo_storage'
+    handler = 'MongoStorage'
 
 
 class test(SharedServiceConfig):
@@ -31,6 +53,6 @@ class test(SharedServiceConfig):
     description = 'test service'
     active = False
     bind_host = '127.0.0.1'
-    bind_port = 8001
+    bind_port = 8003 + port_randomizer()
     module = 'service_test'
     handler = 'TestService'

@@ -4,8 +4,8 @@
 import pickle
 import time
 
+from config.mq import LOGGER_TUBE, COLLECTOR_TUBE
 
-LOGGER_TUBE = 'LOGGER_TUBE'
 
 class EventError(Exception):
 
@@ -51,10 +51,9 @@ class BaseEvent:
     :Class variables:
         - `eid`: string event id.
         - `time`: float. The time of event creation.
-        - `msg`: If this is a loggable event than this field should contain
-          a log message text.
         - `level`: INFO, DEBUG, etc.
-
+        - `required_attr`: this attributes must allways be passed as kwargs
+          when firing the events.
         - `_serializeble_attrs`: this list contains all attributes of the event
           which will be serialized and deserialized.
     """
@@ -63,13 +62,10 @@ class BaseEvent:
 
     eid = None
     time = None
-    # Log message text. For string formating please use dictionary
-    # ('%(key_name)s'). You can pass all arguments to `__init__()` as a keyword
-    # parameters.
-    msg = None
     level = None
 
     _serializeble_attrs = ['time', 'tags']
+    required_attr = []
 
     def __init__(self, custom_time=None, **kwargs):
         """Initialize event instance.
@@ -79,6 +75,7 @@ class BaseEvent:
               then current time will be used.
             - `kwargs` can contain additional attributes for `msg` formating.
         """
+        self.check_required_attrs(kwargs)
         self.__dict__.update(kwargs)
         self._set_fire_time(custom_time=custom_time)
         # Preserve all additional arguments passed to event constructor.
@@ -100,11 +97,15 @@ class BaseEvent:
     def __setstate__(self, state):
         """Restore an object from serialized state.
         """
-        # Log message formatting.
-        if self.msg:
-            self.msg = self.msg % state
-
         self.__dict__.update(state)
+
+    def check_required_attrs(self, args):
+        """Check if all required attributes are present in kwargs dict.
+        """
+        for attr in self.required_attr:
+            if not attr in args:
+                raise EventError('Required attribute "%s" is not specified.' %
+                                    (attr,))
 
     def _set_fire_time(self, custom_time=None):
         """Set the event creation time.
@@ -124,13 +125,37 @@ class BaseEvent:
         """
         try:
             return pickle.dumps(self)
-        except pickle.PicklingError, e:
-            raise EventSerializationError(str(e))
+        except pickle.PicklingError, err:
+            raise EventSerializationError(str(err))
+
+
+class BaseLogEvent(BaseEvent):
+
+    """Base class for all events which should be logged.
+    New instance attributes::
+
+        - `msg`: If this is a loggable event than this field should contain
+          a log message text.
+    """
+
+    # Log message text. For string formating please use dictionary
+    # ('%(key_name)s'). You can pass all arguments to `__init__()` as a keyword
+    # parameters.
+    msg = None
+
+    def __setstate__(self, state):
+        """Update log message then restore all other attributes.
+        """
+        # Log message formatting.
+        if self.msg:
+            self.msg = self.msg % state
+
+        BaseEvent.__setstate__(self, state)
 
 
 # Collector events.
 
-class CollectorEvent(BaseEvent):
+class CollectorEvent(BaseLogEvent):
 
     """Base class for all collector events.
     """
@@ -153,6 +178,8 @@ class CollectorFailureEvent(CollectorEvent):
     """Base class for all collector failure events.
     """
 
+    required_attr = ['error_details']
+
     eid = 'COLLECTOR.FAILURE'
     level = 'crit'
     msg = 'Collector critical error. Details: %(error_details)s'
@@ -163,12 +190,15 @@ class CollectorServiceStartedEvent(CollectorSuccessEvent):
     """Indicates that collector successfully started a service.
     """
 
+    required_attr = ['srv_name']
+
     eid = 'COLLECTOR.SERVICE_STARTED.SUCCESS'
     msg = 'Service "%(srv_name)s" started succesfully.'
 
+
 # Tracker events.
 
-class TrackerEvent(BaseEvent):
+class TrackerEvent(BaseLogEvent):
 
     """Base class for all tracker events.
 
@@ -193,8 +223,12 @@ class TrackerFailureEvent(TrackerEvent):
     """Base class for all tracker failure events.
     """
 
+    required_attr = ['tracker_id', 'error_details']
+
     eid = 'TRACKER.FAILURE'
     level = 'crit'
+    msg = """\
+Tracker "%(tracker_id)s" unhandled error. Details: %(error_details)s"""
 
 
 class TrackerWorkflowEvent(TrackerEvent):
@@ -210,6 +244,8 @@ class TrackerGrabSuccessEvent(TrackerSuccessEvent):
     """Invoked when tracker successfully grabbed data.
     """
 
+    required_attr = ['tracker_id']
+
     eid = 'TRACKER.GRAB.SUCCESS'
     msg = 'Tracker %(tracker_id)s successfully grabbed data.'
 
@@ -218,6 +254,8 @@ class TrackerGrabFailureEvent(TrackerFailureEvent):
 
     """Tracker cannot grab data due to some problem.
     """
+
+    required_attr = ['tracker_id', 'error_details']
 
     eid = 'TRACKER.GRAB.FAILURE'
     msg = 'Tracker %(tracker_id)s cannot grab data. Details: '\
@@ -229,6 +267,8 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
     """Invoked when parser error occured during data grabbing.
     """
 
+    required_attr = ['tracker_id', 'data_type', 'error_details']
+
     eid = 'TRACKER.FAILURE.PARSE'
     msg = 'Tracker %(tracker_id)s unable to parse %(data_type)s data. '\
           'Details: %(error_details)s'
@@ -236,8 +276,11 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
 
 # Logger events.
 
-class LoggerEvent(BaseEvent):
+class LoggerEvent(BaseLogEvent):
+
     """ Base class for all logger events. """
+
+    required_attr = ['message']
 
     eid = 'LOGGER'
     msg = '%(message)s'
@@ -271,9 +314,48 @@ class LoggerCriticalEvent(LoggerEvent):
     eid = 'LOGGER.CRITICAL'
     level = 'crit'
 
+
+# Configuration changes events.
+
+class TrackerConfigEvent(BaseLogEvent, BaseEvent):
+
+    """Base class for all events which indicate about changes in tracker
+    configuration.
+    """
+
+    required_attr = ['tracker_id']
+    eid = 'CONFIG.TRACKER'
+    msg = 'Tracker %(tracker_id)s configuration event.'
+    level = 'info'
+
+
+class NewTrackerAddedEvent(TrackerConfigEvent):
+
+    """Indicates that new tracker was added and collector needs to read its
+    configuration from relational DB and add this tracker to scheduler.
+    """
+
+    eid = 'CONFIG.TRACKER.ADDED'
+    msg = 'Tracker %(tracker_id)s added.'
+
+
+class TrackerConfigChangedEvent(TrackerConfigEvent):
+
+    """Indicates that configuration of tracker with the given `tracker_id` was
+    changed.
+    """
+
+    eid = 'CONFIG.TRACKER.CHANGED'
+    msg = 'Tracker %(tracker_id)s was updated.'
+
+
 # Maps event EID to event class. You need to update this mapping each time you
 # adding new event class.
 _EID_EVENT_MAPPING = {
+    # Tracker config changes events.
+    NewTrackerAddedEvent.eid: NewTrackerAddedEvent,
+    TrackerConfigChangedEvent.eid: TrackerConfigChangedEvent,
+
     # Collector events.
     CollectorServiceStartedEvent.eid: CollectorServiceStartedEvent,
     CollectorFailureEvent.eid: CollectorFailureEvent,
@@ -293,6 +375,10 @@ _EID_EVENT_MAPPING = {
 
 # Defines a list of suitable tubes for each EID. You need to update this
 _EID_TUBE_MAPPING = {
+    # Tracker config changes events.
+    NewTrackerAddedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
+    TrackerConfigChangedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
+
     # Collector events.
     CollectorServiceStartedEvent.eid: (LOGGER_TUBE,),
     CollectorFailureEvent.eid: (LOGGER_TUBE,),

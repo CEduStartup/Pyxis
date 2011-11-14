@@ -1,17 +1,18 @@
-# Module starts all services defined in config/srv_config and services/service.py
+# Module starts all services defined in config/services.py.
 # All services are run under gevent.
-import config.srv as srv_config
+import config.services as config
 from services.service_base import SharedService
 import types
 import gevent
 from gevent import monkey
+from shared.services.services_api import launcher_api
 
 
 def start_service(service_config):
     """Start one service.
 
     :Parameters:
-        - `service_config`: class defining a service. See services/srv_config.py
+        - `service_config`: class defining a service. See config/services.py
     """
     module = __import__('services.%s' %service_config.module,
                         fromlist=(service_config.module))
@@ -25,16 +26,16 @@ def _is_service_config_class(attribute):
     """Determine if given module attribute is a shared service configuration
     class."""
     return (isinstance(attribute, types.ClassType) and
-            issubclass(attribute, srv_config.SharedServiceConfig) and
+            issubclass(attribute, config.SharedServiceConfig) and
             attribute.description)
 
 
 def launch_services():
-    """Launch all services defined in config/srv_config.py."""
+    """Launch all services defined in config/services.py."""
     print 'Starting services...'
     threads = []
-    for attribute in dir(srv_config):
-        attribute = getattr(srv_config, attribute)
+    for attribute in dir(config):
+        attribute = getattr(config, attribute)
         if _is_service_config_class(attribute):
             service_config = attribute
             if service_config.active:
@@ -42,9 +43,16 @@ def launch_services():
             else:
                 print 'Service disabled by administrator: %s' %service_config.description
 
+
+    try:
+        launcher_api().connection.notify.process_ready('services')
+    except Exception, e:
+        # This is not critical error and we should just log it.
+        print 'Cannot send READY signal.'
     gevent.joinall(threads)
 
 
 if __name__ == '__main__':
     monkey.patch_all()
     launch_services()
+

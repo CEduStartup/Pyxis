@@ -11,7 +11,8 @@ dispatcher.subscribe([TrackerSuccessEvent, TrackerFailureEvent], some_func_3)
 dispatcher.dispatch()
 """
 
-from EventManager import EventReceiver
+from shared.events.Event import get_event
+from shared.events.EventManager import EventReceiver
 
 
 class EventDispatcher(object):
@@ -21,7 +22,8 @@ class EventDispatcher(object):
     """
 
     def __init__(self, server_host, server_port, tag):
-        self._receiver = EventReceiver(server_host, server_port, tag, self._dispatch_event)
+        self._receiver = EventReceiver(server_host, server_port, tag,
+                                       self._dispatch_event)
         self._subscriptions = {}
 
     def _dispatch_event(self, event):
@@ -33,7 +35,6 @@ class EventDispatcher(object):
         """ Reduces tags list to the least effective according to
         event-subevent relations.
         """
-
         compressed = []
         for tag in tags:
             for key, value in enumerate(compressed):
@@ -42,12 +43,13 @@ class EventDispatcher(object):
                     break
                 if self._is_subtag(tag, value):
                     break
+            else:
+                compressed.append(tag)
         return compressed
 
     def _get_tags(self, events):
         """ Creates tags list based on given events list.
         """
-
         tags = []
         for event in events:
             tags.append(event.tags[-1])
@@ -65,12 +67,19 @@ class EventDispatcher(object):
     def subscribe(self, events, callback):
         """ Subscribes for bunch of events. Receiving of events arranged by
         using returned id in receive method.
+
+        :Parameters:
+            - `events` a list of event EIDs.
+            - `callback`: a callable object which accepts an instance of event
+              as argument.
         """
+        # Convert a list of EIDs to list of event class instances.
+        event_objects = [get_event(e) for e in events]
 
         # Subscribe given callback for certain events or event types.
-        subscriber_tags = self._get_tags(events)
+        subscriber_tags = self._get_tags(event_objects)
         for tag in subscriber_tags:
             if not tag in self._subscriptions:
-                self.subscriptions[tag] = []
+                self._subscriptions[tag] = []
             self._subscriptions[tag].append(callback)
 
