@@ -65,8 +65,6 @@ class ValueForm(ModelForm):
             Fieldset('Specify values location', 'name', 'value_type', 'extraction_rule', ),
         )
 
-    extraction_rule = forms.CharField(widget=ValuePickerWidget())
-
 class TrackerWizard(FormWizard):
     def get_template(self, step):
         return 'trackers_wiz/wizard.html'
