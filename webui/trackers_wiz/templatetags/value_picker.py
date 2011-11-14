@@ -3,10 +3,6 @@ from django import template
 register = template.Library()
 
 
-@register.inclusion_tag('trackers_wiz/templatetags/value_picker/value_picker.html')
-def value_picker():
-    return locals()
-
 @register.inclusion_tag('trackers_wiz/templatetags/value_picker/xml_picker_node.html')
 def xml_picker_node(node):
     node_name = node.tag
@@ -26,11 +22,15 @@ def xml_picker_attribute(attribute):
 def html_picker_node(node):
     pass
 
-@register.inclusion_tag('trackers_wiz/templatetags/value_picker/html_picker_node.html')
+@register.inclusion_tag('trackers_wiz/templatetags/value_picker/html_picker_attribute.html')
 def html_picker_attribute(attribute):
     pass
 
-@register.inclusion_tag('trackers_wiz/templatetags/value_picker/json_picker.html')
-def json_picker():
+@register.inclusion_tag('trackers_wiz/templatetags/value_picker/json_picker_node.html')
+def json_picker_node(node):
+    pass
+
+@register.inclusion_tag('trackers_wiz/templatetags/value_picker/json_picker_attribute.html')
+def json_picker_attribute(attribute):
     pass
 

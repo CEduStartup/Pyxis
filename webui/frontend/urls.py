@@ -12,4 +12,3 @@ urlpatterns = patterns('frontend.views.trackers',
 urlpatterns += patterns('',
     (r'^call$', 'frontend.views.client.tracker_data'),
 )
-
