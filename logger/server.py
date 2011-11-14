@@ -6,6 +6,7 @@ import tornadio2
 import threading
 import time
 import Queue
+from datetime import datetime
 
 from config.mq import queue_host, queue_port
 from shared.events.EventManager import EventReceiver
@@ -43,7 +44,10 @@ class EventCallback(object):
             while True:
                 event = self.queue.get_nowait()
                 for conn in LoggerConnection.connections:
-                    conn.emit('log', msg=event.msg)        
+                    conn.emit('log', time=datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
+                                     msg=event.msg, 
+                                     level=event.level,
+                                     type=event.tags[-1])        
         except Queue.Empty:
             pass
     

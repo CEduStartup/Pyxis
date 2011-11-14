@@ -1,5 +1,46 @@
+* { margin: 0; padding: 0; outline: 0; -webkit-box-sizing: border-box }
+
+body, div, td, div, p {
+    font-family: tahoma;
+    font-size: 10pt;
+}
+
+header h1 {
+    font-weight: normal;
+}
+
+.none {
+    display: none;
+}
 
 div.log_event {
-    width:100%;
-    border: 1px solid blue;
+  padding: 3px;
+  font-family: tahoma;
+
+  font-size: 9pt;
+  background: #f4f9fe;
+  border-bottom: 1px solid #e5eaf4;
 }
+
+section#logs-critical div.log_event, section#logs-warning div.log_event {
+  color: #543;
+  background: #fef9fa;
+  border-bottom: 1px solid #f4e5eae5;    
+}
+
+div.log_event span.log_time {
+  float: left;
+  margin: 0 5px 0 15px;
+  width: 130px;
+}
+
+div.log_event span.log_type {
+  float: left;
+  width: 130px;
+  font-weight: bold;
+}
+
+div.log_event span.log_message {
+  font-family: courier;
+}
+
