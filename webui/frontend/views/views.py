@@ -47,7 +47,7 @@ def view(request, id):
         values_id_name_list.append([value_id, item['name']])
     values_id_name_list.sort()
     values = dict(values_id_name_list)
-    display_values = {}
+    display_values = simplejson.loads(view.trackers) or {}
     default_aggr = 'avg'
     if options.data['periods'] == 'minute':
         default_aggr = 'raw'
@@ -66,7 +66,9 @@ def view(request, id):
 @csrf_protect
 def save(request):
     view = ViewForm(request.POST)
+    print request.POST
     if view.is_valid():
+        print view.cleaned_data
         instance = view.save(commit=False)
         instance.trackers = view.cleaned_data['trackers']
         instance.save()

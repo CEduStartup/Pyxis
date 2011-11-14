@@ -21,24 +21,6 @@ def _make_pretty(collection):
     """
     return ((k, v['pretty']) for k, v in collection.iteritems())
 
-
-class TrackerModel(Model):
-    """ Tracker model.
-    """
-    class Meta:
-        db_table = 'tracker'
-    class Admin:
-        pass
-
-    user             = ForeignKey(User)
-    name             = CharField(max_length=60)
-    status           = PositiveIntegerField(default=0)
-    refresh_interval = PositiveIntegerField(default=3600)
-    last_modified    = DateTimeField(auto_now=True, auto_now_add=True)
-
-    def __unicode__(self):
-        return '<TrackerModel %s: %s>' % (self.id, self.name)
-
 class ViewModel(Model):
     """ View model.
     """
@@ -60,6 +42,22 @@ class ViewModel(Model):
     def __unicode__(self):
         return '<ViewModel %s: %s>' % (self.id, self.view_name)
 
+class TrackerModel(Model):
+    """ Tracker model.
+    """
+    class Meta:
+        db_table = 'tracker'
+    class Admin:
+        pass
+
+    user             = ForeignKey(User)
+    name             = CharField(max_length=60)
+    status           = PositiveIntegerField(default=0)
+    refresh_interval = PositiveIntegerField(default=3600)
+    last_modified    = DateTimeField(auto_now=True, auto_now_add=True)
+
+    def __unicode__(self):
+        return '<TrackerModel %s: %s>' % (self.id, self.name)
 
 class DataSourceModel(Model):
     """ Data Source model.
