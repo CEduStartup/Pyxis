@@ -48,7 +48,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
               described in `__init__()`.
         """
         query = self.parse_query(config['query'])
-        self._target = query['URI']
+        self._target = query['uri']
 
     def grab_data(self):
         self.request_time = time.time()
@@ -74,6 +74,6 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
 
         now = time.time()
         self.grab_spent_time = now - self.request_time
-        
+
     def get_raw_data(self):
         return self.raw_data

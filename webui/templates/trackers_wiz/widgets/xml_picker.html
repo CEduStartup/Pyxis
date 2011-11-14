@@ -1,0 +1,7 @@
+{% load value_picker %}
+<div id="value_picker">
+    {% autoescape off %}
+    <input {{ attrs }}>
+    {% endautoescape %}
+    {% xml_picker_node node %}
+</div>
