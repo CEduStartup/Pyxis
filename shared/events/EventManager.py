@@ -140,7 +140,7 @@ class GEventSender(EventSender):
     queue = None
 
     def __init__(self, *args, **kwargs):
-        SimpleEventSender.__init__(self, *args, **kwargs)
+        EventSender.__init__(self, *args, **kwargs)
         self.queue = Queue()
         gevent.spawn(self.process_queue)
 

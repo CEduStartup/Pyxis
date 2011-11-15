@@ -95,7 +95,7 @@ def main():
     queue = Queue.Queue()
     
     server = tornado.httpserver.HTTPServer(Application(queue))
-    server.listen(9998)
+    server.listen(9997)
     
     ioloop = tornado.ioloop.IOLoop.instance()
     autoreload.start(ioloop)

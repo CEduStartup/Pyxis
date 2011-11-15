@@ -5,12 +5,76 @@ body, div, td, div, p {
     font-size: 10pt;
 }
 
+.none {
+    display: none;
+}
+
 header h1 {
     font-weight: normal;
 }
 
-.none {
-    display: none;
+header#primary {
+    height: 56px;
+    padding: 8px 0 0 32px;
+    background: #235;
+}
+
+header#primary h1 {
+    color: #fff;
+}
+
+header#primary span {
+    font-size:80%;
+    opacity: .6;
+}
+
+body > section {
+  position: absolute;
+  width: 100%;
+  opacity: 0;
+}
+body > section.current {
+  opacity: 1;
+}
+
+nav#tabs ul {
+  width: 100%;
+  height: 32px;
+  background: #fff;
+  padding-left: 8px;
+  background: #235;
+  margin-bottom: 16px;
+}
+
+nav#tabs ul li {
+  display: block;
+  float: left;
+  height: 32px;
+  width: 160px;
+  padding:8px 4px 0 16px;
+  margin-right: 1px;
+  -moz-border-radius-topleft: 8px;
+  -moz-border-radius-topright: 8px;
+  -webkit-border-top-left-radius: 8px;   
+  -webkit-border-top-right-radius: 8px;
+  border-top-left-radius: 8px;   
+  border-top-right-radius: 8px;   
+  background: #ddd;   
+  -moz-box-shadow: inset 0px 2px 3px #fff;
+  -webkit-box-shadow: inset 0px 2px 3px #fff;
+  box-shadow: inset 0px 2px 3px #fff;
+}
+
+nav#tabs ul li.current {
+  background: #fff;
+  box-shadow: none
+}
+
+nav#tabs ul li a {
+  padding: 8px;
+  text-decoration: none;
+  font-weight:bold;
+  color: #556;
 }
 
 div.log_event {
@@ -36,8 +100,11 @@ div.log_event span.log_time {
 
 div.log_event span.log_type {
   float: left;
-  width: 130px;
+  width: 140px;
   font-weight: bold;
+  font-size: 80%;
+  opacity: 0.3;
+  padding-top: 2px;
 }
 
 div.log_event span.log_message {

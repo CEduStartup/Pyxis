@@ -8,45 +8,10 @@
     <script src="/static/js/vendor/backbone.js"></script>
     <script src="/static/js/main.js"></script>
     <link href="/static/css/main.css" rel="stylesheet">
-    <style>
-    body > section {
-      position: absolute;
-      width: 100%;
-      opacity: 0;
-    }
-    body > section.current {
-      opacity: 1;
-    }
-    
-    nav#tabs ul {
-      width: 100%;
-      height: 32px;
-      background: #fff;
-      border: 1px solid blue;
-    }
-    
-    nav#tabs ul li {
-      display: inline;
-      margin:12px;
-      -moz-border-radius: 16px;
-      -webkit-border-radius: 16px;
-      border-radius: 16px;   
-      background: #eee;   
-    }
-    
-    nav#tabs ul li.current {
-      font-weight:bold;
-    }
-    
-    nav#tabs ul li a {
-      padding: 8px;
-    }
-    
-    </style>
   </head>
   <body>
     <header id="primary">
-      <h1>Logger</h1>
+      <h1>Logger <span>- pyxis log-event monitoring</span></h1>
     </header>
     <nav id='tabs'>
       <ul>
@@ -71,7 +36,7 @@
     <script type="text/javascript">
     $(function() {
       
-      var TabsState = Backbone.Model.extend({
+      /*var TabsState = Backbone.Model.extend({
         defaults: {
           'critical': 0,
           'warning':  0,
@@ -81,7 +46,7 @@
         }
       });
       
-      var tabsState = TabsState();
+      var tabsState = TabsState();*/
       
       var Controller = Backbone.Router.extend({
         routes: {
@@ -133,6 +98,9 @@
         if (!section) section = MAP_LEVELS['other'];
         
         section.prepend(render_item);
+        while (section.children().length > 100) {
+          section.children().last().remove();
+        }
         
         console.log(event.type + ':' + event.level);
       });
