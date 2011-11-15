@@ -7,24 +7,17 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response, redirect
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.encoding import force_unicode
-from frontend.models import TrackerModel
-from frontend.forms import OptionsForm, TrackerForm
+from frontend.models import TrackerModel, ViewModel
+from frontend.forms import OptionsForm, TrackerForm, ViewForm
 from webui.util import render_to
 
 from datetime import date, timedelta
 from shared.services.services_api import mongo_storage_api, \
                                          trackers_api
+from shared.Utils import METHOD_CHOICES
 from pprint import pprint as pp
 
-aggregation_methods = (
-    ('min', 'Minimal'),
-    ('max', 'Maximal'),
-    ('avg', 'Average'),
-    ('sum', 'Summed up'),
-    ('count', 'Count'),
-    ('raw', 'As Is'),
-)
-aggr_map = dict(aggregation_methods)
+aggr_map = dict(METHOD_CHOICES)
 
 
 @login_required
@@ -76,7 +69,7 @@ def view(request, tracker_id=None):
         row.append(display_values.get(value_id, []))
     return {'tracker': tracker, 'options': options,
             'tracker_values': values_id_name_list,
-            'aggregation_methods': aggregation_methods}
+            'aggregation_methods': METHOD_CHOICES}
 
 @csrf_protect
 @render_to('frontend/trackers/form.html')
@@ -92,10 +85,10 @@ def form(request, tracker):
 def enable(request):
     return index(request)
 
+@login_required
 def get_data_to_display(request):
     trackers_client = trackers_api()
     mongo_client = mongo_storage_api()
-
     options = OptionsForm(request.POST)
     options.is_valid()
     start = options.cleaned_data['start'].strftime('%Y-%m-%d')
@@ -166,4 +159,3 @@ def get_data_to_display(request):
             row['name'] = '%s Value for %s' % (aggr_method, value_name)
         data_list.extend(data)
     return HttpResponse(simplejson.dumps(data_list), mimetype='application/javascript')
-
