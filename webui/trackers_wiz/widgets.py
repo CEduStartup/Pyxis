@@ -17,11 +17,15 @@ class ValuePickerWidget(Widget):
     templates_name = 'trackers_wiz/widgets/%s_picker.html'
 
     def render(self, name, value, attrs=None):
+        """Method that renders widget for display.
+        """
         data_type = self.attrs['data_type']
         content = self.attrs['grabbed_data']
+        # Here we need to delete attributes that which should not be rendered as is.
         del self.attrs['data_type']
         del self.attrs['grabbed_data']
 
+        # Attributes that would be rendered to form's input.
         render_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
         if value is None:
             value = ''
@@ -38,6 +42,5 @@ class ValuePickerWidget(Widget):
                self.templates_name % (DATA_TYPES[data_type]['name'],),
                {'node': parser.get_parsed(), 'attrs': flatatt(render_attrs),
                 'input_type': attrs['id']})
-
         return output
 
