@@ -58,13 +58,13 @@ body {
     top: 50%;
     left: 50%;
     margin-top: -100px;
-    margin-left: -100px;
+    margin-left: -200px;
     z-index: 30000;
     text-align: center;
     display: none;
 }
 
-.popup div, .popup button {
+.popup div, .popup input {
     margin-bottom: 10px;
 }
 
