@@ -29,7 +29,7 @@ class Command(BaseCommand):
     def handle(self, addrport='', *args, **options):
         import django
         from django.core.servers.basehttp import AdminMediaHandler, WSGIServerException
-        from django_concurrent_test_server.servers import run
+        from django_concurrent_server.servers import run
         from django.core.handlers.wsgi import WSGIHandler
         if args:
             raise CommandError('Usage is runserver %s' % self.args)
