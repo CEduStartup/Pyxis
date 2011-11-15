@@ -50,13 +50,20 @@
                 },
             });
 
-            $('#view_form').fadeOut(500);
+            $('#view_form').hide();
+            $('div.bg').hide();
 
             console.log(data);
         }
         else {
+            $('div.bg').show();
             $('#view_form').fadeIn(300);
         }
+    }
+
+    function close_popup() {
+        $('#view_form').hide();
+        $('div.bg').hide();
     }
 
     $(document).ready(function() {
@@ -166,10 +173,11 @@
     <div name="update" class="btn primary" onclick="update_chart();">Update Chart</div>
     <div name="save_view" class="btn primary" onclick="save_view();">Save View</div>
   </div>
-  <div class='well' style="padding: 14px 19px; margin-top: 15px; text-align: center; display: none;" id="view_form">
+  <div class='well popup' id="view_form">
     <input type='text' name='view_name' id='view_name'><br />
     <input type='text' name='view_description' id='view_description'><br />
     <div class="btn primary" onclick="save_view(1);">Submit</div>
+    <div class="btn primary" onclick="close_popup();">Close</div>
   </div>
 </form>
 

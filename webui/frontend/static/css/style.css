@@ -1,5 +1,6 @@
 html, body {
   background-color: #eee;
+  height: 100%;
 }
 body {
   padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
@@ -50,4 +51,46 @@ body {
 .tracker_wizard_table th:first-child {
     width: 35%;
     vertical-align: top;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -100px;
+    margin-left: -100px;
+    z-index: 30000;
+    text-align: center;
+    display: none;
+}
+
+.popup div, .popup button {
+    margin-bottom: 10px;
+}
+
+.bg {
+    width: 100%;
+    min-height: 100%;
+    height:     auto !important;
+    height: 100%;
+    background-color: #111111;
+    opacity: 0.6;
+    z-index: 20000;
+    overflow: auto;
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    display: none;
+}
+
+.period-block, .method-block {
+    float: left;
+}
+
+.datepicker-block, .type-block {
+    float: right;
+}
+
+label {
+    padding-right: 10px;
 }
