@@ -6,11 +6,10 @@ import time
 import traceback
 
 from config.init.trackers import sender
+from shared.trackers import VALUE_TYPES
 from shared.trackers.datasources.factory import get_datasource
-from shared.trackers.datasources.Errors import UnknownDatasourceError, \
-                                               BaseGrabError
+from shared.trackers.datasources.Errors import BaseGrabError
 from shared.Parser import get_parser, ParserError
-
 
 class Tracker(object):
 
@@ -56,8 +55,7 @@ class Tracker(object):
 
                               {
                                 `value_id`: `int` unique ID of the value.
-                                `type`: `str`. A rule to validate value.
-                                        Currently `int` or `float`.
+                                `type`: `int`. A rule to validate value.
                                 `extraction_rule`: `str`. XPATH, JSONPATH,
                                                    regexp, etc.
                               }
@@ -67,7 +65,7 @@ class Tracker(object):
         self.tracker_id = tracker_id
         self.name = tracker_name
         self.refresh_interval = refresh_interval
-        self._datasource_settings = datasource_settings
+        self.datasource_settings = datasource_settings
         self.storage = None
 
         self.last_modified = 0
@@ -109,20 +107,16 @@ class Tracker(object):
                 - datasource instance.
 
             """
-            try:
-                datasource = get_datasource(settings_dict)
-            except UnknownDatasourceError, err:
-                # TODO: handle this error correctly.
-                print 'SOME ERROR', err
+            datasource = get_datasource(settings_dict)
             return datasource
 
-        if isinstance(self._datasource_settings, dict):
-            self._datasources = [(create_datasource(self._datasource_settings), 
-                                  self._datasource_settings)]
+        if isinstance(self.datasource_settings, dict):
+            self._datasources = [(create_datasource(self.datasource_settings),
+                                  self.datasource_settings)]
         else:
-            self._datasources = [(create_datasource(settings), 
+            self._datasources = [(create_datasource(settings),
                                   settings) for settings in
-                                 self._datasource_settings]
+                                 self.datasource_settings]
 
         return len(self._datasources)
 
@@ -132,12 +126,11 @@ class Tracker(object):
         self._create_datasources()
 
         for datasource in map(lambda x: x[0], self._datasources):
-            try:
-                datasource.grab_data()
-            except BaseGrabError:
-                # Log this event.
-                print 'GRAB ERROR'
-                pass
+            datasource.grab_data()
+
+            sender.fire('TRACKER.GRAB.SUCCESS', tracker_id=self.tracker_id)
+
+
 
     def _parse_data(self):
         """Parse raw data with appropriate parser and save gathered values in
@@ -151,19 +144,22 @@ class Tracker(object):
                 parser.initialize()
                 parser.parse(datasource.get_raw_data())
                 self._parsers.append(parser)
-                
-                for extract_value in settings['values']:
-                    value_result = parser.xpath(extract_value['extraction_rule'])
-                    self._clean_data[extract_value['value_id']] = value_result
 
-            except ParserError:
-                print '!!!!'
+                for extract_value in settings['values']:
+                    value_result = parser.xpath(
+                       extract_value['extraction_rule'])
+                    cast_func = VALUE_TYPES[extract_value['type']]['cast']
+                    if value_result and len(value_result):
+                        self._clean_data[extract_value['value_id']] = \
+                           cast_func(value_result[0])
+
+            except ParserError, e:
                 # TODO: we need to log this error and notify another components
                 # about it.
-                print 'PARSER ERROR'
+                sender.fire('LOGGER.CRITICAL', message=
+                            'Parsing error for tracker %s' % self.tracker_id)
 
-
-    def _check_data(self):
+    def _validate_data(self):
         """Check if the data stored in `values` attribute has the same type as
         it was requested by the user.
         """
@@ -174,14 +170,21 @@ class Tracker(object):
     def _save_data(self):
         """Save data to storage.
         """
-        self.storage.put(self, {'timestamp': self._datasources[0][0].request_time, #by now we are taking time only from 1st DS 
-                                'data':      self._clean_data})
+        sender.fire('LOGGER.DEBUG', message='Save data: %s %s' %
+                                    (self.tracker_id, self._clean_data))
+        # Currently we process only first datasource.
+        self.storage.put(self,
+                         {'timestamp': self._datasources[0][0].request_time,
+                          'data':      self._clean_data})
 
     def _process_datasource_exception(self, err):
-        # TODO: process exception here
-        print 'ERROR', err
-        sender.fire('LOGGER.DEBUG',
-                    message='DATASOURCE EXCEPTION %s' % (type(err),))
+        """Process grab errors.
+
+        :Parameters:
+            - `err`: an instance of execption.
+        """
+        sender.fire('TRACKER.GRAB.FAILURE', tracker_id=self.tracker_id,
+                    error_details=str(err))
 
     def process(self):
         """Main logic of the tracker.
@@ -192,11 +195,11 @@ class Tracker(object):
         try:
             self._grab_data()
             self._parse_data()
-            self._check_data()
+            self._validate_data()
             self._save_data()
         except BaseGrabError, err:
             self._process_datasource_exception(err)
-        except Exception:
+        except Exception, err:
             sender.fire('LOGGER.CRITICAL', message=traceback.format_exc())
         finally:
             self.last_modified = time.time()
@@ -207,12 +210,12 @@ class Tracker(object):
 
     def __repr__(self):
         return '<Tracker %s: `%s` %s>' % (self.tracker_id, self.name,
-                                          self._datasource_settings)
+                                          self.datasource_settings)
     def get_values(self):
-        if isinstance(self._datasource_settings, dict):
-            ds = [self._datasource_settings,]
+        if isinstance(self.datasource_settings, dict):
+            ds = [self.datasource_settings,]
         else:
-            ds = self._datasource_settings
+            ds = self.datasource_settings
 
         values = {}
         for d in ds:

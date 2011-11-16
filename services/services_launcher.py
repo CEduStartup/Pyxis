@@ -44,7 +44,11 @@ def launch_services():
                 print 'Service disabled by administrator: %s' %service_config.description
 
 
-    launcher_api().connection.notify.process_ready('services')
+    try:
+        launcher_api().connection.notify.process_ready('services')
+    except Exception, e:
+        # This is not critical error and we should just log it.
+        print 'Cannot send READY signal.'
     gevent.joinall(threads)
 
 
