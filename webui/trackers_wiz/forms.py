@@ -1,5 +1,7 @@
 import simplejson
 
+from shared.events.EventManager import EventSender
+
 from django import forms
 from django.forms import ModelForm
 from django.http import HttpResponseRedirect, HttpResponse
@@ -55,21 +57,29 @@ class TrackerWizard(FormWizard):
         tracker = None
         data_source = None
         value = None
+
+        is_new_tracker = False
+
         # Handle add vs edit cases.
         if self.initial:
             edited_id = self.initial[0].get('id')
             if edited_id:
                 tracker = get_object_or_404(TrackerModel, pk=edited_id)
+
         if not tracker:
             tracker = TrackerModel.objects.create(user=request.user)
+            is_new_tracker = True
         else:
             data_source = DataSourceModel.objects.get(tracker=tracker)
+
         if not data_source:
             data_source = DataSourceModel.objects.create(tracker=tracker)
         else:
             value = ValueModel.objects.get(data_source=data_source)
+
         if not value:
             value = ValueModel.objects.create(data_source=data_source)
+
         value.data_source = data_source
         data_source.tracker = tracker
         # Fill in objects with new data.
@@ -77,7 +87,6 @@ class TrackerWizard(FormWizard):
         tracker.refresh_interval = form_list[0].cleaned_data['refresh_interval']
         tracker.status = form_list[0].cleaned_data['status']
         data_source.access_method = form_list[1].cleaned_data['access_method']
-
         data_source.query = form_list[1].cleaned_data['query']
         data_source.data_type = form_list[1].cleaned_data['data_type']
         value.name = form_list[2].cleaned_data['name']
@@ -87,5 +96,14 @@ class TrackerWizard(FormWizard):
         tracker.save()
         data_source.save()
         value.save()
+
+        if is_new_tracker:
+            eid = 'CONFIG.TRACKER.ADDED'
+        else:
+            eid = 'CONFIG.TRACKER.CHANGED'
+
+        sender = EventSender()
+        sender.fire(eid, tracker_id=tracker.id)
+
         return HttpResponseRedirect('/trackers/')
 
