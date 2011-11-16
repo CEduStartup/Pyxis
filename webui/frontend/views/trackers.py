@@ -161,3 +161,9 @@ def get_data_to_display(request):
             row['name'] = '%s Value for %s' % (aggr_method, value_name)
         data_list.extend(data)
     return HttpResponse(simplejson.dumps(data_list), mimetype='application/javascript')
+
+@login_required
+def delete(request, id):
+    view = TrackerModel.objects.get(pk=id)
+    view.delete()
+    return redirect('/trackers/')
