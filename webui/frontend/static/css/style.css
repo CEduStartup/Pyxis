@@ -46,3 +46,8 @@ body {
 .topbar .btn {
   border: 0;
 }
+
+.tracker_wizard_table th:first-child {
+    width: 35%;
+    vertical-align: top;
+}

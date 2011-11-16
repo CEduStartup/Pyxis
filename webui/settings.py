@@ -11,12 +11,16 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_NAME = 'pyxis.%s' %os.environ['LOGNAME']             # Or path to database file if using sqlite3.
-DATABASE_USER = 'postgres'             # Not used with sqlite3.
-DATABASE_PASSWORD = '123'         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+DATABASES = {
+    'default': dict(
+        ENGINE = 'django.db.backends.postgresql_psycopg2', # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        NAME = 'pyxis_%s' %os.environ['LOGNAME'], # Or path to database file if using sqlite3.
+        USER = 'postgres',             # Not used with sqlite3.
+        PASSWORD = '123',              # Not used with sqlite3.
+        HOST = '',                     # Set to empty string for localhost. Not used with sqlite3.
+        PORT = '',                     # Set to empty string for default. Not used with sqlite3.
+    )
+}
 
 DATABASE_ENGINE = 'sqlite3'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
 DATABASE_NAME = 'trackers.db'        # Or path to database file if using sqlite3.
@@ -29,7 +33,7 @@ DATABASE_PORT = ''             # Set to empty string for default. Not used with 
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'Europe/Kiev'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -60,8 +64,8 @@ SECRET_KEY = 'm_8a_z@_4*9+odt9b)pvfe!m7!cxphr(#u^+qk0urgx#+amcur'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
 #     'django.template.loaders.eggs.load_template_source',
 )
 
@@ -85,20 +89,21 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'bootstrap',
     'frontend',
     'registration',
-    'accounts',
+    'trackers_wiz'
 )
 
 # Django Registration
 ACCOUNT_ACTIVATION_DAYS = 2
 
 AUTH_USER_EMAIL_UNIQUE = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'pyxis.odmin@gmail.com'
-EMAIL_HOST_PASSWORD = 'ironport'
-EMAIL_USE_TLS = True
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'info@pyxis'
 
 STATIC_ROOT = '%s/frontend/static' % (os.getcwd(),)
@@ -108,7 +113,4 @@ STATIC_URL = '/static/'
 RPC_HOST = '127.0.0.1'
 RPC_PORT = 10123
 
-APPEND_SLASH = True
-
-LOGIN_REDIRECT_URL = '/'
-AUTH_PROFILE_MODULE = "accounts.UserProfile"
+APPEND_SLASH = False

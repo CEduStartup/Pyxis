@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+"""This module provide a simple way to build PYTHONPATH environment variable.
+Each child directory which contains *.py file(s) and doesn't contain
+__init__.py or SKIP_AUTOPATH file will be added to output.
+"""
+
 import os
 import sys
 
@@ -83,7 +89,12 @@ where this script is located).
         dir_name = os.getcwd()
 
     path = process_dir(dir_name)
-    print ':'.join(path)
+    if os.name == 'posix':
+        separator = ':'
+    else:
+        separator = ';'
+
+    print separator.join(path)
 
 
 
