@@ -2,7 +2,7 @@ import simplejson
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.encoding import force_unicode
 from frontend.models import ViewModel
@@ -60,21 +60,22 @@ def view(request, id):
 
     return {'tracker': tracker, 'options': options,
             'tracker_values': values_id_name_list,
-            'aggregation_methods': METHOD_CHOICES}
+            'aggregation_methods': METHOD_CHOICES, 'view': view}
 
 @login_required
 @csrf_protect
-def save(request):
-    view = ViewForm(request.POST)
-    print request.POST
-    if view.is_valid():
-        print view.cleaned_data
-        instance = view.save(commit=False)
-        instance.trackers = view.cleaned_data['trackers']
+def save(request, id=None):
+    view = None
+    if id:
+        view = get_object_or_404(ViewModel, pk=id)
+    form = ViewForm(request.POST, instance=view)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.trackers = form.cleaned_data['trackers']
         instance.save()
         response_data = {'success': True}
     else:
-        response_data = {'success': False, 'errors': view.errors}
+        response_data = {'success': False, 'errors': form.errors}
 
     return HttpResponse(simplejson.dumps(response_data), mimetype='application/javascript')
 
