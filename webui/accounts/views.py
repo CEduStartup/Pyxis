@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from util import render_to
+from utils.util import render_to
 from accounts.forms import UserProfileForm
 
 
@@ -7,8 +7,6 @@ from accounts.forms import UserProfileForm
 def profile(request):
     if request.method == 'POST':
         form = UserProfileForm(request.POST)
-        # save
-        import pdb; pdb.set_trace()
     else:
         form = UserProfileForm()
     return locals()

@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.encoding import force_unicode
 from frontend.models import TrackerModel, ViewModel
 from frontend.forms import OptionsForm, TrackerForm, ViewForm
-from webui.util import render_to
+from utils.util import render_to
 
 from datetime import date, timedelta
 from shared.services.services_api import mongo_storage_api, \

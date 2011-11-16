@@ -3,14 +3,23 @@
 <head>
     <title>{% block title %}Pyxis - Welcome{% endblock title %}</title>
     {% load static %}{% get_static_prefix as STATIC_PREFIX %}
+    {% if CDN %}
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+    {% else %}
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/jquery-ui.min.js"></script>
+    {% endif %}
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/main.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/highcharts.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/modules/exporting.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-twipsy.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-popover.js"></script>
+    {% if CDN %}
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css">
+    {% else %}
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/jquery-ui.css">
+    {% endif %}
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/bootstrap.css">
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/style.css">
     {% block extrahead %}

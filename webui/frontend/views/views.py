@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.encoding import force_unicode
 from frontend.models import ViewModel
 from frontend.forms import OptionsForm, ViewForm
-from webui.util import render_to
+from utils.util import render_to
 
 # TODO: Investigate if we real need it
 from shared.services.services_api import mongo_storage_api, \
