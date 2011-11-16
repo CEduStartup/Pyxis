@@ -26,13 +26,15 @@
           {% if user.is_authenticated %}
           <p class="pull-right">
             Logged in as
+            {% spaceless %}
             <a href="/users/profile/">
               {% if user.get_full_name %}
-                {{user.get_full_name}}
+                <span>{{user.get_full_name}}</span>
               {% else %}
-                {{ user }}
+                <span>{{ user }}</span>
               {% endif %}
             </a>
+            {% endspaceless %}
             <a href="/accounts/logout/">Log out</a>
           </p>
           {% else %}
