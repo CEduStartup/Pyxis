@@ -2,6 +2,7 @@
 """
 
 import gevent
+import gevent.coros
 import config.collector as config
 import time
 
@@ -34,12 +35,14 @@ class Scheduler(object):
 
     # All trackers that our system processing.
     _trackers = None
+    _trackers_lock = None
 
     def __init__(self):
         self.tasks = PriorityQueue()
         self.to_run = Queue()
         self.pool = Pool(config.parallel_threads_num)
         self._trackers = {}
+        self._trackers_lock = gevent.coros.RLock()
 
     def _run_tasks(self):
         """The main purpose of this method is to take tasks from to_run and
@@ -73,6 +76,8 @@ class Scheduler(object):
             self.tasks.put((run_time + tracker.refresh_interval, tracker))
 
     def get_run_queue_size(self):
+        """Return a size of run queue.
+        """
         return self.to_run.qsize()
 
     def add_tracker(self, tracker):
@@ -94,21 +99,34 @@ class Scheduler(object):
             if (tracker.refresh_interval != curr_tracker.refresh_interval):
                 self.remove_tracker(tracker)
 
-            # `refresh_interval` is not chnaged so we can update configuration
+            # `refresh_interval` is not changed so we can update configuration
             # without rescheduling.
             else:
                 curr_tracker.update_settings(tracker)
                 return
 
-        self._trackers[tracker.tracker_id] = tracker
-        self.tasks.put((_get_int_time(), tracker))
+        # Modification of _trackers dict is an atomic operation so we need to
+        # get exclusive access.
+        self._trackers_lock.acquire()
+        try:
+            self._trackers[tracker.tracker_id] = tracker
+            self.tasks.put((_get_int_time(), tracker))
+        finally:
+            self._trackers_lock.release()
 
     def remove_tracker(self, tracker):
         """Remove tracker from scheduler.
         """
         t_id = tracker.tracker_id
-        self._trackers[t_id].set_deleted()
-        del self._trackers[t_id]
+
+        # Modification of _trackers dict is an atomic operation so we need to
+        # get exclusive access.
+        self._trackers_lock.acquire()
+        try:
+            self._trackers[t_id].set_deleted()
+            del self._trackers[t_id]
+        finally:
+            self._trackers_lock.release()
 
     def start(self):
         gevent.spawn(self._run_tasks)
