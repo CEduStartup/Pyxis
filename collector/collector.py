@@ -1,4 +1,5 @@
 import gevent.monkey; gevent.monkey.patch_all()
+import signal
 import sys
 import traceback
 
@@ -8,8 +9,24 @@ import config.storage as storage_config
 from config.init.trackers import sender
 from gevent.backdoor import BackdoorServer
 from Scheduler import Scheduler
+from shared.signal import installer
 from storage import storage_types
 from TrackerCollection import TrackerCollection
+
+
+def cb_sighup_handler(sig, stack_frame):
+    """SIGHUP signal handler.
+    Read trackers configuration from DB and add it to Scheduler.
+    """
+    tracker_collection.load_trackers()
+
+# New signal handlers map.
+_SIGNAL_HANDLERS = {
+    signal.SIGHUP: {
+        'handler': cb_sighup_handler,
+        'keep_old_handler': False
+    },
+}
 
 storage = None
 tracker_collection = None
@@ -26,6 +43,8 @@ def initialize():
                         storage_config.db_name)
     scheduler = Scheduler()
     tracker_collection = TrackerCollection(scheduler, storage)
+
+    installer.install_signal_handlers(_SIGNAL_HANDLERS)
 
 def _start_srv(service, name):
     """Helper function to start service.
@@ -62,7 +81,6 @@ def initialize_backdoor():
     sender.fire('COLLECTOR.SERVICE_STARTED.SUCCESS',
                 srv_name='backdoor')
     BackdoorServer((host, port)).serve_forever()
-
 
 if __name__ == '__main__':
     handle_command_line_args()

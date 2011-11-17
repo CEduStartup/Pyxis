@@ -4,6 +4,7 @@
 import gevent
 
 from config.init.trackers import event_dispatcher
+from config.init.trackers import sender
 from shared.services.services_api import trackers_api
 
 
@@ -45,7 +46,7 @@ class TrackerCollection:
         """
         self._trackers_api = trackers_api()
 
-    def _load_trackers(self):
+    def load_trackers(self):
         """This method is responsible for loading all trackers into scheduler
         when the system is starting.
         """
@@ -56,10 +57,15 @@ class TrackerCollection:
             tracker.set_storage(self.storage)
             self.scheduler.add_tracker(tracker)
 
+        sender.fire('LOGGER.INFO',
+                    message='%d trackers loaded.' % (len(updated_trackers,)))
+
+
+
     def start(self):
         """Start main method in separate thread.
         """
         self._initialize()
-        self._load_trackers()
+        self.load_trackers()
         self._tracker_updater()
 
