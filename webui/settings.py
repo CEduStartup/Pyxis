@@ -99,6 +99,18 @@ INSTALLED_APPS = (
     'registration',
     'south',
     'trackers_wiz',
+    'facebook',
+)
+
+FACEBOOK_APP_ID = '237540559641530'
+FACEBOOK_APP_SECRET = 'eb5a946cc19d2ebf1829ecd1fccf09ca'
+FACEBOOK_SCOPE = 'email'
+
+AUTH_PROFILE_MODULE = 'facebook.FacebookProfile'
+
+AUTHENTICATION_BACKENDS = (
+    'facebook.backend.FacebookBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 # Django Registration
@@ -111,6 +123,8 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'info@pyxis'
+
+LOGIN_REDIRECT_URL = '/'
 
 STATIC_ROOT = '%s/frontend/static' % (os.getcwd(),)
 STATIC_URL = '/static/'

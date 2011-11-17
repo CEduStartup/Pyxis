@@ -11,3 +11,4 @@ Django
 psycopg2
 python-dateutil==1.5 # ensure to use 1.5 version for 2.x python!
 South
+git+git://github.com/ryanmark/django_facebook_oauth.git#egg=django_facebook_oauth
