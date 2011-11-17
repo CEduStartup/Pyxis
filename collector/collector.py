@@ -9,7 +9,7 @@ import config.storage as storage_config
 from config.init.trackers import sender
 from gevent.backdoor import BackdoorServer
 from Scheduler import Scheduler
-from shared.signal import installer
+from shared.signal import utils as signal_utils
 from storage import storage_types
 from TrackerCollection import TrackerCollection
 
@@ -44,7 +44,7 @@ def initialize():
     scheduler = Scheduler()
     tracker_collection = TrackerCollection(scheduler, storage)
 
-    installer.install_signal_handlers(_SIGNAL_HANDLERS)
+    signal_utils.install_signal_handlers(_SIGNAL_HANDLERS)
 
 def _start_srv(service, name):
     """Helper function to start service.
