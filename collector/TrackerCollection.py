@@ -47,8 +47,7 @@ class TrackerCollection:
         self._trackers_api = trackers_api()
 
     def load_trackers(self):
-        """This method is responsible for loading all trackers into scheduler
-        when the system is starting.
+        """This method is responsible for loading all trackers into scheduler.`
         """
         updated_trackers = \
            self._trackers_api.get_trackers(modified_since=None)
