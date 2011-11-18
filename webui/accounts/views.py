@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from util import render_to
+from utils.util import render_to
 from accounts.forms import UserProfileForm
 from django.contrib.auth.models import User
 

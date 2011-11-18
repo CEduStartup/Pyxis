@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.encoding import force_unicode
 from frontend.models import TrackerModel, ViewModel
 from frontend.forms import OptionsForm, TrackerForm, ViewForm
-from webui.util import render_to
+from utils.util import render_to
 
 from datetime import date, timedelta
 from shared.services.services_api import mongo_storage_api, \
@@ -128,6 +128,7 @@ def get_data_to_display(request):
             values_id_name_list.append([value_id, item['name']])
         values_id_name_list.sort()
         values = dict(values_id_name_list)
+        print 'test: ', values
         if not display_values:
             for value_id in values:
                 display_values[str(value_id)] = [default_aggr]
@@ -135,6 +136,7 @@ def get_data_to_display(request):
             value_id = str(row[0])
             row.append(display_values.get(value_id, []))
         src_parms = []
+        print display_values
         for value_id, methods in display_values.iteritems():
             for aggr in methods:
                 src_parms.append((value_id, aggr))
@@ -159,3 +161,9 @@ def get_data_to_display(request):
             row['name'] = '%s Value for %s' % (aggr_method, value_name)
         data_list.extend(data)
     return HttpResponse(simplejson.dumps(data_list), mimetype='application/javascript')
+
+@login_required
+def delete(request, id):
+    view = TrackerModel.objects.get(pk=id)
+    view.delete()
+    return redirect('/trackers/')

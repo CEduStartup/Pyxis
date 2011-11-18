@@ -39,26 +39,24 @@ class DataSourceForm(ModelForm):
     def clean(self):
         cleaned_data = super(DataSourceForm, self).clean()
         query = {}
-
         query['method_name'] = cleaned_data.get('method_name', '')
         query['parms'] = cleaned_data.get('parms', '')
-        query['uri'] = cleaned_data.get('uri', '')
+        query['URI'] = cleaned_data.get('URI', '')
         cleaned_data['query'] = simplejson.dumps(query)
         try:
             datasource = get_datasource(cleaned_data)
             datasource.grab_data()
             grabbed_data = datasource.get_raw_data()
         except ResponseHTTPError:
-            raise forms.ValidationError('Address "%s" cannot be opened due to server error.' % (query['uri'],))
+            raise forms.ValidationError('Address "%s" cannot be opened due to server error.' % (query['URI'],))
         except ResponseURLError:
-            raise forms.ValidationError('Address "%s" cannot be opened.' % (query['uri'],))
+            raise forms.ValidationError('Address "%s" cannot be opened.' % (query['URI'],))
         except ResponseGeventTimeout:
-            raise forms.ValidationError('Timeout on address "%s".' % (query['uri'],))
+            raise forms.ValidationError('Timeout on address "%s".' % (query['URI'],))
         except ValueError:
             raise forms.ValidationError('Wrong datasource configuration.')
         cleaned_data['grabbed_data'] = grabbed_data
         return cleaned_data
-
 
 class ValueForm(ModelForm):
     extraction_rule = forms.CharField(widget=ValuePickerWidget)

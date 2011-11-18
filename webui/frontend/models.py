@@ -21,27 +21,6 @@ def _make_pretty(collection):
     """
     return ((k, v['pretty']) for k, v in collection.iteritems())
 
-
-class TrackerModel(Model):
-    """ Tracker model.
-    """
-    class Meta:
-        db_table = 'tracker'
-    class Admin:
-        pass
-
-    def __unicode__(self):
-        return self.name
-
-    user             = models.ForeignKey(User)
-    name             = models.CharField(max_length=60)
-    status           = models.PositiveIntegerField(default=0)
-    refresh_interval = models.PositiveIntegerField(default=3600)
-    last_modified    = models.DateTimeField(auto_now=True, auto_now_add=True)
-
-    def __unicode__(self):
-        return '<TrackerModel %s: %s>' % (self.id, self.name)
-
 class ViewModel(Model):
     """ View model.
     """
@@ -63,6 +42,22 @@ class ViewModel(Model):
     def __unicode__(self):
         return '<ViewModel %s: %s>' % (self.id, self.view_name)
 
+class TrackerModel(Model):
+    """ Tracker model.
+    """
+    class Meta:
+        db_table = 'tracker'
+    class Admin:
+        pass
+
+    user             = ForeignKey(User)
+    name             = CharField(max_length=60)
+    status           = PositiveIntegerField(default=0)
+    refresh_interval = PositiveIntegerField(default=3600)
+    last_modified    = DateTimeField(auto_now=True, auto_now_add=True)
+
+    def __unicode__(self):
+        return '<TrackerModel %s: %s>' % (self.id, self.name)
 
 class DataSourceModel(Model):
     """ Data Source model.
@@ -73,8 +68,8 @@ class DataSourceModel(Model):
     def __unicode__(self):
         return self.query
 
-    tracker          = models.ForeignKey(TrackerModel)
-    access_method    = models.SmallIntegerField(
+    tracker          = ForeignKey(TrackerModel)
+    access_method    = SmallIntegerField(
                           choices=_make_pretty(ACCESS_METHODS), default=0)
     query            = TextField()
     data_type        = SmallIntegerField(
@@ -89,9 +84,9 @@ class ValueModel(Model):
     def __unicode__(self):
         return self.name
 
-    data_source     = models.ForeignKey(DataSourceModel)
-    name            = models.CharField(max_length=60)
-    value_type      = models.SmallIntegerField(
+    data_source     = ForeignKey(DataSourceModel)
+    name            = CharField(max_length=60)
+    value_type      = SmallIntegerField(
        choices=_make_pretty(VALUE_TYPES), default=1)
     extraction_rule = CharField(max_length=200)
 

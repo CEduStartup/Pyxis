@@ -43,11 +43,11 @@ ranges greater than two days as there would be a lot of data to display."""
     start = DateField(label='Start', input_formats=['%d/%m/%Y'],
                       widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
                                               'readonly': True}),
-                      required=False)
+                      required=True)
     end = DateField(label='End', input_formats=['%d/%m/%Y'],
                     widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
                                             'readonly': True}),
-                    required=False)
+                    required=True)
 
     help_text = """\
 Data aggregation method for the selected `Minimal time interval`.
@@ -59,6 +59,15 @@ displayed on chart as is. Other intervals requires aggregation method."""
 
 class ViewForm(ModelForm):
     display_values = CharField(widget=DictBasedWidget())
+    start = DateField(label='Start', input_formats=['%d/%m/%Y'],
+                      widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
+                                              'readonly': True}),
+                      required=True)
+    end = DateField(label='End', input_formats=['%d/%m/%Y'],
+                    widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
+                                            'readonly': True}),
+                    required=True)
+
     class Meta:
         model = ViewModel
         fields = ('view_name', 'view_description', 'periods', 'types',

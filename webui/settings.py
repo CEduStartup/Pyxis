@@ -76,6 +76,17 @@ TEMPLATE_DIRS = (
     '%s/templates' % os.getcwd(),
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
+    'utils.context_processors.cdn_enable',
+)
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -86,8 +97,20 @@ INSTALLED_APPS = (
     'bootstrap',
     'frontend',
     'registration',
-    'south'
-    'trackers_wiz'
+    'south',
+    'trackers_wiz',
+    'facebook',
+)
+
+FACEBOOK_APP_ID = '237540559641530'
+FACEBOOK_APP_SECRET = 'eb5a946cc19d2ebf1829ecd1fccf09ca'
+FACEBOOK_SCOPE = 'email'
+
+AUTH_PROFILE_MODULE = 'facebook.FacebookProfile'
+
+AUTHENTICATION_BACKENDS = (
+    'facebook.backend.FacebookBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 # Django Registration
@@ -101,6 +124,8 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'info@pyxis'
 
+LOGIN_REDIRECT_URL = '/'
+
 STATIC_ROOT = '%s/frontend/static' % (os.getcwd(),)
 STATIC_URL = '/static/'
 
@@ -110,3 +135,4 @@ RPC_PORT = 10123
 
 APPEND_SLASH = False
 
+CDN = False

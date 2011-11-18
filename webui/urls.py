@@ -24,6 +24,8 @@ urlpatterns += patterns('',
     (r'^views/?', include('frontend.urls_view')),
     (r'^accounts/?', include('registration.urls')),
     (r'^trackerwiz/?', include('trackers_wiz.urls')),
+    (r'^facebook/login$', 'facebook.views.login'),
+    (r'^facebook/authentication_callback$', 'facebook.views.authentication_callback'),
     (r'^admin/?', include(admin.site.urls)),
 )
 

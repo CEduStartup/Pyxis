@@ -8,10 +8,11 @@ import json
 import time
 import urllib2
 
-from shared.trackers.datasources.Common import DatasourceCommon
-from shared.trackers.datasources.Errors import ResponseHTTPError, ResponseURLError, \
-                                               ResponseGeventTimeout
-from shared.trackers.datasources.query_parsers.JSON import QueryParserJSON
+from .Common import DatasourceCommon
+from .Errors import ResponseHTTPError, ResponseURLError, \
+                    ResponseGeventTimeout
+from shared.trackers.datasources.query_parsers import JSON
+from .query_parsers.JSON import QueryParserJSON
 
 from config.collector import tracker_thread_timeout
 from config.init.trackers import sender
@@ -47,7 +48,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
               described in `__init__()`.
         """
         query = self.parse_query(config['query'])
-        self._target = query['uri']
+        self._target = query['URI']
 
     def grab_data(self):
         self.request_time = time.time()
