@@ -1,0 +1,27 @@
+{% extends "common/layout.html" %}
+
+{% block content %}
+<h1>User Registration</h1>
+
+<form method="post" action="">
+{% csrf_token %}
+<dl class="register">
+{% for field in form %}
+    <div class="{{ field.errors|yesno:"error,"}} clearfix">
+    {{ field.label_tag }} {{ field }}
+    {% if field.help_text %}
+      <div class="clearfix">
+        {{ field.help_text }}
+      </div>
+    {% endif %}
+    {% if field.errors %}
+      <span class="help-inline">
+        {{ field.errors|join:". " }}
+      </span>
+    {% endif %}
+  </div>
+{% endfor %}
+</dl>
+<input type="submit" value="Signup" class="btn primary">
+</form>
+{% endblock %}

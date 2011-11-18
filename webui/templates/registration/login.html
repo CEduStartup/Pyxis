@@ -1,0 +1,25 @@
+{% extends "common/layout.html" %}
+
+{% block content %}
+<h1>User Login</h1> 
+{% if user.is_authenticated %}
+You already authorized
+{% else %}
+
+<form method="post" action="">
+{% csrf_token %}
+{% include "common/submit_form_snippet.html" %}
+<input type="submit" value="Login" class="btn primary">
+</form>
+
+<script type="text/javascript">
+document.getElementById('id_username').focus()
+</script>
+
+<br/><br/>
+<ul>
+    <li><a href="{% url auth_password_reset %}">Password restore</a></li>
+    <li><a href="{% url registration_register %}">Signup</a></li>
+</ul>  
+{% endif %}
+{% endblock %}

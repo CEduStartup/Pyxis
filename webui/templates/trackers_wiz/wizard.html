@@ -1,0 +1,30 @@
+{% extends 'common/layout.html' %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock extrahead %}
+
+{% block content %}
+
+<form action='' method='POST'>
+{% csrf_token %}
+{% ifequal step 3 %}
+    <p>You're almost done!</p>
+{% endifequal %}
+<input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
+<table class="tracker_wizard_table" style="border-collapse:collapse;">
+    {{ previous_fields|safe }}
+    {{ form }}
+    <tr><th>&nbsp;</th><td>
+      {% ifequal step 3 %}
+      <input type="submit" value="Create Tracker" style="float:right;" />
+      {% else %}
+      <input type="submit" value="Next" style="float:right;" />
+      {% endifequal %}
+    </td></tr>
+</table>
+</form>
+
+{% endblock %}
+

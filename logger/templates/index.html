@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Logger Monitor</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+    <script src="/static/js/vendor/socket.io.js"></script>
+    <script src="/static/js/vendor/underscore-min.js"></script>
+    <script src="/static/js/vendor/backbone.js"></script>
+    <script src="/static/js/main.js"></script>
+    <link href="/static/css/main.css" rel="stylesheet">
+  </head>
+  <body>
+    <header id="primary">
+      <h1>Logger <span>- pyxis log-event monitoring</span></h1>
+    </header>
+    <nav id='tabs'>
+      <ul>
+        <li><a href="#">Index</a></li>
+        <li><a href="#critical">Critical</a></li>
+        <li><a href="#debug">Debug</a></li>
+        <li><a href="#warning">Warning</a></li>
+        <li><a href="#info">Info</a></li>
+        <li><a href="#other">Other</a></li>
+      </ul>
+    </nav>
+    <section id="index"></section>
+    <section id="logs-critical"></section>
+    <section id="logs-debug"></section>
+    <section id="logs-warning"></section>
+    <section id="logs-info"></section>
+    <section id="logs-other"></section>
+    
+    <div id="status"></div>
+
+    <div id="logger"></div>
+    <script type="text/javascript">
+    $(function() {
+      
+      /*var TabsState = Backbone.Model.extend({
+        defaults: {
+          'critical': 0,
+          'warning':  0,
+          'debug':    0,
+          'info':     0,
+          'other':    0
+        }
+      });
+      
+      var tabsState = TabsState();*/
+      
+      var Controller = Backbone.Router.extend({
+        routes: {
+          ''         : 'index',
+          ':type'    : 'logs'
+        },
+        
+        toggleNav: function(type) {
+          $('nav#tabs li').removeClass('current');
+          $('nav#tabs a[href="#'+type+'"]').parent().addClass('current');
+        },
+        hideAll: function() {
+          $('')
+          $('body > section').removeClass('current');
+        },
+        index: function() {
+          this.toggleNav('');
+          this.hideAll();
+          $('section#index').addClass('current');
+        },
+        logs: function(type) {
+          this.toggleNav(type);
+          this.hideAll();
+          $('section#logs-' + type).addClass('current');
+        }
+      });
+      var controlller = new Controller();
+      Backbone.history.start();
+
+      var MAP_LEVELS = {
+        'crit': $('section#logs-critical'),
+        'debg': $('section#logs-debug'),
+        'warn': $('section#logs-warning'),
+        'info': $('section#logs-info'),
+        'other': $('section#logs-other')
+      };
+
+      var socket = io.connect('/');
+      render_template = $('#log_msg_template');
+      socket.on('log', function(event) {
+        render_item = render_template.clone();
+        render_item.removeClass('none').removeAttr('id');
+        
+        $('span.log_time', render_item).text(event.time)
+        $('span.log_type', render_item).text(event.type)
+        $('span.log_message', render_item).text(event.msg)
+        
+        var section = MAP_LEVELS[event.level];
+        if (!section) section = MAP_LEVELS['other'];
+        
+        section.prepend(render_item);
+        while (section.children().length > 100) {
+          section.children().last().remove();
+        }
+        
+        console.log(event.type + ':' + event.level);
+      });
+    });
+    </script>
+    <div id="log_msg_template" class='log_event none'>
+      <span class="log_time">11.11.2011 11:11:11</span>
+      <span class="log_type">DEBUG</span>
+      <span class="log_message">Just a message</span>
+    </div>
+  </body>
+</html>

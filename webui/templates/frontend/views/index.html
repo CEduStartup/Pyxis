@@ -1,0 +1,24 @@
+{% extends 'common/layout.html' %}
+
+{% block content %}
+
+User Views are here:
+
+<table width="100%" border="1">
+<tr>
+    <th>View name</th>
+    <th>View description</th>
+    <th>View trackers</th>
+    <th></th>
+</tr>
+{% for view in views %}
+<tr>
+    <td><a href="/views/view/{{ view.id }}/">{{ view.view_name }}</a></td>
+    <td>{{ view.view_description }}</td>
+    <td>{{ view.trackers }}</td>
+    <td><a href="/views/delete/{{ view.id }}">Delete</a></td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock content %}
