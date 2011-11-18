@@ -1,10 +1,15 @@
-{% extends 'frontend/layout.html' %}
+{% extends 'common/layout.html' %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock extrahead %}
 
 {% block content %}
 
 <form action='' method='POST'>
 {% csrf_token %}
-<table>
+<table class="tracker_wizard_table">
     {% ifequal step 2 %}
         <p>You're almost done!</p>
     {% endifequal %}

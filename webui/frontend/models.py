@@ -30,11 +30,14 @@ class TrackerModel(Model):
     class Admin:
         pass
 
-    user             = ForeignKey(User)
-    name             = CharField(max_length=60)
-    status           = PositiveIntegerField(default=0)
-    refresh_interval = PositiveIntegerField(default=3600)
-    last_modified    = DateTimeField(auto_now=True, auto_now_add=True)
+    def __unicode__(self):
+        return self.name
+
+    user             = models.ForeignKey(User)
+    name             = models.CharField(max_length=60)
+    status           = models.PositiveIntegerField(default=0)
+    refresh_interval = models.PositiveIntegerField(default=3600)
+    last_modified    = models.DateTimeField(auto_now=True, auto_now_add=True)
 
     def __unicode__(self):
         return '<TrackerModel %s: %s>' % (self.id, self.name)
@@ -67,8 +70,11 @@ class DataSourceModel(Model):
     class  Meta:
         db_table  = 'datasource'
 
-    tracker          = ForeignKey(TrackerModel)
-    access_method    = SmallIntegerField(
+    def __unicode__(self):
+        return self.query
+
+    tracker          = models.ForeignKey(TrackerModel)
+    access_method    = models.SmallIntegerField(
                           choices=_make_pretty(ACCESS_METHODS), default=0)
     query            = TextField()
     data_type        = SmallIntegerField(
@@ -80,9 +86,12 @@ class ValueModel(Model):
     class  Meta:
         db_table  = 'value'
 
-    data_source     = ForeignKey(DataSourceModel)
-    name            = CharField(max_length=60)
-    value_type      = SmallIntegerField(
+    def __unicode__(self):
+        return self.name
+
+    data_source     = models.ForeignKey(DataSourceModel)
+    name            = models.CharField(max_length=60)
+    value_type      = models.SmallIntegerField(
        choices=_make_pretty(VALUE_TYPES), default=1)
     extraction_rule = CharField(max_length=200)
 

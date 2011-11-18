@@ -1,0 +1,15 @@
+{% extends "common/layout.html" %}
+
+{% block content %}
+  <form method="post" action="">
+  {% csrf_token %}
+  {% include "common/submit_form_snippet.html" %}
+  <div class="actions">
+    <button type="submit" class="btn primary">
+      Save changes
+    </button>
+    <button type="reset" class="btn">
+      Cancel
+    </button>
+  </div>
+{% endblock %}

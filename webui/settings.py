@@ -87,6 +87,7 @@ INSTALLED_APPS = (
     'frontend',
     'registration',
     'south'
+    'trackers_wiz'
 )
 
 # Django Registration
