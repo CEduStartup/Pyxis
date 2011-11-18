@@ -29,3 +29,10 @@ urlpatterns += patterns('',
     (r'^admin/?', include(admin.site.urls)),
 )
 
+from django.conf import settings
+#if DEBUG is True it will be served automatically
+if settings.DEBUG is False:
+    urlpatterns += patterns('',
+                    url(r'^static/(?P<path>.*)$',
+                        'django.views.static.serve',
+                        {'document_root': settings.STATIC_ROOT}),)
