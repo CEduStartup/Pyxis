@@ -5,7 +5,6 @@ from django.template.loader import render_to_string
 from shared.Parser import get_parser
 from shared.trackers import DATA_TYPES
 from shared.trackers.datasources.factory import get_datasource
-from shared.trackers.data_types import XML_DATA, HTML_DATA, JSON_DATA
 
 class ValuePickerWidget(Widget):
 
