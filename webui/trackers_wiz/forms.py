@@ -37,6 +37,8 @@ class DataSourceForm(ModelForm):
         )
 
     def clean(self):
+        """Method for preparing input data for storing and passing to next steps.
+        """
         cleaned_data = super(DataSourceForm, self).clean()
         query = {}
         query['method_name'] = cleaned_data.get('method_name', '')
@@ -55,6 +57,7 @@ class DataSourceForm(ModelForm):
             raise forms.ValidationError('Timeout on address "%s".' % (query['URI'],))
         except ValueError:
             raise forms.ValidationError('Wrong datasource configuration.')
+        # Data for visualisation on next step.
         cleaned_data['grabbed_data'] = grabbed_data
         return cleaned_data
 
@@ -126,6 +129,10 @@ class TrackerWizard(FormWizard):
         return HttpResponseRedirect('/trackers/')
 
     def get_form(self, step=None, data=None):
+        """Method that initiates form creation for current step.
+
+        Overrided in order to add additional attributes to form's widgets.
+        """
         form = super(TrackerWizard, self).get_form(step, data)
         current_step = int(step)
         if current_step == 2:
@@ -136,6 +143,8 @@ class TrackerWizard(FormWizard):
         return form
 
     def parse_params(self, request, *args, **kwargs):
+        """Overrided for passing attributes to next step from validated and cleaned form.
+        """
         current_step = self.determine_step(request, *args, **kwargs)
         if request.method == 'POST' and current_step == 1:
             form = self.get_form(current_step, request.POST)
