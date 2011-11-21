@@ -56,10 +56,10 @@ if __name__ == '__main__':
     os.environ['PYXIS_ROOT'] = os.getcwd()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_const', const=1,
+    parser.add_argument('--debug', action='store_const', const=True,
                         help='run system in debug mode')
     args = parser.parse_args()
-    debug = args.debug or 0
+    debug = args.debug or False
 
     from config.processes import processes
     pythonpath_dirs = process_dir(os.getcwd())
