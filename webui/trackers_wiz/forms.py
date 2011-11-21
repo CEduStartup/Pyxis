@@ -126,6 +126,9 @@ class TrackerWizard(FormWizard):
         sender = EventSender()
         sender.fire(eid, tracker_id=tracker.id)
 
+        # Clean temporary data.
+        del request.session['extra_cleaned_data']
+
         return HttpResponseRedirect('/trackers/')
 
     def get_form(self, step=None, data=None):
