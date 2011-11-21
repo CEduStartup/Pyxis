@@ -126,6 +126,9 @@ class TrackerWizard(FormWizard):
         sender = EventSender()
         sender.fire(eid, tracker_id=tracker.id)
 
+        # Clean temporary data.
+        del request.session['extra_cleaned_data']
+
         return HttpResponseRedirect('/trackers/')
 
     def get_form(self, step=None, data=None):
@@ -137,18 +140,20 @@ class TrackerWizard(FormWizard):
         current_step = int(step)
         if current_step == 2:
             form.fields['extraction_rule'].widget.attrs['grabbed_data'] = \
-               self.initial[current_step].get('grabbed_data')
+               self.extra_cleaned_data.get('grabbed_data')
             form.fields['extraction_rule'].widget.attrs['data_type'] = \
-               self.initial[current_step].get('data_type')
+               self.extra_cleaned_data.get('data_type')
         return form
 
     def parse_params(self, request, *args, **kwargs):
         """Overrided for passing attributes to next step from validated and cleaned form.
         """
         current_step = self.determine_step(request, *args, **kwargs)
+        self.extra_cleaned_data = request.session.get('extra_cleaned_data', {})
         if request.method == 'POST' and current_step == 1:
             form = self.get_form(current_step, request.POST)
             if form.is_valid():
-                self.initial[(current_step + 1)]['grabbed_data'] = form.cleaned_data['grabbed_data']
-                self.initial[(current_step + 1)]['data_type'] = form.cleaned_data['data_type']
+                self.extra_cleaned_data['grabbed_data'] = form.cleaned_data['grabbed_data']
+                self.extra_cleaned_data['data_type'] = form.cleaned_data['data_type']
+                request.session['extra_cleaned_data'] = self.extra_cleaned_data
 
