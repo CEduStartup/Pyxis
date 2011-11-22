@@ -56,7 +56,7 @@ class TrackerModel(Model):
     user             = ForeignKey(User)
     name             = CharField(max_length=60, verbose_name='Tracker name:', help_text="""\
 Tracker's name helps you identify your tracker among others. It's good idea to have name meaningful,
-like 'Weather in my hometown' or 'Currency exchange rate'.
+like <nobr>'Weather in my hometown'</nobr> or 'Currency exchange rate'.
 """)
     status           = PositiveIntegerField(default=0)
     refresh_interval = PositiveIntegerField(default=3600, choices=REFRESH_INTERVAL_CHOICES,
