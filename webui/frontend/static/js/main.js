@@ -121,3 +121,22 @@ function tooltip_formatter(){
   }
   return text += 'Data for ' + Highcharts.dateFormat('%Y', this.x);
 }
+
+function alert_message(data, success_message, error_message) {
+    var success_message = success_message || 'View has been saved!'
+    var error_message = error_message || 'Somthing wrong'
+
+    var alert_message = $('#alert-message');
+    console.log(data);
+    if (data.success) {
+        alert_message.removeClass('error');
+        alert_message.addClass('success');
+        alert_message.html(success_message);
+    }
+    else {
+        alert_message.removeClass('success');
+        alert_message.addClass('error');
+        alert_message.html(error_message);
+    }
+    alert_message.fadeIn(300).delay(3000).fadeOut(500);
+}
