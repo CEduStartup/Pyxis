@@ -188,6 +188,12 @@ class RegistrationManager(models.Manager):
                 if not user.is_active:
                     user.delete()
 
+    def delete_all_users(self):
+        """Command deletes all users except superuser."""
+        for profile in self.all():
+            if not profile.is_super_user():
+                profile.user.delete()
+
 
 class RegistrationProfile(models.Model):
     """
@@ -248,3 +254,6 @@ class RegistrationProfile(models.Model):
         return self.activation_key == self.ACTIVATED or \
                (self.user.date_joined + expiration_date <= datetime.datetime.now())
     activation_key_expired.boolean = True
+
+    def is_super_user(self):
+        return self.user.is_superuser
