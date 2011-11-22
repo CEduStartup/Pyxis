@@ -23,7 +23,7 @@ aggr_map = dict(METHOD_CHOICES)
 @login_required
 @render_to('frontend/trackers/index.html')
 def index(request):
-    trackers = TrackerModel.objects.all()
+    trackers = TrackerModel.objects.filter(user=request.user)
     return locals()
 
 @login_required

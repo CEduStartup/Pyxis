@@ -29,6 +29,7 @@ class ViewModel(Model):
     class Admin:
         pass
 
+    user             = ForeignKey(User, default=1)
     view_name        = CharField(max_length=60, null=False, blank=False)
     view_description = TextField(null=True, blank=True)
     start            = DateField(null=False, blank=False)
