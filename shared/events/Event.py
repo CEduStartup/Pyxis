@@ -349,12 +349,22 @@ class TrackerConfigChangedEvent(TrackerConfigEvent):
     msg = 'Tracker %(tracker_id)s was updated.'
 
 
+class TrackerDeletedEvent(TrackerConfigEvent):
+
+    """Indicates that tracker with the given `tracker_id` was deleted.
+    """
+
+    eid = 'CONFIG.TRACKER.DELETED'
+    msg = 'Tracker %(tracker_id)s was deleted.'
+
+
 # Maps event EID to event class. You need to update this mapping each time you
 # adding new event class.
 _EID_EVENT_MAPPING = {
     # Tracker config changes events.
     NewTrackerAddedEvent.eid: NewTrackerAddedEvent,
     TrackerConfigChangedEvent.eid: TrackerConfigChangedEvent,
+    TrackerDeletedEvent.eid: TrackerDeletedEvent,
 
     # Collector events.
     CollectorServiceStartedEvent.eid: CollectorServiceStartedEvent,
@@ -378,6 +388,7 @@ _EID_TUBE_MAPPING = {
     # Tracker config changes events.
     NewTrackerAddedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
     TrackerConfigChangedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
+    TrackerDeletedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
 
     # Collector events.
     CollectorServiceStartedEvent.eid: (LOGGER_TUBE,),
