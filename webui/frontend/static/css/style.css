@@ -62,6 +62,7 @@ body {
     z-index: 30000;
     text-align: center;
     display: none;
+    padding: 30px;
 }
 
 .popup div, .popup input {
