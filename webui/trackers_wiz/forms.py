@@ -9,6 +9,7 @@ from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import get_object_or_404
 
 from frontend.models import *
+from shared.trackers import HTTP_ACCESS_METHOD, XML_DATA_TYPE, HTML_DATA_TYPE
 from shared.trackers.datasources.Errors import ResponseHTTPError, ResponseURLError, ResponseGeventTimeout
 from shared.trackers.datasources.factory import get_datasource
 from widgets import ValuePickerWidget
@@ -18,28 +19,45 @@ from bootstrap.forms import BootstrapModelForm, Fieldset
 class TrackerNameForm(ModelForm):
     class Meta:
         model = TrackerModel
-        fields = ('name', 'refresh_interval', 'status', )
+        fields = ('name', 'refresh_interval', )
         layout = (
-            Fieldset('General tracker information', 'name', 'refresh_interval', 'status', ),
+            Fieldset('General tracker information', 'name', 'refresh_interval', ),
         )
+    step_name='Tracker information'
 
 
 class DataSourceForm(ModelForm):
-    method_name = forms.CharField(max_length=100, required=False)
-    parms = forms.CharField(max_length=100, required=False)
-    URI = forms.URLField(required=True)
+    #method_name = forms.CharField(max_length=100, required=False)
+    #parms = forms.CharField(max_length=100, required=False)
+    URI = forms.URLField(required=True, label='URI:', help_text="""\
+URI of your data source, like http://mypyxis.com/sample_data
+""")
     class Meta:
         model = DataSourceModel
-        fields = ('access_method', 'data_type')
+        fields = ('access_method', 'data_type', 'URI')
         layout = (
-            Fieldset('Specify datasources', 'access_method', 'method_name',
-            'parms', 'URI', 'data_type', ),
+            Fieldset('Specify datasources', 'access_method',
+                     'URI', 'data_type', ),
         )
+
+    step_name = 'Data source options'
 
     def clean(self):
         """Method for preparing input data for storing and passing to next steps.
         """
         cleaned_data = super(DataSourceForm, self).clean()
+        #Temporary check for unsupported values.
+        access_method = cleaned_data.get('access_method', 0)
+        data_type = cleaned_data.get('data_type', 0)
+        have_errors = False
+        if data_type not in (XML_DATA_TYPE,):
+            self._errors['data_type'] = ('Data type not supported yet.',)
+            have_errors = True
+        if access_method not in (HTTP_ACCESS_METHOD,):
+            self._errors['access_method'] = ('Access method not supported yet.',)
+            have_errors = True
+        if have_errors:
+            return cleaned_data
         query = {}
         query['method_name'] = cleaned_data.get('method_name', '')
         query['parms'] = cleaned_data.get('parms', '')
@@ -69,6 +87,7 @@ class ValueForm(ModelForm):
         layout = (
             Fieldset('Specify values location', 'name', 'value_type', 'extraction_rule', ),
         )
+    step_name = 'Tracked value setup'
 
 class TrackerWizard(FormWizard):
     def get_template(self, step):
@@ -106,7 +125,7 @@ class TrackerWizard(FormWizard):
         # Fill in objects with new data.
         tracker.name = form_list[0].cleaned_data['name']
         tracker.refresh_interval = form_list[0].cleaned_data['refresh_interval']
-        tracker.status = form_list[0].cleaned_data['status']
+        tracker.status = 1
         data_source.access_method = form_list[1].cleaned_data['access_method']
         data_source.query = form_list[1].cleaned_data['query']
         data_source.data_type = form_list[1].cleaned_data['data_type']
