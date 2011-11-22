@@ -12,7 +12,6 @@ User trackers are here:
     <th>Type</th>
     <th>Status</th>
     <th></th>
-    <th></th>
 </tr>
 {% for tracker in trackers %}
 <tr>
@@ -21,12 +20,14 @@ User trackers are here:
     <td>{{ tracker.refresh_interval }}</td>
     <td>{{ tracker.data_source.data_type }}</td>
     <td>{{ tracker.status }}</td>
-    <td><a href="/trackerwiz/edit/{{ tracker.id }}">Edit</a></td>
-    <td><a href="/trackers/delete/{{ tracker.id }}">Delete</a></td>
+    <td>
+        <a href="/trackerwiz/edit/{{ tracker.id }}" class='btn small'>Edit</a>
+        <a href="/trackers/delete/{{ tracker.id }}" class='btn small'>Delete</a>
+    </td>
 </tr>
 {% endfor %}
 </table>
 
-<a href="/trackerwiz/add">Add new tracker</a>
+<a href="/trackerwiz/add" class='btn primary'>Add new tracker</a>
 
 {% endblock content %}
