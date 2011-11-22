@@ -14,9 +14,9 @@
     {% include "common/submit_form_snippet.html" %}
 <div class="clearfix">
       {% ifequal step 3 %}
-      <input type="submit" value="Create Tracker" style="float:right;" />
+      <input type="submit" value="Create Tracker" style="float:right;" class="btn danger"/>
       {% else %}
-      <input type="submit" value="Next" style="float:right;" />
+      <input type="submit" value="Next" style="float:right;" class="btn primary"/>
       {% endifequal %}
 </div>
 </form>
