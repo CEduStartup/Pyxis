@@ -15,7 +15,9 @@
       {% endif %}
       {% if field.help_text %}
         <div class="help-block">
+          {% autoescape off %}
           {{ field.help_text }}
+          {% endautoescape %}  
         </div>
       {% endif %}
     </div>
