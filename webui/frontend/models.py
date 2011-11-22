@@ -50,10 +50,17 @@ class TrackerModel(Model):
     class Admin:
         pass
 
+    REFRESH_INTERVAL_CHOICES = ((1800, '30 minutes'), (3600, '1 hour'), (7200, '2 hours'))
+
     user             = ForeignKey(User)
-    name             = CharField(max_length=60)
+    name             = CharField(max_length=60, verbose_name='Tracker name:', help_text="""\
+Tracker's name helps you identify your tracker among others. It's good idea to have name meaningful,
+like 'Weather in my hometown' or 'Currency exchange rate'.
+""")
     status           = PositiveIntegerField(default=0)
-    refresh_interval = PositiveIntegerField(default=3600)
+    refresh_interval = PositiveIntegerField(default=3600, choices=REFRESH_INTERVAL_CHOICES, help_text="""\
+This is how often you want your data to be updated.
+""")
     last_modified    = DateTimeField(auto_now=True, auto_now_add=True)
 
     def __unicode__(self):
@@ -70,10 +77,13 @@ class DataSourceModel(Model):
 
     tracker          = ForeignKey(TrackerModel)
     access_method    = SmallIntegerField(
-                          choices=_make_pretty(ACCESS_METHODS), default=0)
+                          choices=_make_pretty(ACCESS_METHODS), default=0, help_text="""\
+Currently only access over the web (HTTP) is supported.""")
     query            = TextField()
     data_type        = SmallIntegerField(
-                          choices=_make_pretty(DATA_TYPES), default=0)
+                          choices=_make_pretty(DATA_TYPES), default=0, help_text="""\
+Currently only XML data is supported.
+""")
 
 class ValueModel(Model):
     """ Value model.
