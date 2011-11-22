@@ -94,3 +94,7 @@ body {
 label {
     padding-right: 10px;
 }
+
+table td, table th {
+    vertical-align: middle;
+}
