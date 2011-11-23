@@ -17,7 +17,7 @@
 <tr>
     <td><a href="/trackers/view/{{ tracker.id }}/">{{ tracker.name }}</a></td>
     <td>{{ tracker.URI }}</td>
-    <td>{{ tracker.refresh_interval }}</td>
+    <td>{{ tracker.refresh_interval_pretty }}</td>
     <td>{{ tracker.data_source.data_type }}</td>
     <td>{{ tracker.status|yesno:"Active,Inactive" }}</td>
     <td>

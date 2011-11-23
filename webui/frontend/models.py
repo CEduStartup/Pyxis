@@ -1,4 +1,5 @@
 import json
+from utils import util
 from django.db.models import *
 from django.contrib.auth.models import User
 
@@ -70,6 +71,10 @@ This is how often you want your data to be updated.
     def URI(self):
         """This is temporary, in future URI will not be a Tracker property."""
         return json.loads(self.datasourcemodel_set.get().query)['URI']
+
+    def refresh_interval_pretty(self):
+        """This is temporary, in future URI will not be a Tracker property."""
+        return util.seconds_to_time(self.refresh_interval)
 
 
 class DataSourceModel(Model):
