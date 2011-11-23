@@ -133,6 +133,6 @@ STATIC_URL = '/static/'
 RPC_HOST = '127.0.0.1'
 RPC_PORT = 10123
 
-APPEND_SLASH = False
+APPEND_SLASH = True
 
 CDN = False

@@ -6,6 +6,8 @@
 <form method="post" action="">
 {% csrf_token %}
 {% include "common/submit_form_snippet.html" %}
-<input type="submit" value="Signup" class="btn primary">
+  <div class="actions">
+    <input type="submit" value="Sign Up" class="btn primary" />
+  </div>
 </form>
 {% endblock %}

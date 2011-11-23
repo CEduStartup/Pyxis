@@ -1,4 +1,5 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
 from django.contrib import admin
 
@@ -26,6 +27,12 @@ urlpatterns += patterns('',
     (r'^trackerwiz/?', include('trackers_wiz.urls')),
     (r'^facebook/login$', 'facebook.views.login'),
     (r'^facebook/authentication_callback$', 'facebook.views.authentication_callback'),
-    (r'^admin/?', include(admin.site.urls)),
+    (r'^admin/', include(admin.site.urls)),
 )
+
+if settings.DEBUG is False:   #if DEBUG is True it will be served automatically
+    urlpatterns += patterns('',
+            url(r'^static/(?P<path>.*)$',
+                'django.views.static.serve',
+                {'document_root': settings.STATIC_ROOT}),)
 

@@ -18,7 +18,7 @@ from shared.Utils import METHOD_CHOICES
 @login_required
 @render_to('frontend/views/index.html')
 def index(request):
-    views = ViewModel.objects.all()
+    views = ViewModel.objects.filter(user=request.user)
     return {'views': views}
 
 @login_required
@@ -71,6 +71,7 @@ def save(request, id=None):
     form = ViewForm(request.POST, instance=view)
     if form.is_valid():
         instance = form.save(commit=False)
+        instance.user = request.user
         instance.trackers = form.cleaned_data['trackers']
         instance.save()
         response_data = {'success': True}
