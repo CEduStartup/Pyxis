@@ -96,7 +96,7 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
 def main(port=9997):
-    print 'Starting Web-bases Logger manager on port %s' % port
+    print 'Starting Web-based Logger manager on port %s' % port
     queue = mp.Queue()
     
     server = tornado.httpserver.HTTPServer(Application(queue))
