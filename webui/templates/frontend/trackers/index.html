@@ -1,0 +1,33 @@
+{% extends 'common/layout.html' %}
+
+{% block content %}
+
+<h3>Configured Trackers:</h3>
+<br>
+<table width="100%" border="1">
+<tr>
+    <th>Tracker Name</th>
+    <th>Tracker Source URL</th>
+    <th>Interval</th>
+    <th>Type</th>
+    <th>Status</th>
+    <th></th>
+</tr>
+{% for tracker in trackers %}
+<tr>
+    <td><a href="/trackers/view/{{ tracker.id }}/">{{ tracker.name }}</a></td>
+    <td>{{ tracker.URI }}</td>
+    <td>{{ tracker.refresh_interval_pretty }}</td>
+    <td>{{ tracker.data_source.data_type }}</td>
+    <td>{{ tracker.status|yesno:"Active,Inactive" }}</td>
+    <td>
+        <a href="/trackerwiz/edit/{{ tracker.id }}" class='btn small'>Edit</a>
+        <a href="/trackers/delete/{{ tracker.id }}" class='btn small'>Delete</a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+<a href="/trackerwiz/add" class='btn primary'>Add new tracker</a>
+
+{% endblock content %}

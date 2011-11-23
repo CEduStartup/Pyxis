@@ -16,3 +16,28 @@ Work flow (very high level):
     Using admin-GUI user creates his “tracker”s based on data types available in our system. For the first version the only data type will be time-based data: time: number. For instance, daily temperature: “5.09.2011: +15”. Also user sets interval of data retrieval, and other options. Than user gets a link to given tracker.
     Ok, we have set of trackers stored in the database. Another process (multithreading) gathers data for given trackers and puts them to the MongoDB.
     GUI process (maybe not the same as admin GUI) handles visualization tasks.
+
+Requirements
+============
+- MongoDB server
+- beanstalkd queue server (>1.4.6)
+- Postgresql
+- libxml2
+
+Python libraries used
+=====================
+gevent
+Django
+pymongo
+lxml
+BeautifulSoup
+beanstalkc (client)
+
+Usage
+=====
+1. export PYTHONPATH=`./build_python_path.py`
+2. generate some data and run test server (optional):
+   a. testdata/manage.py trackers_erase - to erase current database trackers configuration
+   b. testdata/manage.py trackers_generate http://HOST:PORT/ NUM_OF_TRACKERS - to generate some test trackers
+   c. testdata/manage.py runserver 0.0.0.0:PORT
+3. python launcher.py to start the system

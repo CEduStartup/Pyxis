@@ -1,0 +1,13 @@
+{% extends "common/layout.html" %}
+
+{% block content %}
+<h1>User Registration</h1>
+
+<form method="post" action="">
+{% csrf_token %}
+{% include "common/submit_form_snippet.html" %}
+  <div class="actions">
+    <input type="submit" value="Sign Up" class="btn primary" />
+  </div>
+</form>
+{% endblock %}

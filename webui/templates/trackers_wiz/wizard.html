@@ -1,0 +1,25 @@
+{% extends 'common/layout.html' %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock extrahead %}
+
+{% block content %}
+<div class="clearfix"><h1>{{ form.step_name }}</h1></div>
+<form action='' method='POST'>
+{% csrf_token %}
+<input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
+    {{ previous_fields|safe }}
+    {% include "common/submit_form_snippet.html" %}
+<div class="clearfix">
+      {% ifequal step 3 %}
+      <input type="submit" value="Create Tracker" class="btn danger pull-right" />
+      {% else %}
+      <input type="submit" value="Next" style="float:right;" class="btn primary pull-right" />
+      {% endifequal %}
+</div>
+</form>
+
+{% endblock %}
+

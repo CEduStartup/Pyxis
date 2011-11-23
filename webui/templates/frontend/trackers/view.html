@@ -1,0 +1,205 @@
+{% extends 'frontend/trackers/index.html' %}
+
+{% block content %}
+
+<style>
+  .popover .content {
+    padding-left: 22px;
+  }
+  input[readonly], input[disabled]{
+    cursor: default;
+  }
+</style>
+
+<script>
+    var dates;
+    var dateFormat = 'dd/mm/yy';
+
+    function check_period() {
+      if( $('#id_'+'{{ options.periods.html_name }}').val() == 'minute' ) {
+        $('.aggregated-data').attr('disabled', 'disabled');
+        $('.raw-data').removeAttr('disabled');
+      }else{
+        $('.aggregated-data').removeAttr('disabled');
+        $('.raw-data').attr('disabled', 'disabled');
+      }
+    }
+
+    function selectDate(selectedDate, inst){
+      var ctrl = inst.input[0];
+      var option = ctrl.id == "id_start" ? "minDate" : "maxDate",
+          instance = $( ctrl ).data( "datepicker" ),
+          date = $.datepicker.parseDate(dateFormat,
+            selectedDate, instance.settings );
+      dates.not( ctrl ).datepicker( "option", option, date );
+    }
+
+    function save_view(submit) {
+        var submit = submit || 0;
+        if (submit) {
+            var data = $('#form').serialize();
+            console.log('data: ', data);
+
+            var url = "/views/save";
+            {% if view.id %}
+            url += '/{{ view.id }}';
+            {% endif %}
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                dataType: "json",
+                data: data,
+                success: function(data){
+                    alert_message(data);
+                },
+            });
+
+            $('#view_form').hide();
+            $('div.bg').hide();
+
+            console.log(data);
+        }
+        else {
+            $('div.bg').show();
+            $('#view_form').fadeIn(300);
+        }
+    }
+
+    function close_popup() {
+        $('#view_form').hide();
+        $('div.bg').hide();
+    }
+
+    $(document).ready(function() {
+      $("a[rel=popover]")
+        .popover({
+          offset: 10
+        })
+        .click(function(e) {
+          e.preventDefault()
+        })
+
+      $('#id_'+'{{ options.periods.html_name }}').change(check_period);
+      check_period();
+
+      $(function() {
+        dates = $( "#id_start, #id_end" ).datepicker({
+          dateFormat: dateFormat,
+          onSelect: selectDate
+        });
+        dates.each(function(i){
+          var date = $( this ).val();
+          selectDate(date, $( this ).data('datepicker'));
+        });
+      });
+
+      $('#id_{{ options.types.html_name }}').change(function() {
+        render_chart(options, $('#id_{{ options.types.html_name }}').val());
+      });
+
+      update_chart();
+    });
+</script>
+
+{% if view %}
+<h3>{{ view.view_name }}</h3>
+{% else %}
+<h3>{{ tracker.name }}</h3>
+{% endif %}
+
+<div id="container" style="width: 100%; height: 400px"></div>
+<form id='form' action='/trackers/view/{{ tracker.tracker_id }}/' method='post'>
+  {% csrf_token %}
+  {{ options.tracker_id }}
+
+  {% if view %}
+  <input type="hidden" name="view_id" value="{{ view.id }}">
+  {% endif %}
+
+  <input type="hidden" name="tracker_ids" value="{{ tracker.tracker_id }}">
+  <input type="hidden" name="tracker_names" value="{{ tracker.name }}">
+  <div class="well">
+    <div class="row">
+      <div class="span3"><b>Values to display</b></div>
+      <div class="span12">
+        <div class="row">
+          <div class="span12" style="text-align: center;"><b>Aggregation Methods</b></div>
+        </div>
+        <div class="row">
+      {% for aggr, aggr_name in aggregation_methods %}
+          <div class="span2" style="text-align: center;"><b>{{ aggr_name }}</b></div>
+      {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% for value_id, value_name, methods in tracker_values %}
+    <div class="row">
+      <div class="span3">{{ value_name }}</div>
+      {% for aggr, aggr_name in aggregation_methods %}
+          <div class="span2" style="text-align: center;">
+            <input type="checkbox" name="display_values[{{ value_id }}]"
+                   value="{{ aggr }}"
+        {% if aggr in methods %}
+                   checked="checked"
+        {% endif %}
+        {% if aggr == 'raw' %}
+                   class="raw-data"
+        {% else %}
+                   class="aggregated-data"
+        {% endif %}
+            >
+          </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class='row'>
+    <div class='span8'>
+      {{ options.periods.errors }}
+      {{ options.periods.label_tag }}
+      {{ options.periods }}
+      {% autoescape off %}
+      <a data-original-title="{{ options.periods.label }}"
+         href="#" class="btn info small" rel="popover"
+         data-content="{{ options.periods.help_text }}">?</a>
+      {% endautoescape %}
+    </div>
+    <div class='span8'>
+      {{ options.start.errors }}
+      {{ options.start.label_tag }}
+      {{ options.start }}
+    </div>
+  </div>
+
+  <div class='row'>
+    <div class='span8'>
+      {{ options.types.errors }}
+      {{ options.types.label_tag }}
+      {{ options.types }}
+    </div>
+    <div class='span8'>
+      {{ options.end.errors }}
+      {{ options.end.label_tag }}
+      {{ options.end }}
+    </div>
+  </div>
+  <div class='well' style="padding: 14px 19px; margin-top: 15px; text-align: center;">
+    <div name="update" class="btn primary" onclick="update_chart();">Update Chart</div>
+    <div name="save_view" class="btn primary" onclick="save_view();">Save View</div>
+  </div>
+  <div class='well popup' id="view_form">
+    <label for='view_name'>View Name: </label>
+    <input type='text' name='view_name' id='view_name' {% if view.view_name %} value='{{ view.view_name }}' {% endif %}><br />
+    <label for='view_name'>View Description: </label>
+    <input type='text' name='view_description' id='view_description' {% if view.view_description %} value='{{ view.view_description }}' {% endif %}><br />
+    <div class="btn primary" onclick="save_view(1);">Submit</div>
+    <div class="btn primary" onclick="close_popup();">Close</div>
+  </div>
+</form>
+
+
+<!--div style="margin-top: 100px; clear: both; cursor: pointer; display: block; border: 1px solid #111111; text-align: center;" onclick='update_chart()'>Add more tracker</div-->
+<br/>
+<a href="/trackers/edit/{{ tracker.tracker_id }}">Edit</a> | <a href="/trackers/">Back to list</a>
+{% endblock content %}
