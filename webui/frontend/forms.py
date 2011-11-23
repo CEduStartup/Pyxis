@@ -77,6 +77,4 @@ class ViewForm(ModelForm):
         display_values = simplejson.loads(self.cleaned_data['display_values'])
         if not display_values:
             self._errors['trackers'] = 'Trackers do not exist'
-        self.cleaned_data['trackers'] = self.cleaned_data['display_values']
-        del self.cleaned_data['display_values']
         return self.cleaned_data

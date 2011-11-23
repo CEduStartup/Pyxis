@@ -21,28 +21,6 @@ def _make_pretty(collection):
     """
     return ((k, v['pretty']) for k, v in collection.iteritems())
 
-class ViewModel(Model):
-    """ View model.
-    """
-    class Meta:
-        db_table = 'view'
-    class Admin:
-        pass
-
-    user             = ForeignKey(User, default=1)
-    view_name        = CharField(max_length=60, null=False, blank=False)
-    view_description = TextField(null=True, blank=True)
-    start            = DateField(null=False, blank=False)
-    end              = DateField(null=False, blank=False)
-    periods          = CharField(choices=PERIOD_CHOICES, max_length=15,
-                                 null=False, blank=False)
-    types            = CharField(choices=TYPE_CHOICES, max_length=15,
-                                 null=False, blank=False)
-    trackers         = TextField(null=False, blank=False)
-
-    def __unicode__(self):
-        return '<ViewModel %s: %s>' % (self.id, self.view_name)
-
 class TrackerModel(Model):
     """ Tracker model.
     """
@@ -104,3 +82,43 @@ class ValueModel(Model):
     def __unicode__(self):
         return '<ValueModel %s: %s>' % (self.id, self.name)
 
+class ViewModel(Model):
+    """ View model.
+    """
+    class Meta:
+        db_table = 'view'
+    class Admin:
+        pass
+
+    user             = ForeignKey(User, default=1)
+    view_name        = CharField(max_length=60, null=False, blank=False)
+    view_description = TextField(null=True, blank=True)
+    start            = DateField(null=False, blank=False)
+    end              = DateField(null=False, blank=False)
+    periods          = CharField(choices=PERIOD_CHOICES, max_length=15,
+                                 null=False, blank=False)
+    types            = CharField(choices=TYPE_CHOICES, max_length=15,
+                                 null=False, blank=False)
+    trackers         = ManyToManyField(TrackerModel, through='AggregationModel', null=True)
+    #TextField(null=False, blank=False)
+
+    def __unicode__(self):
+        return '<ViewModel %s: %s>' % (self.id, self.view_name)
+
+class AggregationModel(Model):
+    class Meta:
+        db_table = 'aggregation'
+    class Admin:
+        pass
+
+    tracker         = ForeignKey(TrackerModel)
+    view            = ForeignKey(ViewModel)
+    avg             = BooleanField(default=0)
+    max             = BooleanField(default=0)
+    min             = BooleanField(default=0)
+    sum             = BooleanField(default=0)
+    count           = BooleanField(default=0)
+    raw             = BooleanField(default=0)
+
+    def __unicode__(self):
+        return '<AggregationModel %s: %s>' % (self.id)
