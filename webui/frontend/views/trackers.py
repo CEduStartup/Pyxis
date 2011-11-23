@@ -12,6 +12,7 @@ from frontend.forms import OptionsForm, TrackerForm, ViewForm
 from utils.util import render_to
 
 from datetime import date, timedelta
+from shared.events.EventManager import EventSender
 from shared.services.services_api import mongo_storage_api, \
                                          trackers_api
 from shared.Utils import METHOD_CHOICES
@@ -166,4 +167,6 @@ def get_data_to_display(request):
 def delete(request, id):
     view = TrackerModel.objects.get(pk=id)
     view.delete()
+    sender = EventSender()
+    sender.fire('CONFIG.TRACKER.DELETED', tracker_id=int(id))
     return redirect('/trackers/')

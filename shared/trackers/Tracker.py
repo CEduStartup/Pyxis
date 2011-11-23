@@ -195,7 +195,7 @@ class Tracker(object):
             - `err`: an instance of execption.
         """
         sender.fire('TRACKER.GRAB.FAILURE', tracker_id=self.tracker_id,
-                    error_details=str(err.reason))
+                    error_details='** TO BE DONE **')#str(err.reason))
 
     def process(self):
         """Main logic of the tracker.
