@@ -1,5 +1,9 @@
 * { margin: 0; padding: 0; outline: 0; -webkit-box-sizing: border-box }
 
+ul {
+    list-style-type: none;
+}
+
 body, div, td, div, p {
     font-family: tahoma;
     font-size: 10pt;
@@ -28,13 +32,17 @@ header#primary span {
     opacity: .6;
 }
 
-body > section {
-  position: absolute;
-  width: 100%;
-  opacity: 0;
+div#log-output {
+    width: 80%;
 }
-body > section.current {
-  opacity: 1;
+
+div#log-output > section {
+  display: none;
+  visible: hidden;
+  width: 100%;
+}
+div#log-output > section.current {
+  display: block;
 }
 
 nav#tabs ul {
@@ -75,6 +83,30 @@ nav#tabs ul li a {
   text-decoration: none;
   font-weight:bold;
   color: #556;
+}
+
+div#prefs {
+    float:right; 
+    width:19%; 
+    padding: 8px 16px 24px 16px;
+    background: #eff4fc;
+    -moz-border-radius-topleft: 16px;
+    -moz-border-radius-bottomleft: 16px;
+    -webkit-border-top-left-radius: 16px;   
+    -webkit-border-bottom-left-radius: 16px;
+    border-top-left-radius: 16px;   
+    border-bottom-left-radius: 16px;
+    -moz-box-shadow: inset 0px 2px 3px #bcd;
+    -webkit-box-shadow: inset 0px 2px 3px #bcd;
+    box-shadow: inset 1px 2px 4px #bcd;
+    color: #456;
+}
+
+div#prefs h1 {
+    font-size: 18px;
+    font-weight: normal;
+    padding-bottom: 8px;
+    opacity: .7;
 }
 
 div.log_event {

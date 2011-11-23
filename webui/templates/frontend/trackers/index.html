@@ -2,12 +2,12 @@
 
 {% block content %}
 
-User trackers are here:
-
+<h3>Configured Trackers:</h3>
+<br>
 <table width="100%" border="1">
 <tr>
-    <th>Tracker name</th>
-    <th>Tracker source URL</th>
+    <th>Tracker Name</th>
+    <th>Tracker Source URL</th>
     <th>Interval</th>
     <th>Type</th>
     <th>Status</th>
@@ -16,10 +16,10 @@ User trackers are here:
 {% for tracker in trackers %}
 <tr>
     <td><a href="/trackers/view/{{ tracker.id }}/">{{ tracker.name }}</a></td>
-    <td>{{ tracker.query }}</td>
-    <td>{{ tracker.refresh_interval }}</td>
+    <td>{{ tracker.URI }}</td>
+    <td>{{ tracker.refresh_interval_pretty }}</td>
     <td>{{ tracker.data_source.data_type }}</td>
-    <td>{{ tracker.status }}</td>
+    <td>{{ tracker.status|yesno:"Active,Inactive" }}</td>
     <td>
         <a href="/trackerwiz/edit/{{ tracker.id }}" class='btn small'>Edit</a>
         <a href="/trackers/delete/{{ tracker.id }}" class='btn small'>Delete</a>
