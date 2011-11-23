@@ -58,3 +58,36 @@ def render_to_json(**jsonargs):
             return r
         return inner_json
     return outer
+
+
+def singular_or_plural(singular_form, plural_form, number):
+    """Return singular or plural word form depending on number."""
+    if number == 1:
+        return singular_form
+    return plural_form
+
+
+def seconds_to_time(seconds):
+    """Converts number of seconds to human-readable time.
+
+    Examples:
+        1800 -> "30 minutes"
+        7200 -> "2 hours"
+        86400 -> "1 day"
+
+    """
+    mins, secs = divmod(seconds, 60)
+    hours, mins = divmod(mins, 60)
+    days, hours = divmod(hours, 24)
+
+    units = []
+    if days:
+        units.append('%s %s' %(days, singular_or_plural('day', 'days', days)))
+    if hours:
+        units.append('%s %s' %(hours, singular_or_plural('hour', 'hours', hours)))
+    if mins:
+        units.append('%s %s' %(mins, singular_or_plural('minute', 'minutes', mins)))
+    if secs:
+        units.append('%s %s' %(s, singular_or_plural('second', 'seconds', secs)))
+
+    return ' '.join(units)
