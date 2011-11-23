@@ -22,13 +22,18 @@ class TrackerCollection:
 
         self._trackers_api = None
 
-    def _config_changes_handler(self, trackre_changed_event):
+    def _config_changes_handler(self, tracker_changed_event):
         """Handle tracker configuration changes.
         """
         tracker = self._trackers_api.get_trackers(
-                                tracker_id=trackre_changed_event.tracker_id)[0]
+                                tracker_id=tracker_changed_event.tracker_id)[0]
         tracker.set_storage(self.storage)
         self.scheduler.add_tracker(tracker)
+
+    def _tracker_deletion_handler(self, tracker_deleted_event):
+        """Handle tracker deletion.
+        """
+        self.scheduler.remove_tracker(tracker_deleted_event.tracker_id)
 
     def _tracker_updater(self):
         """Manage trackers queue.
@@ -38,6 +43,8 @@ class TrackerCollection:
         event_dispatcher.subscribe(
            ['CONFIG.TRACKER.ADDED', 'CONFIG.TRACKER.CHANGED'],
            self._config_changes_handler)
+        event_dispatcher.subscribe(['CONFIG.TRACKER.DELETED'],
+           self._tracker_deletion_handler)
 
         gevent.spawn(event_dispatcher.dispatch)
 
