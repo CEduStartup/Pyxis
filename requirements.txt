@@ -10,6 +10,6 @@ bjsonrpc
 Django
 psycopg2
 python-dateutil==1.5 # ensure to use 1.5 version for 2.x python!
-tornadio2 # use git clone https://github.com/MrJoes/tornadio2 && sudo python setup.py install
+git+git://github.com/MrJoes/tornadio2.git#egg=TornadIO2
 South
 git+git://github.com/ryanmark/django_facebook_oauth.git#egg=django_facebook_oauth
