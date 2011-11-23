@@ -4,6 +4,7 @@ from shared.events.EventManager import EventSender
 
 from django import forms
 from django.forms import ModelForm
+from django.forms.util import ErrorList
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import get_object_or_404
@@ -80,7 +81,21 @@ URI of your data source, like http://mypyxis.com/sample_data
         return cleaned_data
 
 class ValueForm(ModelForm):
-    extraction_rule = forms.CharField(widget=ValuePickerWidget)
+    def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
+                 initial=None, error_class=ErrorList, label_suffix=':',
+                 empty_permitted=False, instance=None):
+        """Here we overrided constructor in order to replace field's widget.
+        That was made to keep all fields attributes in models module. It isn't
+        that important for syntetic fields (like URL in datasource form)
+        because they aren't present in any model as is.
+        """
+        super(ModelForm, self).__init__(data, files, auto_id, prefix, initial,
+                                        error_class, label_suffix,
+                                        empty_permitted, instance)
+
+        self.fields['extraction_rule'].widget = \
+           ValuePickerWidget(attrs=self.fields['extraction_rule'].widget.attrs)
+
     class Meta:
         model = ValueModel
         fields = ('name', 'value_type', 'extraction_rule')
