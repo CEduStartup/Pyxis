@@ -1,3 +1,4 @@
+import json
 from django.db.models import *
 from django.contrib.auth.models import User
 
@@ -66,6 +67,11 @@ This is how often you want your data to be updated.
     def __unicode__(self):
         return '<TrackerModel %s: %s>' % (self.id, self.name)
 
+    def URI(self):
+        """This is temporary, in future URI will not be a Tracker property."""
+        return json.loads(self.datasourcemodel_set.get().query)['URI']
+
+
 class DataSourceModel(Model):
     """ Data Source model.
     """
@@ -84,6 +90,7 @@ Currently only access over the web (HTTP) is supported.""")
                           choices=_make_pretty(DATA_TYPES), default=0, help_text="""\
 Currently only XML data is supported.
 """)
+
 
 class ValueModel(Model):
     """ Value model.
