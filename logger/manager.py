@@ -28,7 +28,7 @@ class LogManager:
                event.tags[1].upper(), # Component name.
                datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
                event.level.upper(),
-               event.msg)
+               event.format_message())
             print log_msg
 
 if __name__ == '__main__':
