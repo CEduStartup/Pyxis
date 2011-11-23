@@ -3,20 +3,31 @@
 <head>
     <title>{% block title %}Pyxis - Welcome{% endblock title %}</title>
     {% load static %}{% get_static_prefix as STATIC_PREFIX %}
+    {% if CDN %}
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+    {% else %}
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/jquery-ui.min.js"></script>
+    {% endif %}
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/main.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/highcharts.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/modules/exporting.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-twipsy.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-popover.js"></script>
+    {% if CDN %}
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css">
+    {% else %}
+    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/jquery-ui.css">
+    {% endif %}
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/bootstrap.css">
     <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/style.css">
-    <link rel="stylesheet" href="{{ STATIC_PREFIX }}css/main.css">
+    {% block extrahead %}
+    {% endblock extrahead %}
     <meta charset="utf-8">
 </head>
 <body>
+    <div class='bg'></div>
     <div class="topbar">
       <div class="topbar-inner">
         <div class="container-fluid">
@@ -28,13 +39,15 @@
           {% if user.is_authenticated %}
           <p class="pull-right">
             Logged in as
+            {% spaceless %}
             <a href="/users/profile/">
               {% if user.get_full_name %}
-                {{user.get_full_name}}
+                <span>{{user.get_full_name}}</span>
               {% else %}
-                {{ user }}
+                <span>{{ user }}</span>
               {% endif %}
             </a>
+            {% endspaceless %}
             <a href="/accounts/logout/">Log out</a>
           </p>
           {% else %}
@@ -43,7 +56,8 @@
             {% csrf_token %}
             <input name="username" class="input-small" type="text" placeholder="Username">
             <input name="password" class="input-small" type="password" placeholder="Password">
-            <button class="btn primary" type="submit">Sign in</button>
+            <button class="btn" type="submit">Sign in</button>
+          <a href='/facebook/login' class='btn'>Connect with Facebook</a>
           </form>
           {% endif %}
         </div>
@@ -53,6 +67,7 @@
     <div class="container" style="width: 940px;">
 
       <div class="content">
+      <div class="alert-message" id="alert-message" style="display: none;"></div>
         {% block content %}
         {% endblock content %}
       </div>

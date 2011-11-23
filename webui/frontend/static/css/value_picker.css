@@ -1,0 +1,37 @@
+.tree_element {
+}
+
+.tree_element_header {
+}
+
+.tree_element_footer {
+}
+
+.tree_element_tag_name {
+    color: DarkBlue;
+    cursor: pointer;
+}
+
+.tree_element_attribute {
+}
+
+.tree_element_content {
+    padding-left: 20px;
+}
+
+.tree_element_text {
+    color: Maroon;
+}
+
+.tree_element_attribute_name {
+    color: DarkGreen;
+}
+
+.tree_element_attribute_value {
+    color: Fuchsia;
+}
+
+.value_picker_selectable {
+    cursor: pointer;
+}
+

@@ -40,23 +40,35 @@
             var data = $('#form').serialize();
             console.log('data: ', data);
 
+            var url = "/views/save";
+            {% if view.id %}
+            url += '/{{ view.id }}';
+            {% endif %}
+
             $.ajax({
-                url: "/views/save",
+                url: url,
                 type: "POST",
                 dataType: "json",
                 data: data,
                 success: function(data){
-                    console.log('Success: ', data)
+                    alert_message(data);
                 },
             });
 
-            $('#view_form').fadeOut(500);
+            $('#view_form').hide();
+            $('div.bg').hide();
 
             console.log(data);
         }
         else {
+            $('div.bg').show();
             $('#view_form').fadeIn(300);
         }
+    }
+
+    function close_popup() {
+        $('#view_form').hide();
+        $('div.bg').hide();
     }
 
     $(document).ready(function() {
@@ -90,11 +102,21 @@
     });
 </script>
 
+{% if view %}
+<h3>{{ view.view_name }}</h3>
+{% else %}
 <h3>{{ tracker.name }}</h3>
+{% endif %}
+
 <div id="container" style="width: 100%; height: 400px"></div>
 <form id='form' action='/trackers/view/{{ tracker.tracker_id }}/' method='post'>
   {% csrf_token %}
   {{ options.tracker_id }}
+
+  {% if view %}
+  <input type="hidden" name="view_id" value="{{ view.id }}">
+  {% endif %}
+
   <input type="hidden" name="tracker_ids" value="{{ tracker.tracker_id }}">
   <input type="hidden" name="tracker_names" value="{{ tracker.name }}">
   <div class="well">
@@ -166,10 +188,13 @@
     <div name="update" class="btn primary" onclick="update_chart();">Update Chart</div>
     <div name="save_view" class="btn primary" onclick="save_view();">Save View</div>
   </div>
-  <div class='well' style="padding: 14px 19px; margin-top: 15px; text-align: center; display: none;" id="view_form">
-    <input type='text' name='view_name' id='view_name'><br />
-    <input type='text' name='view_description' id='view_description'><br />
+  <div class='well popup' id="view_form">
+    <label for='view_name'>View Name: </label>
+    <input type='text' name='view_name' id='view_name' {% if view.view_name %} value='{{ view.view_name }}' {% endif %}><br />
+    <label for='view_name'>View Description: </label>
+    <input type='text' name='view_description' id='view_description' {% if view.view_description %} value='{{ view.view_description }}' {% endif %}><br />
     <div class="btn primary" onclick="save_view(1);">Submit</div>
+    <div class="btn primary" onclick="close_popup();">Close</div>
   </div>
 </form>
 

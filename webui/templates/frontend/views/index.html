@@ -1,4 +1,4 @@
-{% extends 'frontend/layout.html' %}
+{% extends 'common/layout.html' %}
 
 {% block content %}
 
@@ -16,7 +16,7 @@ User Views are here:
     <td><a href="/views/view/{{ view.id }}/">{{ view.view_name }}</a></td>
     <td>{{ view.view_description }}</td>
     <td>{{ view.trackers }}</td>
-    <td><a href="/views/delete/{{ view.id }}">Delete</a></td>
+    <td><a href="/views/delete/{{ view.id }}" class='btn small'>Delete</a></td>
 </tr>
 {% endfor %}
 </table>

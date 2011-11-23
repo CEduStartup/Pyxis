@@ -8,9 +8,11 @@ from trackers_wiz.forms import *
 TRACKER_WIZARD_FORMS = [TrackerNameForm, DataSourceForm, ValueForm]
 
 def add(request):
-    return TrackerWizard(TRACKER_WIZARD_FORMS)(request)
+    return TrackerWizard(TRACKER_WIZARD_FORMS, initial=_make_initial_add())(request)
 
 def _make_initial(tracker):
+    """Creates wizard's initial dict for edit action.
+    """
     data_source = DataSourceModel.objects.get(tracker=tracker)
     value = ValueModel.objects.get(data_source=data_source)
 
@@ -34,6 +36,18 @@ def _make_initial(tracker):
          2: {'value_type': value.value_type , 'name': value.name,
              'extraction_rule': value.extraction_rule},
        }
+
+def _make_initial_add():
+    """Creates wizard's initial dict for add action.
+
+    We need to create such dict because by default wizard creates empty dict
+    while we need dict with steps keys for processing.
+    """
+    return {
+        0: {},
+        1: {},
+        2: {},
+    }
 
 def edit(request, tracker_id):
     tracker = get_object_or_404(TrackerModel, pk=tracker_id)
