@@ -11,15 +11,15 @@
     <th>Interval</th>
     <th>Type</th>
     <th>Status</th>
-    <th></th>
+    <th>Operations</th>
 </tr>
 {% for tracker in trackers %}
 <tr>
     <td><a href="/trackers/view/{{ tracker.id }}/">{{ tracker.name }}</a></td>
     <td>{{ tracker.URI }}</td>
     <td>{{ tracker.refresh_interval_pretty }}</td>
-    <td>{{ tracker.data_source.data_type }}</td>
     <td>{{ tracker.status|yesno:"Active,Inactive" }}</td>
+    <td>Alive</td>
     <td>
         <a href="/trackerwiz/edit/{{ tracker.id }}" class='btn small'>Edit</a>
         <a href="/trackers/delete/{{ tracker.id }}" class='btn small'>Delete</a>
