@@ -168,6 +168,9 @@ LoggerApplication = function() {
       var controller = new Controller({ logsState: this.logsState });
       Backbone.history.start();
 
+      if (typeof window !== 'undefined'){
+          window.WEB_SOCKET_SWF_LOCATION = '/static/js/vendor/WebSocketMain.swf';
+      }
       var socket = io.connect('/');
   
       socket.on('log', function(event) {

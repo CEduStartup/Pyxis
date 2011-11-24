@@ -84,7 +84,7 @@ class Application(tornado.web.Application):
             (r"/(favicon.ico)", tornado.web.StaticFileHandler, {"path": static_path })
         ]
         
-        tornado.ioloop.PeriodicCallback(EventCallback(queue=queue), 1).start()
+        tornado.ioloop.PeriodicCallback(EventCallback(queue=queue), 10).start()
         
         LoggerServer = tornadio2.router.TornadioRouter(LoggerConnection)
         handlers.extend(LoggerServer.urls)
