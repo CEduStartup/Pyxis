@@ -1,9 +1,9 @@
-import context
+from config.context import create_context
 ##
 ## Settings file.
 ##
 
 component_name = 'LOGGER'
 
-context.context = context.RunContext(component_name)
+create_context(component_name)
 

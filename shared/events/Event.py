@@ -121,7 +121,7 @@ class BaseLogEvent(BaseEvent):
     component = None
 
     def __init__(self, custom_time=None, **kwargs):
-        super(BaseLogEvent, self).__init__(custom_time, **kwargs)
+        BaseLogEvent.__init__(self, custom_time, **kwargs)
 
         self.component = context.component_name
 

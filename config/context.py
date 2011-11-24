@@ -11,5 +11,14 @@ class RunContext(object):
     def __init__(self, component_name):
         self.component_name = component_name
 
+def create_context(component_name):
+    """Function that creates run context by given component name.
+
+    :Parameters:
+        - `component_name`: string for name of the component.
+    """
+    global context
+    context = RunContext(component_name)
+
 context = None
 

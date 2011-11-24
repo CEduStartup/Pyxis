@@ -1,5 +1,5 @@
 from shared.Utils import port_randomizer
-import context
+from config.context import create_context
 ##
 ## Settings file.
 ##
@@ -14,5 +14,5 @@ backdoor_port = 8091 + port_randomizer()
 
 component_name = 'COLLECTOR'
 
-context.context = context.RunContext(component_name)
+create_context(component_name)
 
