@@ -97,7 +97,7 @@ class Scheduler(object):
             # Tracker is present but refresh_interval is changed, so we need to
             # delete tracker from scheduler and reschedule it.
             if (tracker.refresh_interval != curr_tracker.refresh_interval):
-                self.remove_tracker(tracker)
+                self.remove_tracker(tracker.tracker_id)
 
             # `refresh_interval` is not changed so we can update configuration
             # without rescheduling.
@@ -114,17 +114,15 @@ class Scheduler(object):
         finally:
             self._trackers_lock.release()
 
-    def remove_tracker(self, tracker):
+    def remove_tracker(self, tracker_id):
         """Remove tracker from scheduler.
         """
-        t_id = tracker.tracker_id
-
         # Modification of _trackers dict is an atomic operation so we need to
         # get exclusive access.
         self._trackers_lock.acquire()
         try:
-            self._trackers[t_id].set_deleted()
-            del self._trackers[t_id]
+            self._trackers[tracker_id].set_deleted()
+            del self._trackers[tracker_id]
         finally:
             self._trackers_lock.release()
 
