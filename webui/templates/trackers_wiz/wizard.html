@@ -6,6 +6,15 @@
 {% endblock extrahead %}
 
 {% block content %}
+<script>
+function valuePickerOnChange(value)
+{
+  if(value.indexOf('.') >=0)
+    $('#id_2-value_type').val(2);
+  else
+    $('#id_2-value_type').val(1);
+}
+</script>
 <div class="clearfix"><h1>{{ form.step_name }}</h1></div>
 <form action='' method='POST'>
 {% csrf_token %}

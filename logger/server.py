@@ -84,7 +84,7 @@ class Application(tornado.web.Application):
             (r"/(favicon.ico)", tornado.web.StaticFileHandler, {"path": static_path })
         ]
         
-        tornado.ioloop.PeriodicCallback(EventCallback(queue=queue), 1).start()
+        tornado.ioloop.PeriodicCallback(EventCallback(queue=queue), 10).start()
         
         LoggerServer = tornadio2.router.TornadioRouter(LoggerConnection)
         handlers.extend(LoggerServer.urls)
@@ -96,7 +96,7 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
 def main(port=9997):
-    print 'Starting Web-bases Logger manager on port %s' % port
+    print 'Starting Web-based Logger manager on port %s' % port
     queue = mp.Queue()
     
     server = tornado.httpserver.HTTPServer(Application(queue))
