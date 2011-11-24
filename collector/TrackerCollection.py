@@ -5,6 +5,8 @@ import gevent
 
 from config.init.trackers import event_dispatcher
 from config.init.trackers import sender
+from shared.events.Event import NewTrackerAddedEvent, TrackerConfigChangedEvent, \
+                                TrackerDeletedEvent, LoggerInfoEvent
 from shared.services.services_api import trackers_api
 
 
@@ -41,9 +43,9 @@ class TrackerCollection:
         changed.
         """
         event_dispatcher.subscribe(
-           ['CONFIG.TRACKER.ADDED', 'CONFIG.TRACKER.CHANGED'],
+           [NewTrackerAddedEvent, TrackerConfigChangedEvent],
            self._config_changes_handler)
-        event_dispatcher.subscribe(['CONFIG.TRACKER.DELETED'],
+        event_dispatcher.subscribe([TrackerDeletedEvent],
            self._tracker_deletion_handler)
 
         gevent.spawn(event_dispatcher.dispatch)
@@ -63,7 +65,7 @@ class TrackerCollection:
             tracker.set_storage(self.storage)
             self.scheduler.add_tracker(tracker)
 
-        sender.fire('LOGGER.INFO',
+        sender.fire(LoggerInfoEvent,
                     message='%d trackers loaded.' % (len(updated_trackers,)))
 
 

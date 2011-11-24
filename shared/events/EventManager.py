@@ -61,17 +61,16 @@ class EventSender(EventManagerBase):
     """Used to send event to different tubes.
     """
 
-    def _create_event_obj(self, eid, **kwargs):
+    def _create_event_obj(self, event_cls, **kwargs):
         """Create an event and pass all required arguments.
 
         :Parameters:
-            - `eid`: event ID.
+            - `event_cls`: event class.
             - `kwargs`: additional arguments required for event.
 
         :Return:
             An event object.
         """
-        event_cls = Event.get_event(eid)
         return event_cls(**kwargs)
 
     def _serialize_event(self, event):
@@ -86,11 +85,11 @@ class EventSender(EventManagerBase):
         except Event.EventSerializationError, err:
             raise UnserializableEvent(str(err))
 
-    def _get_destination(self, eid, dest=None):
-        """Return a tuple with tubes suitable from event with the given `eid`.
+    def _get_destination(self, event_cls, dest=None):
+        """Return a tuple with tubes suitable from event with the given class.
 
         :Parameters:
-            - `eid`: string with EID.
+            - `event_cls`: event class.
             - `dest`: string (or list of strings) which contains tubes for
               ivent. In case when it's None, default destinations for event
               whith such `eid` will be returned.
@@ -106,22 +105,22 @@ class EventSender(EventManagerBase):
             elif isinstance(dest, (list, tuple)):
                 res_dest.extend(dest)
         else:
-            res_dest.extend(Event.get_tubes(eid))
+            res_dest.extend(Event.get_tubes(event_cls))
 
         return res_dest
 
-    def fire(self, event, tubes=None, **kwargs):
+    def fire(self, event_cls, tubes=None, **kwargs):
         """Put event into current tube.
 
         :Parameters:
-            - `event`: an event id.
+            - `event_cls`: an event class.
             - `tubes`: a list of tubes to send the `event` to.
             - `kwargs`: dictionary which contains all required parameters to
               format log message.
         """
-        event = self._create_event_obj(event, **kwargs)
+        event = self._create_event_obj(event_cls, **kwargs)
         serialized_event = self._serialize_event(event)
-        dest = self._get_destination(event.eid, tubes)
+        dest = self._get_destination(event_cls, tubes)
 
         for tube in dest:
             try:
@@ -144,18 +143,18 @@ class GEventSender(EventSender):
         self.queue = Queue()
         gevent.spawn(self.process_queue)
 
-    def fire(self, event, tubes=None, **kwargs):
+    def fire(self, event_cls, tubes=None, **kwargs):
         """Put event into current tube.
 
         :Parameters:
-            - `event`: an event id.
+            - `event_cls`: an event class.
             - `tubes`: a list of tubes to send the `event` to.
             - `kwargs`: dictionary which contains all required parameters to
               format log message.
         """
-        event = self._create_event_obj(event, **kwargs)
+        event = self._create_event_obj(event_cls, **kwargs)
         serialized_event = self._serialize_event(event)
-        dest = self._get_destination(event.eid, tubes)
+        dest = self._get_destination(event_cls, tubes)
         self.queue.put((serialized_event, dest))
 
     def process_queue(self):

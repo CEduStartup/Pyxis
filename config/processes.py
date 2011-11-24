@@ -20,7 +20,7 @@ class _logger_console_manager(process):
     pid = 'logger'
     command = 'python'
     params = '%s/logger/manager.py' %os.environ['PYXIS_ROOT']
-    
+
 class _logger_web_manager(process):
     pid = 'logger'
     command = 'python'

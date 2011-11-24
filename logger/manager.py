@@ -1,3 +1,5 @@
+import config.logger as logger_config
+
 from datetime import datetime
 from config.mq import queue_host, queue_port
 from shared.events.EventManager import EventReceiver
@@ -25,7 +27,7 @@ class LogManager:
     def on_message(self, event):
         if isinstance(event, BaseEvent):
             log_msg = '[ %s ] - %s [ %s ] %s' % (
-               event.tags[1].upper(), # Component name.
+               event.component,
                datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
                event.level.upper(),
                event.format_message())

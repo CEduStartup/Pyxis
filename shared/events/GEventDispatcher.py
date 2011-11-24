@@ -42,8 +42,10 @@ class GEventDispatcher(EventDispatcher):
         self._subscribers = []
 
     def _dispatch_event(self, event):
-        for tag in event.tags:
-            listeners = self._subscriptions.get(tag, [])
+        events = [event.__class__]
+        events.extend(event.__class__.__bases__)
+        for event_cls in events:
+            listeners = self._subscriptions.get(event_cls, [])
             for listener in listeners:
                 if isinstance(listener, Queue):
                     listener.put(event)

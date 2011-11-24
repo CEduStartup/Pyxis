@@ -9,6 +9,7 @@ from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import get_object_or_404
 
 from frontend.models import *
+from shared.events.Event import NewTrackerAddedEvent, TrackerConfigChangedEvent
 from shared.trackers import HTTP_ACCESS_METHOD, XML_DATA_TYPE, HTML_DATA_TYPE
 from shared.trackers.datasources.Errors import ResponseHTTPError, ResponseURLError, ResponseGeventTimeout
 from shared.trackers.datasources.factory import get_datasource
@@ -138,12 +139,12 @@ class TrackerWizard(FormWizard):
         value.save()
 
         if is_new_tracker:
-            eid = 'CONFIG.TRACKER.ADDED'
+            event_cls = NewTrackerAddedEvent
         else:
-            eid = 'CONFIG.TRACKER.CHANGED'
+            event_cls = TrackerConfigChangedEvent
 
         sender = EventSender()
-        sender.fire(eid, tracker_id=tracker.id)
+        sender.fire(event_cls, tracker_id=tracker.id)
 
         # Clean temporary data.
         del request.session['extra_cleaned_data']

@@ -1,4 +1,5 @@
 from shared.Utils import port_randomizer
+import context
 ##
 ## Settings file.
 ##
@@ -10,4 +11,8 @@ scheduler_maximum_sleep = 15
 
 backdoor_host = '127.0.0.1'
 backdoor_port = 8091 + port_randomizer()
+
+component_name = 'COLLECTOR'
+
+context.context = context.RunContext(component_name)
 
