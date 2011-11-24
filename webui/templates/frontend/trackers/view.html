@@ -38,7 +38,6 @@
         var submit = submit || 0;
         if (submit) {
             var data = $('#form').serialize();
-            console.log('data: ', data);
 
             var url = "/views/save";
             {% if view.id %}
@@ -57,8 +56,6 @@
 
             $('#view_form').hide();
             $('div.bg').hide();
-
-            console.log(data);
         }
         else {
             $('div.bg').show();

@@ -2,8 +2,9 @@
 
 {% block content %}
 
-User Views are here:
+<h3>Views:</h3>
 
+{% if views %}
 <table width="100%" border="1">
 <tr>
     <th>View name</th>
@@ -13,12 +14,20 @@ User Views are here:
 </tr>
 {% for view in views %}
 <tr>
-    <td><a href="/views/view/{{ view.id }}/">{{ view.view_name }}</a></td>
+    <td><a href="{%url frontend.views.views.view view.id %}">{{ view.view_name }}</a></td>
     <td>{{ view.view_description }}</td>
-    <td>{{ view.trackers }}</td>
-    <td><a href="/views/delete/{{ view.id }}" class='btn small'>Delete</a></td>
+    <td>{% for tracker in view.trackers.values %}
+    <div><a href="{%url frontend.views.trackers.view tracker.id %}">{{ tracker.name }}</a></div>
+     {% endfor %}
+    </td>
+    <td><a href="{%url frontend.views.views.delete view.id %}" class='btn small'>Delete</a></td>
 </tr>
 {% endfor %}
 </table>
+{% else %}
+    <div class="alert-message">
+        <p><strong>No Views</strong></p>
+    </div>
+{% endif %}
 
 {% endblock content %}

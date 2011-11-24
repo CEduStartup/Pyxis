@@ -59,6 +59,7 @@ displayed on chart as is. Other intervals requires aggregation method."""
 
 class ViewForm(ModelForm):
     display_values = CharField(widget=DictBasedWidget())
+    tracker_ids = MultipleField()
     start = DateField(label='Start', input_formats=['%d/%m/%Y'],
                       widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
                                               'readonly': True}),
@@ -77,6 +78,4 @@ class ViewForm(ModelForm):
         display_values = simplejson.loads(self.cleaned_data['display_values'])
         if not display_values:
             self._errors['trackers'] = 'Trackers do not exist'
-        self.cleaned_data['trackers'] = self.cleaned_data['display_values']
-        del self.cleaned_data['display_values']
         return self.cleaned_data

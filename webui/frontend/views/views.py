@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.encoding import force_unicode
-from frontend.models import ViewModel
+from frontend.models import AggregationModel, TrackerModel, ValueModel, ViewModel
 from frontend.forms import OptionsForm, ViewForm
 from utils.util import render_to
 
@@ -26,9 +26,9 @@ def index(request):
 def view(request, id):
     view = ViewModel.objects.get(pk=id)
 
-    trackers = simplejson.loads(force_unicode(view.trackers))
-    # TODO: Hardcode only for ONE trackers
-    tracker_id = trackers.popitem()[0]
+    # TODO: Hardcode for ONE trackers
+    tracker_id = view.trackers.values()[0].get('id')
+    aggregations = view.aggregationmodel_set.values('max', 'min', 'avg', 'sum', 'raw', 'count')[0]
 
     trackers_client = trackers_api()
     tracker = trackers_client.get_trackers(tracker_id=tracker_id)[0]
@@ -47,7 +47,13 @@ def view(request, id):
         values_id_name_list.append([value_id, item['name']])
     values_id_name_list.sort()
     values = dict(values_id_name_list)
-    display_values = simplejson.loads(view.trackers) or {}
+
+    #TODO: Refactoring
+    display_values = {str(tracker_id): []}
+    for method, checked in aggregations.iteritems():
+        if checked:
+            display_values[str(tracker_id)].append(method)
+
     default_aggr = 'avg'
     if options.data['periods'] == 'minute':
         default_aggr = 'raw'
@@ -65,15 +71,44 @@ def view(request, id):
 @login_required
 @csrf_protect
 def save(request, id=None):
-    view = None
+    view_instance = None
     if id:
-        view = get_object_or_404(ViewModel, pk=id)
-    form = ViewForm(request.POST, instance=view)
+        view_instance = get_object_or_404(ViewModel, pk=id)
+    form = ViewForm(request.POST, instance=view_instance)
     if form.is_valid():
-        instance = form.save(commit=False)
-        instance.user = request.user
-        instance.trackers = form.cleaned_data['trackers']
-        instance.save()
+        #TODO: Hardcode for one tracker.
+        tracker_id = form.cleaned_data['tracker_ids'][0]
+        # Load trackers aggregation method from page and then delete their from
+        # cleaned_data, because we dont need save it in TrackerModel
+        trackers = simplejson.loads(form.cleaned_data['display_values'])
+        del(form.cleaned_data['display_values'])
+
+        view = form.save(commit=False)
+        view.user = request.user
+        view.save()
+
+        # Modify aggregations tuple to default dict: {'max': False, 'min': False,...
+        aggregation_default = {}
+        for key, value in METHOD_CHOICES:
+            aggregation_default[key] = not(bool(value))
+
+        for value_id, methods in trackers.iteritems():
+            aggregations = aggregation_default
+            tracker = get_object_or_404(TrackerModel, pk=tracker_id)
+            value = get_object_or_404(ValueModel, pk=value_id)
+            for method in methods:
+                aggregations[method] = True
+
+            if id:
+                aggr = AggregationModel.objects.filter(view=view,
+                                                       tracker=tracker,
+                                                       value=value)
+                aggr.update(**aggregations)
+            else:
+                aggr = AggregationModel(view=view, tracker=tracker,
+                                        value=value, **aggregations)
+                aggr.save()
+
         response_data = {'success': True}
     else:
         response_data = {'success': False, 'errors': form.errors}
