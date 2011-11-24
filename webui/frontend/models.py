@@ -53,7 +53,9 @@ class TrackerModel(Model):
     class Admin:
         pass
 
-    REFRESH_INTERVAL_CHOICES = ((1800, '30 minutes'), (3600, '1 hour'), (7200, '2 hours'))
+    REFRESH_INTERVAL_CHOICES = ((60, '1 minute'), (300, '5 minutes'),
+                                (600, '10 minutes'), (1800, '30 minutes'),
+                                (3600, '1 hour'), (7200, '2 hours'))
 
     user             = ForeignKey(User)
     name             = CharField(max_length=60, verbose_name='Tracker name:', help_text="""\
