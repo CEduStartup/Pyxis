@@ -127,7 +127,6 @@ function alert_message(data, success_message, error_message) {
     var error_message = error_message || 'Somthing wrong'
 
     var alert_message = $('#alert-message');
-    console.log(data);
     if (data.success) {
         alert_message.removeClass('error');
         alert_message.addClass('success');

@@ -38,7 +38,6 @@
         var submit = submit || 0;
         if (submit) {
             var data = $('#form').serialize();
-            console.log('data: ', data);
 
             var url = "/views/save";
             {% if view.id %}
@@ -57,8 +56,6 @@
 
             $('#view_form').hide();
             $('div.bg').hide();
-
-            console.log(data);
         }
         else {
             $('div.bg').show();
@@ -188,7 +185,7 @@
     <div name="update" class="btn primary" onclick="update_chart();">Update Chart</div>
     <div name="save_view" class="btn primary" onclick="save_view();">Save View</div>
   </div>
-  <div class='modal popup' id="view_form">
+  <div class='well popup' id="view_form">
     <label for='view_name'>View Name: </label>
     <input type='text' name='view_name' id='view_name' {% if view.view_name %} value='{{ view.view_name }}' {% endif %}><br />
     <label for='view_name'>View Description: </label>
