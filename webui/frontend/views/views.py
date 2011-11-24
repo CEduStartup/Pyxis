@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.utils.encoding import force_unicode
-from frontend.models import ViewModel, TrackerModel, AggregationModel
+from frontend.models import AggregationModel, TrackerModel, ValueModel, ViewModel
 from frontend.forms import OptionsForm, ViewForm
 from utils.util import render_to
 
@@ -76,25 +76,33 @@ def save(request, id=None):
         view_instance = get_object_or_404(ViewModel, pk=id)
     form = ViewForm(request.POST, instance=view_instance)
     if form.is_valid():
+        #TODO: Hardcode for one tracker.
+        tracker_id = form.cleaned_data['tracker_ids'][0]
         # Load trackers aggregation method from page and then delete their from
         # cleaned_data, because we dont need save it in TrackerModel
         trackers = simplejson.loads(form.cleaned_data['display_values'])
         del(form.cleaned_data['display_values'])
 
-        view = form.save()
+        view = form.save(commit=False)
+        view.user = request.user
+        view.save()
 
-        for tracker_id, methods in trackers.iteritems():
+        for value_id, methods in trackers.iteritems():
             aggregations = {'avg': False, 'count': False, 'sum': False,
                             'min': False, 'max': False, 'raw': False}
-            tracker = get_object_or_404(TrackerModel, pk=int(tracker_id))
+            tracker = get_object_or_404(TrackerModel, pk=tracker_id)
+            value = get_object_or_404(ValueModel, pk=value_id)
             for method in methods:
                 aggregations[method] = True
 
             if id:
-                aggr = AggregationModel.objects.filter(view=view, tracker=tracker)
+                aggr = AggregationModel.objects.filter(view=view,
+                                                       tracker=tracker,
+                                                       value=value)
                 aggr.update(**aggregations)
             else:
-                aggr = AggregationModel(view=view, tracker=tracker, **aggregations)
+                aggr = AggregationModel(view=view, tracker=tracker,
+                                        value=value, **aggregations)
                 aggr.save()
 
         response_data = {'success': True}

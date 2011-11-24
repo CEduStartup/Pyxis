@@ -20,8 +20,8 @@ urlpatterns += patterns('',
 #)
 
 urlpatterns += patterns('',
-    (r'^trackers/?', include('frontend.urls')),
-    (r'^views/?', include('frontend.urls_view')),
+    (r'^trackers/', include('frontend.urls')),
+    (r'^views/', include('frontend.urls_view')),
     (r'^accounts/?', include('registration.urls')),
     (r'^trackerwiz/?', include('trackers_wiz.urls')),
     (r'^facebook/login$', 'facebook.views.login'),

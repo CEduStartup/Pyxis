@@ -59,6 +59,7 @@ displayed on chart as is. Other intervals requires aggregation method."""
 
 class ViewForm(ModelForm):
     display_values = CharField(widget=DictBasedWidget())
+    tracker_ids = MultipleField()
     start = DateField(label='Start', input_formats=['%d/%m/%Y'],
                       widget=TextInput(attrs={'placeholder': 'dd/mm/YYYY',
                                               'readonly': True}),

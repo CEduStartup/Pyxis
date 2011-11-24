@@ -113,6 +113,7 @@ class AggregationModel(Model):
 
     tracker         = ForeignKey(TrackerModel)
     view            = ForeignKey(ViewModel)
+    value           = ForeignKey(ValueModel)
     avg             = BooleanField(default=0)
     max             = BooleanField(default=0)
     min             = BooleanField(default=0)

@@ -163,5 +163,7 @@ def get_data_to_display(request):
 @login_required
 def delete(request, id):
     tracker = TrackerModel.objects.get(pk=id)
+    view = ViewModel.objects.filter(trackers=tracker)
+    view.delete()
     tracker.delete()
     return redirect('/trackers/')
