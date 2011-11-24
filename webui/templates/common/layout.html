@@ -15,6 +15,7 @@
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/modules/exporting.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-twipsy.js"></script>
     <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-popover.js"></script>
+    <script type="text/javascript" src="{{ STATIC_PREFIX }}js/bootstrap-dropdown.js"></script>
     {% if CDN %}
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css">
     {% else %}
@@ -36,30 +37,47 @@
             <li><a href="/trackers/">Trackers</a></li>
             <li><a href="/views">Views</a></li>
           </ul>
+          <ul class="nav secondary-nav">
+            <li class="dropdown" data-dropdown="dropdown">
           {% if user.is_authenticated %}
-          <p class="pull-right">
-            Logged in as
-            {% spaceless %}
-            <a href="/users/profile/">
-              {% if user.get_full_name %}
-                <span>{{user.get_full_name}}</span>
-              {% else %}
-                <span>{{ user }}</span>
-              {% endif %}
-            </a>
-            {% endspaceless %}
+              <a href="#" class="dropdown-toggle">
+              Hello,
+              {% spaceless %}
+                {% if user.get_full_name %}
+                  <span>{{user.get_full_name}}</span>
+                {% else %}
+                  <span>{{ user }}</span>
+                {% endif %}
+              {% endspaceless %}
+              </a>
+            <ul class="dropdown-menu">
+              <li>
+              <a href="/users/profile/">
+                Edit profile
+              </a>
+            </li>
+            <li>
             <a href="/accounts/logout/">Log out</a>
+            </li>
+            </ul>
           </p>
           {% else %}
-          <p class="pull-right">&nbsp;|&nbsp;<a href="/accounts/register/">Register</a></p>
-          <form action="/accounts/login/" class="pull-right" method="POST">
-            {% csrf_token %}
-            <input name="username" class="input-small" type="text" placeholder="Username">
-            <input name="password" class="input-small" type="password" placeholder="Password">
-            <button class="btn" type="submit">Sign in</button>
-          <a href='/facebook/login' class='btn'>Connect with Facebook</a>
-          </form>
+              <a href="#" class="dropdown-toggle">Sign in</a>
+              <div id="signin-dropdown" class="dropdown-menu">
+                <form action="/accounts/login/" class="dropdown-registration-form" method="POST">
+                  {% csrf_token %}
+                  <label>Username</label>
+                  <input name="username" class="" type="text" placeholder="Username">
+                  <label>Password</label>
+                  <input name="password" class="" type="password" placeholder="Password">
+                  <button id="dropdown-submit-btn" class="btn small" type="submit">Sign in</button>
+                  </form>
+                <a href="/accounts/register/">Register</a></p>
+                <a target="_blank"href='/facebook/login'>Connect with Facebook</a>
+              </div>
           {% endif %}
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -78,5 +96,8 @@
 
     </div>
 
+<script>
+  $('#signin-dropdown').bind("click", function(e){e.stopPropagation();})
+</script>
 </body>
 </html>
