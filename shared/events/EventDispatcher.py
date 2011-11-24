@@ -12,6 +12,7 @@ dispatcher.dispatch()
 """
 
 from shared.events.EventManager import EventReceiver
+from shared.Utils import get_base_classes
 
 
 class EventDispatcher(object):
@@ -26,8 +27,7 @@ class EventDispatcher(object):
         self._subscriptions = {}
 
     def _dispatch_event(self, event):
-        events = [events.__class__]
-        events.extend(event.__class__.__bases__)
+        events = get_base_classes(event.__class__)
         for event_cls in events:
             for subscription in self._subscriptions[event_cls]:
                 subscription(event)

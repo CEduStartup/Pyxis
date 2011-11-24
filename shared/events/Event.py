@@ -316,7 +316,7 @@ class TrackerDeletedEvent(TrackerConfigEvent):
     msg = 'Tracker %(tracker_id)s was deleted.'
 
 
-# Defines a list of suitable tubes for each EID. You need to update this
+# Defines a list of suitable tubes for each event. You need to update this
 _EVENT_TUBE_MAPPING = {
     # Tracker config changes events.
     NewTrackerAddedEvent: (COLLECTOR_TUBE, LOGGER_TUBE),

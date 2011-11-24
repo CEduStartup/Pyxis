@@ -25,6 +25,7 @@ while True:
 from gevent.queue import Queue
 
 from shared.events.EventDispatcher import EventDispatcher
+from shared.Utils import get_base_classes
 
 
 class GEventDispatcher(EventDispatcher):
@@ -42,8 +43,7 @@ class GEventDispatcher(EventDispatcher):
         self._subscribers = []
 
     def _dispatch_event(self, event):
-        events = [event.__class__]
-        events.extend(event.__class__.__bases__)
+        events = get_base_classes(event.__class__)
         for event_cls in events:
             listeners = self._subscriptions.get(event_cls, [])
             for listener in listeners:
