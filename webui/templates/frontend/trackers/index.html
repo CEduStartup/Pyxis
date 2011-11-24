@@ -4,6 +4,8 @@
 
 <h3>Configured Trackers:</h3>
 <br>
+
+{% if trackers %}
 <table width="100%" border="1">
 <tr>
     <th>Tracker Name</th>
@@ -13,7 +15,7 @@
     <th>Visualization</th>
     <th></th>
 </tr>
-{% for tracker in trackers %}
+    {% for tracker in trackers %}
 <tr>
     <td><a href="/trackerwiz/edit/{{ tracker.id }}">{{tracker.name}}</a></td>
     <td>{{ tracker.URI }}</td>
@@ -24,9 +26,17 @@
         <a href="/trackers/delete/{{ tracker.id }}" class='btn small'>Delete</a>
     </td>
 </tr>
-{% endfor %}
+    {% endfor %}
+<tr>
+   <td colspan="6"><big><i>No Trackers Configured</i></big></td>
+</tr>
 </table>
 
+{% else %}
+  <div class="alert-message">
+    <p><strong>No Trackers Configured</strong></p>
+  </div>
+{% endif %}
 <a href="/trackerwiz/add" class='btn primary'>Add new tracker</a>
 
 {% endblock content %}
