@@ -51,7 +51,7 @@ class DummyXMLParser:
     def xpath(self, xpath):
         return [XPATH_VALUES[xpath]]
 
-class DummyEventSender:
+class DummyEventSender(object):
     events = []
 
     def fire(self, event_name, **params): 

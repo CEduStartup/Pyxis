@@ -99,3 +99,7 @@ label {
 table td, table th {
     vertical-align: middle;
 }
+.topbar a.btn {
+  color: #333333;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+}

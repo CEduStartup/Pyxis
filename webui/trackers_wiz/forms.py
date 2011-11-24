@@ -3,6 +3,7 @@ import simplejson
 from shared.events.EventManager import EventSender
 
 from django import forms
+from django.db import transaction
 from django.forms import ModelForm
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.formtools.wizard import FormWizard
@@ -93,6 +94,7 @@ class TrackerWizard(FormWizard):
     def get_template(self, step):
         return 'trackers_wiz/wizard.html'
 
+    @transaction.commit_on_success
     def done(self, request, form_list):
         tracker = None
         data_source = None

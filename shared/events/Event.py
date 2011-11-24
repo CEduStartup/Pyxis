@@ -52,10 +52,10 @@ class BaseEvent:
         - `eid`: string event id.
         - `time`: float. The time of event creation.
         - `level`: INFO, DEBUG, etc.
-        - `required_attr`: this attributes must allways be passed as kwargs
+        - `REQUIRED_ATTRS`: this attributes must allways be passed as kwargs
           when firing the events.
-        - `_serializeble_attrs`: this list contains all attributes of the event
-          which will be serialized and deserialized.
+          
+    Arguments, which starts with _ or uppercase, will not be serialized
     """
 
     __metaclass__ = EventMeta
@@ -64,8 +64,7 @@ class BaseEvent:
     time = None
     level = None
 
-    _serializeble_attrs = ['time', 'tags']
-    required_attr = []
+    REQUIRED_ATTRS = []
 
     def __init__(self, custom_time=None, **kwargs):
         """Initialize event instance.
@@ -78,8 +77,6 @@ class BaseEvent:
         self.check_required_attrs(kwargs)
         self.__dict__.update(kwargs)
         self._set_fire_time(custom_time=custom_time)
-        # Preserve all additional arguments passed to event constructor.
-        self._serializeble_attrs.extend(kwargs.keys())
 
     def __getstate__(self):
         """This method will be invoked by `serialize()`. Its purpose is to
@@ -89,7 +86,7 @@ class BaseEvent:
         attributes = self.__dict__.copy()
         for attr in self.__dict__:
             # Delete all attributes which cannot be serialized.
-            if attr not in self._serializeble_attrs:
+            if attr.startswith('_') or attr.istitle():
                 del attributes[attr]
 
         return attributes
@@ -102,7 +99,7 @@ class BaseEvent:
     def check_required_attrs(self, args):
         """Check if all required attributes are present in kwargs dict.
         """
-        for attr in self.required_attr:
+        for attr in self.REQUIRED_ATTRS:
             if not attr in args:
                 raise EventError('Required attribute "%s" is not specified.' %
                                     (attr,))
@@ -142,15 +139,11 @@ class BaseLogEvent(BaseEvent):
     # ('%(key_name)s'). You can pass all arguments to `__init__()` as a keyword
     # parameters.
     msg = None
+    
+    def format_message(self):
+        """Returns formatted message."""
+        return self.msg % self.__dict__
 
-    def __setstate__(self, state):
-        """Update log message then restore all other attributes.
-        """
-        # Log message formatting.
-        if self.msg:
-            self.msg = self.msg % state
-
-        BaseEvent.__setstate__(self, state)
 
 
 # Collector events.
@@ -178,7 +171,7 @@ class CollectorFailureEvent(CollectorEvent):
     """Base class for all collector failure events.
     """
 
-    required_attr = ['error_details']
+    REQUIRED_ATTRS = ['error_details']
 
     eid = 'COLLECTOR.FAILURE'
     level = 'crit'
@@ -190,7 +183,7 @@ class CollectorServiceStartedEvent(CollectorSuccessEvent):
     """Indicates that collector successfully started a service.
     """
 
-    required_attr = ['srv_name']
+    REQUIRED_ATTRS = ['srv_name']
 
     eid = 'COLLECTOR.SERVICE_STARTED.SUCCESS'
     msg = 'Service "%(srv_name)s" started succesfully.'
@@ -223,7 +216,7 @@ class TrackerFailureEvent(TrackerEvent):
     """Base class for all tracker failure events.
     """
 
-    required_attr = ['tracker_id', 'error_details']
+    REQUIRED_ATTRS = ['tracker_id', 'error_details']
 
     eid = 'TRACKER.FAILURE'
     level = 'crit'
@@ -244,7 +237,7 @@ class TrackerGrabSuccessEvent(TrackerSuccessEvent):
     """Invoked when tracker successfully grabbed data.
     """
 
-    required_attr = ['tracker_id']
+    REQUIRED_ATTRS = ['tracker_id']
 
     eid = 'TRACKER.GRAB.SUCCESS'
     msg = 'Tracker %(tracker_id)s successfully grabbed data.'
@@ -255,7 +248,7 @@ class TrackerGrabFailureEvent(TrackerFailureEvent):
     """Tracker cannot grab data due to some problem.
     """
 
-    required_attr = ['tracker_id', 'error_details']
+    REQUIRED_ATTRS = ['tracker_id', 'error_details']
 
     eid = 'TRACKER.GRAB.FAILURE'
     msg = 'Tracker %(tracker_id)s cannot grab data. Details: '\
@@ -267,7 +260,7 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
     """Invoked when parser error occured during data grabbing.
     """
 
-    required_attr = ['tracker_id', 'data_type', 'error_details']
+    REQUIRED_ATTRS = ['tracker_id', 'data_type', 'error_details']
 
     eid = 'TRACKER.FAILURE.PARSE'
     msg = 'Tracker %(tracker_id)s unable to parse %(data_type)s data. '\
@@ -280,7 +273,7 @@ class LoggerEvent(BaseLogEvent):
 
     """ Base class for all logger events. """
 
-    required_attr = ['message']
+    REQUIRED_ATTRS = ['message']
 
     eid = 'LOGGER'
     msg = '%(message)s'
@@ -323,7 +316,7 @@ class TrackerConfigEvent(BaseLogEvent, BaseEvent):
     configuration.
     """
 
-    required_attr = ['tracker_id']
+    REQUIRED_ATTRS = ['tracker_id']
     eid = 'CONFIG.TRACKER'
     msg = 'Tracker %(tracker_id)s configuration event.'
     level = 'info'

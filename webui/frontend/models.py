@@ -1,3 +1,5 @@
+import json
+from utils import util
 from django.db.models import *
 from django.contrib.auth.models import User
 
@@ -56,16 +58,26 @@ class TrackerModel(Model):
     user             = ForeignKey(User)
     name             = CharField(max_length=60, verbose_name='Tracker name:', help_text="""\
 Tracker's name helps you identify your tracker among others. It's good idea to have name meaningful,
-like 'Weather in my hometown' or 'Currency exchange rate'.
+like <nobr>'Weather in my hometown'</nobr> or 'Currency exchange rate'.
 """)
     status           = PositiveIntegerField(default=0)
-    refresh_interval = PositiveIntegerField(default=3600, choices=REFRESH_INTERVAL_CHOICES, help_text="""\
+    refresh_interval = PositiveIntegerField(default=3600, choices=REFRESH_INTERVAL_CHOICES,
+                                            verbose_name='Polling interval:', help_text="""\
 This is how often you want your data to be updated.
 """)
     last_modified    = DateTimeField(auto_now=True, auto_now_add=True)
 
     def __unicode__(self):
         return '<TrackerModel %s: %s>' % (self.id, self.name)
+
+    def URI(self):
+        """This is temporary, in future URI will not be a Tracker property."""
+        return json.loads(self.datasourcemodel_set.get().query)['URI']
+
+    def refresh_interval_pretty(self):
+        """This is temporary, in future URI will not be a Tracker property."""
+        return util.seconds_to_time(self.refresh_interval)
+
 
 class DataSourceModel(Model):
     """ Data Source model.
@@ -78,13 +90,16 @@ class DataSourceModel(Model):
 
     tracker          = ForeignKey(TrackerModel)
     access_method    = SmallIntegerField(
-                          choices=_make_pretty(ACCESS_METHODS), default=0, help_text="""\
+                          choices=_make_pretty(ACCESS_METHODS), default=0,
+                          verbose_name='Access method:', help_text="""\
 Currently only access over the web (HTTP) is supported.""")
     query            = TextField()
     data_type        = SmallIntegerField(
-                          choices=_make_pretty(DATA_TYPES), default=0, help_text="""\
+                          choices=_make_pretty(DATA_TYPES), default=0,
+                          verbose_name='Data type:', help_text="""\
 Currently only XML data is supported.
 """)
+
 
 class ValueModel(Model):
     """ Value model.
@@ -96,10 +111,16 @@ class ValueModel(Model):
         return self.name
 
     data_source     = ForeignKey(DataSourceModel)
-    name            = CharField(max_length=60)
+    name            = CharField(max_length=60, verbose_name='Value name:',
+                                help_text="""\
+Actually, this is what you'll see in your chart's Y axis label.""")
     value_type      = SmallIntegerField(
-       choices=_make_pretty(VALUE_TYPES), default=1)
-    extraction_rule = CharField(max_length=200)
+       choices=_make_pretty(VALUE_TYPES), default=1, verbose_name='Value type:',
+       help_text="""\
+Type of your value (integer or fractional).""")
+    extraction_rule = CharField(max_length=200, verbose_name='Extraction rule:',
+                                help_text="""\
+Find the value you need in data below and click on it to get its path in data.""")
 
     def __unicode__(self):
         return '<ValueModel %s: %s>' % (self.id, self.name)
