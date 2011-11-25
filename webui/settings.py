@@ -1,5 +1,7 @@
 import os
 
+import config.webui as webui_config
+
 # Django settings for webuiproject.
 
 DEBUG = False

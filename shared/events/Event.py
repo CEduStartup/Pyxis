@@ -4,6 +4,7 @@
 import pickle
 import time
 
+from config.context import context
 from config.mq import LOGGER_TUBE, COLLECTOR_TUBE
 
 
@@ -25,42 +26,20 @@ class NoSuchEventError(EventError):
     """
 
 
-class EventMeta(type):
-
-    """Metaclass for event classes. Used for putting tags into class field.
-    These tags are defining topics to subscribe when listening for events.
-    """
-
-    def __init__(mcs, name, bases, dct):
-        super(EventMeta, mcs).__init__(name, bases, dct)
-        mcs.tags = ['']
-        if mcs.eid:
-            tag_parts = mcs.eid.split('.')
-            tag = tag_parts[0]
-            mcs.tags.append(tag)
-            for part in tag_parts[1:]:
-                tag = '%s.%s' % (tag, part)
-                mcs.tags.append(tag)
-
-
-class BaseEvent:
+class BaseEvent(object):
 
     """ Base class for all events.
     Don't invoke this event.
 
     :Class variables:
-        - `eid`: string event id.
         - `time`: float. The time of event creation.
         - `level`: INFO, DEBUG, etc.
         - `REQUIRED_ATTRS`: this attributes must allways be passed as kwargs
           when firing the events.
-          
+
     Arguments, which starts with _ or uppercase, will not be serialized
     """
 
-    __metaclass__ = EventMeta
-
-    eid = None
     time = None
     level = None
 
@@ -139,7 +118,13 @@ class BaseLogEvent(BaseEvent):
     # ('%(key_name)s'). You can pass all arguments to `__init__()` as a keyword
     # parameters.
     msg = None
-    
+    component = None
+
+    def __init__(self, custom_time=None, **kwargs):
+        BaseEvent.__init__(self, custom_time, **kwargs)
+
+        self.component = context.component_name
+
     def format_message(self):
         """Returns formatted message."""
         return self.msg % self.__dict__
@@ -153,7 +138,6 @@ class CollectorEvent(BaseLogEvent):
     """Base class for all collector events.
     """
 
-    eid = 'COLLECTOR'
     level = 'info'
 
 
@@ -162,7 +146,6 @@ class CollectorSuccessEvent(CollectorEvent):
     """Base class for all tracker success events.
     """
 
-    eid = 'COLLECTOR.SUCCESS'
     level = 'info'
 
 
@@ -173,7 +156,6 @@ class CollectorFailureEvent(CollectorEvent):
 
     REQUIRED_ATTRS = ['error_details']
 
-    eid = 'COLLECTOR.FAILURE'
     level = 'crit'
     msg = 'Collector critical error. Details: %(error_details)s'
 
@@ -185,7 +167,6 @@ class CollectorServiceStartedEvent(CollectorSuccessEvent):
 
     REQUIRED_ATTRS = ['srv_name']
 
-    eid = 'COLLECTOR.SERVICE_STARTED.SUCCESS'
     msg = 'Service "%(srv_name)s" started succesfully.'
 
 
@@ -198,7 +179,6 @@ class TrackerEvent(BaseLogEvent):
     Don't invoke this event.
     """
 
-    eid = 'TRACKER'
     tracker_id = None
 
 
@@ -207,7 +187,6 @@ class TrackerSuccessEvent(TrackerEvent):
     """Base class for all tracker success events.
     """
 
-    eid = 'TRACKER.SUCCESS'
     level = 'info'
 
 
@@ -218,7 +197,6 @@ class TrackerFailureEvent(TrackerEvent):
 
     REQUIRED_ATTRS = ['tracker_id', 'error_details']
 
-    eid = 'TRACKER.FAILURE'
     level = 'crit'
     msg = """\
 Tracker "%(tracker_id)s" unhandled error. Details: %(error_details)s"""
@@ -229,7 +207,6 @@ class TrackerWorkflowEvent(TrackerEvent):
     """ Base class for all non-failure events during data grabbing.
     """
 
-    eid = 'TRACKER.WORKFLOW'
 
 
 class TrackerGrabSuccessEvent(TrackerSuccessEvent):
@@ -239,7 +216,6 @@ class TrackerGrabSuccessEvent(TrackerSuccessEvent):
 
     REQUIRED_ATTRS = ['tracker_id']
 
-    eid = 'TRACKER.GRAB.SUCCESS'
     msg = 'Tracker %(tracker_id)s successfully grabbed data.'
 
 
@@ -250,7 +226,6 @@ class TrackerGrabFailureEvent(TrackerFailureEvent):
 
     REQUIRED_ATTRS = ['tracker_id', 'error_details']
 
-    eid = 'TRACKER.GRAB.FAILURE'
     msg = 'Tracker %(tracker_id)s cannot grab data. Details: '\
           '%(error_details)s'
 
@@ -262,7 +237,6 @@ class TrackerParseErrorEvent(TrackerFailureEvent):
 
     REQUIRED_ATTRS = ['tracker_id', 'data_type', 'error_details']
 
-    eid = 'TRACKER.FAILURE.PARSE'
     msg = 'Tracker %(tracker_id)s unable to parse %(data_type)s data. '\
           'Details: %(error_details)s'
 
@@ -275,7 +249,6 @@ class LoggerEvent(BaseLogEvent):
 
     REQUIRED_ATTRS = ['message']
 
-    eid = 'LOGGER'
     msg = '%(message)s'
     level = 'gene'
 
@@ -283,28 +256,24 @@ class LoggerEvent(BaseLogEvent):
 class LoggerInfoEvent(LoggerEvent):
     """ Event used for logger's info messages. """
 
-    eid = 'LOGGER.INFO'
     level = 'info'
 
 
 class LoggerWarningEvent(LoggerEvent):
     """ Event used for logger's warning messages. """
 
-    eid = 'LOGGER.WARNING'
     level = 'warn'
 
 
 class LoggerDebugEvent(LoggerEvent):
     """ Event used for logger's debug messages. """
 
-    eid = 'LOGGER.DEBUG'
     level = 'debg'
 
 
 class LoggerCriticalEvent(LoggerEvent):
     """ Event used for logger's critical messages. """
 
-    eid = 'LOGGER.CRITICAL'
     level = 'crit'
 
 
@@ -317,7 +286,6 @@ class TrackerConfigEvent(BaseLogEvent, BaseEvent):
     """
 
     REQUIRED_ATTRS = ['tracker_id']
-    eid = 'CONFIG.TRACKER'
     msg = 'Tracker %(tracker_id)s configuration event.'
     level = 'info'
 
@@ -328,7 +296,6 @@ class NewTrackerAddedEvent(TrackerConfigEvent):
     configuration from relational DB and add this tracker to scheduler.
     """
 
-    eid = 'CONFIG.TRACKER.ADDED'
     msg = 'Tracker %(tracker_id)s added.'
 
 
@@ -338,7 +305,6 @@ class TrackerConfigChangedEvent(TrackerConfigEvent):
     changed.
     """
 
-    eid = 'CONFIG.TRACKER.CHANGED'
     msg = 'Tracker %(tracker_id)s was updated.'
 
 
@@ -347,83 +313,41 @@ class TrackerDeletedEvent(TrackerConfigEvent):
     """Indicates that tracker with the given `tracker_id` was deleted.
     """
 
-    eid = 'CONFIG.TRACKER.DELETED'
     msg = 'Tracker %(tracker_id)s was deleted.'
 
 
-# Maps event EID to event class. You need to update this mapping each time you
-# adding new event class.
-_EID_EVENT_MAPPING = {
+# Defines a list of suitable tubes for each event. You need to update this
+_EVENT_TUBE_MAPPING = {
     # Tracker config changes events.
-    NewTrackerAddedEvent.eid: NewTrackerAddedEvent,
-    TrackerConfigChangedEvent.eid: TrackerConfigChangedEvent,
-    TrackerDeletedEvent.eid: TrackerDeletedEvent,
+    NewTrackerAddedEvent: (COLLECTOR_TUBE, LOGGER_TUBE),
+    TrackerConfigChangedEvent: (COLLECTOR_TUBE, LOGGER_TUBE),
+    TrackerDeletedEvent: (COLLECTOR_TUBE, LOGGER_TUBE),
 
     # Collector events.
-    CollectorServiceStartedEvent.eid: CollectorServiceStartedEvent,
-    CollectorFailureEvent.eid: CollectorFailureEvent,
+    CollectorServiceStartedEvent: (LOGGER_TUBE,),
+    CollectorFailureEvent: (LOGGER_TUBE,),
 
     # Tracker events.
-    TrackerGrabSuccessEvent.eid: TrackerGrabSuccessEvent,
-    TrackerGrabFailureEvent.eid: TrackerGrabFailureEvent,
-    TrackerParseErrorEvent.eid: TrackerParseErrorEvent,
-    TrackerWorkflowEvent.eid: TrackerWorkflowEvent,
+    TrackerGrabSuccessEvent: (LOGGER_TUBE,),
+    TrackerGrabFailureEvent: (LOGGER_TUBE,),
+    TrackerParseErrorEvent: (LOGGER_TUBE,),
+    TrackerWorkflowEvent: (LOGGER_TUBE,),
 
     # Logger events.
-    LoggerInfoEvent.eid: LoggerInfoEvent,
-    LoggerWarningEvent.eid: LoggerWarningEvent,
-    LoggerDebugEvent.eid: LoggerDebugEvent,
-    LoggerCriticalEvent.eid: LoggerCriticalEvent,
+    LoggerInfoEvent: (LOGGER_TUBE,),
+    LoggerWarningEvent: (LOGGER_TUBE,),
+    LoggerDebugEvent: (LOGGER_TUBE,),
+    LoggerCriticalEvent: (LOGGER_TUBE,),
 }
 
-# Defines a list of suitable tubes for each EID. You need to update this
-_EID_TUBE_MAPPING = {
-    # Tracker config changes events.
-    NewTrackerAddedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
-    TrackerConfigChangedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
-    TrackerDeletedEvent.eid: (COLLECTOR_TUBE, LOGGER_TUBE),
-
-    # Collector events.
-    CollectorServiceStartedEvent.eid: (LOGGER_TUBE,),
-    CollectorFailureEvent.eid: (LOGGER_TUBE,),
-
-    # Tracker events.
-    TrackerGrabSuccessEvent.eid: (LOGGER_TUBE,),
-    TrackerGrabFailureEvent.eid: (LOGGER_TUBE,),
-    TrackerParseErrorEvent.eid: (LOGGER_TUBE,),
-    TrackerWorkflowEvent.eid: (LOGGER_TUBE,),
-
-    # Logger events.
-    LoggerInfoEvent.eid: (LOGGER_TUBE,),
-    LoggerWarningEvent.eid: (LOGGER_TUBE,),
-    LoggerDebugEvent.eid: (LOGGER_TUBE,),
-    LoggerCriticalEvent.eid: (LOGGER_TUBE,),
-}
-
-def get_tubes(eid):
+def get_tubes(event_cls):
     """Return a list of tubes appropriate for given `eid`.
 
     :Exception:
         - `NoSuchEventError` in case when given `eid` was not found.
     """
     try:
-        return _EID_TUBE_MAPPING[eid]
+        return _EVENT_TUBE_MAPPING[event_cls]
     except KeyError:
-        raise NoSuchEventError(eid)
-
-def get_event(eid):
-    """Try to return an event class for given `eid`.
-
-    Please *always* use this method to get event object.
-
-    :Return:
-        - event class.
-
-    :Exception:
-        - `NoSuchEventError` in case when event with such `eid` doesn't exists.
-    """
-    try:
-        return _EID_EVENT_MAPPING[eid]
-    except KeyError:
-        raise NoSuchEventError(eid)
+        raise NoSuchEventError(event_cls)
 

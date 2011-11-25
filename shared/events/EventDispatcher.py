@@ -11,8 +11,8 @@ dispatcher.subscribe([TrackerSuccessEvent, TrackerFailureEvent], some_func_3)
 dispatcher.dispatch()
 """
 
-from shared.events.Event import get_event
 from shared.events.EventManager import EventReceiver
+from shared.Utils import get_base_classes
 
 
 class EventDispatcher(object):
@@ -27,39 +27,10 @@ class EventDispatcher(object):
         self._subscriptions = {}
 
     def _dispatch_event(self, event):
-        for tag in event.tags:
-            for subscription in self._subscriptions[tag]:
+        events = get_base_classes(event.__class__)
+        for event_cls in events:
+            for subscription in self._subscriptions[event_cls]:
                 subscription(event)
-
-    def _get_tags_compressed(self, tags):
-        """ Reduces tags list to the least effective according to
-        event-subevent relations.
-        """
-        compressed = []
-        for tag in tags:
-            for key, value in enumerate(compressed):
-                if self._is_subtag(value, tag):
-                    compressed[key] = tag
-                    break
-                if self._is_subtag(tag, value):
-                    break
-            else:
-                compressed.append(tag)
-        return compressed
-
-    def _get_tags(self, events):
-        """ Creates tags list based on given events list.
-        """
-        tags = []
-        for event in events:
-            tags.append(event.tags[-1])
-        return self._get_tags_compressed(tags)
-
-    def _is_subtag(self, subtag, tag):
-        """ Checks whether tag-subtag relation satisfied.
-        """
-
-        return tag.startswith(subtag)
 
     def dispatch(self):
         self._receiver.dispatch()
@@ -73,13 +44,8 @@ class EventDispatcher(object):
             - `callback`: a callable object which accepts an instance of event
               as argument.
         """
-        # Convert a list of EIDs to list of event class instances.
-        event_objects = [get_event(e) for e in events]
-
         # Subscribe given callback for certain events or event types.
-        subscriber_tags = self._get_tags(event_objects)
-        for tag in subscriber_tags:
-            if not tag in self._subscriptions:
-                self._subscriptions[tag] = []
-            self._subscriptions[tag].append(callback)
+        for event in events:
+            subscr = self._subscriptions.get(event, [])
+            subscr.append(callback)
 

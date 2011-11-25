@@ -187,3 +187,23 @@ def pt(*ts):
 
 def port_randomizer():
     return os.getuid() % 997
+
+def get_base_classes(cls, include_cls=True, include_object=False):
+    """Function for generating list of base classes for given class.
+
+    :Parameters:
+        - `cls`: class that list will be generated for.
+        - `include_cls`: indicates whether to include cls into result list.
+        - `include_object` : indicates whether to include object class into result list.
+
+    :Return:
+        - list with base classes for given.
+    """
+    if issubclass(object, cls):
+        ret_hrc = [cls] if include_object and include_cls else []
+    else:
+        cur_hrc = [cls] if include_cls else []
+        map(lambda base: cur_hrc.extend(get_base_classes(base, include_object=include_object)),
+            cls.__bases__)
+        ret_hrc = list(set(cur_hrc))
+    return ret_hrc

@@ -10,6 +10,8 @@ from datetime import datetime
 
 import multiprocessing as mp
 
+import config.logger as logger_config
+
 from config.mq import queue_host, queue_port
 from shared.events.EventManager import EventReceiver
 from shared.events.Event import BaseEvent, LOGGER_TUBE
@@ -17,13 +19,13 @@ from shared.events.Event import BaseEvent, LOGGER_TUBE
 
 class LoggerConnection(tornadio2.SocketConnection):
     connections = set()
-    
+
     def on_open(self, info):
         self.connections.add(self)
-        
+
     def on_close(self):
         self.connections.remove(self)
-    
+
     def on_event(self, name, *args, **kwargs):
         if name == 'connected':
             self.emit('log', msg='Just a message')
@@ -38,22 +40,22 @@ class IndexHandler(tornado.web.RequestHandler):
 
 class EventCallback(object):
     queue=None
-    
+
     def __init__(self, queue):
         self.queue=queue
-    
+
     def __call__(self):
         try:
             while True:
                 event = self.queue.get_nowait()
                 for conn in LoggerConnection.connections:
                     conn.emit('log', time=datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
-                                     msg=event.format_message(), 
+                                     msg=event.format_message(),
                                      level=event.level,
-                                     type=event.tags[-1])        
+                                     type=event.component)
         except Queue.Empty:
             pass
-    
+
 
 class EventReceiverThread(mp.Process):
     queue = None
@@ -72,7 +74,7 @@ class EventReceiverThread(mp.Process):
 
     def _run(self):
         self.receiver.dispatch()
-            
+
 
 class Application(tornado.web.Application):
     def __init__(self, queue):
@@ -83,9 +85,9 @@ class Application(tornado.web.Application):
             (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": static_path }),
             (r"/(favicon.ico)", tornado.web.StaticFileHandler, {"path": static_path })
         ]
-        
+
         tornado.ioloop.PeriodicCallback(EventCallback(queue=queue), 10).start()
-        
+
         LoggerServer = tornadio2.router.TornadioRouter(LoggerConnection)
         handlers.extend(LoggerServer.urls)
         settings = dict(
@@ -98,10 +100,10 @@ class Application(tornado.web.Application):
 def main(port=9997):
     print 'Starting Web-based Logger manager on port %s' % port
     queue = mp.Queue()
-    
+
     server = tornado.httpserver.HTTPServer(Application(queue))
     server.listen(port)
-    
+
     ioloop = tornado.ioloop.IOLoop.instance()
     autoreload.start(ioloop)
 
