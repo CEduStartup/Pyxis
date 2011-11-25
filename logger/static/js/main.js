@@ -1,5 +1,13 @@
+/* Implements user interaction.
+   Currently it shows last 200 events for each log level due to browser limitations.
+ */
 LoggerApplication = function() {
   
+  /*
+  LogsState model stores:
+  - tabs to display (log-levels)
+  - number of events logged for each level    
+  */
   this.LogsState = Backbone.Model.extend({
     MAP_LEVELS: {
         'crit': 'critical',
@@ -8,7 +16,10 @@ LoggerApplication = function() {
         'info': 'info',
         'other': 'other'
     },
-    
+
+    /*
+    for each level corresponding section element stored in MAP_SECTIONS
+    */
     MAP_SECTIONS: {}, // Will be initialized in constructor
       
     defaults: {
@@ -30,6 +41,7 @@ LoggerApplication = function() {
         });
     },
     get_states: function() {
+        /* Returns `active` states for each log-level */
         var result = {};
         var attributes = this.toJSON();
         _.each(attributes, function(v, k) {
@@ -40,6 +52,7 @@ LoggerApplication = function() {
         return result;
     },
     get_counts: function() {
+        /* Returns number of log events for each log-level */
         var result = {};
         var attributes = this.toJSON();
         _.each(attributes, function(v, k) {
@@ -50,14 +63,17 @@ LoggerApplication = function() {
         return result;            
     },
     get_section: function(lvl) {
+        /* returns section JQuery element by short level name */
         var section = this.MAP_SECTIONS[lvl];
         if (!section) {
             section = this.MAP_SECTIONS['other'];
         }
         return section;
     },
-    // Returns updatable section, or null, if it's disabled
     handle_event: function(event) {
+        /* Returns True, if web-based logger could handle event and increments 
+           number of events for current log level.
+           Returns False in case this log level is not checked to handle. */
         var result = false;
         var level = this.MAP_LEVELS[event.level];
         if (this.get('show_'+level)) {
@@ -73,6 +89,7 @@ LoggerApplication = function() {
   this.logsState = new this.LogsState();
   
   var PreferencesView = Backbone.View.extend({
+    /* Implements preferences panel view. */
 	el: $("div#prefs"),
 	
 	events: {
@@ -80,15 +97,18 @@ LoggerApplication = function() {
 	},
 	
 	initialize: function() {
+	    /* Activates view refreshing on model data change. */
 		this.model.bind('change', this.render, this);
 	},
 	check: function(e) {
+	    /* Updates model with new state according to checked checkbox. */
 	    var el = $(e.target);
 	    var obj = {}
 	    obj[el.attr('id')] = Boolean(el.attr('checked'));
 		this.model.set(obj);
 	},
 	render: function() {
+	    /* Renders view using model properties. */
 	    _.each(this.model.get_states(), function(v, k) {
 		    $("input#show_"+k, this.el).attr('checked', v);
 	    });
@@ -96,6 +116,7 @@ LoggerApplication = function() {
   });
 
   var TabsView = Backbone.View.extend({
+    /* Implements tabs view. Number of events in tabs should be updated if logsState changes */
     el: $('nav#tabs'),
     
     initialize: function() {
@@ -114,11 +135,18 @@ LoggerApplication = function() {
     } 
   });
 	
-	
   var preferences = new PreferencesView({ model: this.logsState });
   var tabs        = new TabsView({ model: this.logsState })
 
   var Controller = Backbone.Router.extend({
+    /* Setups routes: function routes, by accessing:
+       - http://LOGMANAGER:PORT/#critical
+       - http://LOGMANAGER:PORT/#debug
+       - http://LOGMANAGER:PORT/#warning
+       - http://LOGMANAGER:PORT/#info
+       - http://LOGMANAGER:PORT/#other
+       user gets to corresponding tab
+    */
     routes: {
       ''         : 'index',
       ':type'    : 'logs'
@@ -133,6 +161,7 @@ LoggerApplication = function() {
       $('nav#tabs a[href="#'+type+'"]').parent().addClass('current');
     },
     hideAll: function() {
+      /* Hides all sections. */
       $('div#log-output > section').removeClass('current');
     },
     index: function() {
@@ -141,11 +170,19 @@ LoggerApplication = function() {
       $('section#index').addClass('current');
     },
     logs: function(type) {
+      /* Shows critical, debug, warning, info or other tab. */
       this.toggleNav(type);
       this.hideAll();
       $('section#logs-' + type).addClass('current');
     },
     new_event: function(event) {
+      /* Log event processing method:
+         - Checks, if log event should be shown
+         - Creates new element (div - which copies form template div)
+         - Updates corresponding elements with event data
+         - Adds new event element to corresponding section (critical, warning, debug, info, other)
+         - Deletes all extra elements so to keep max 100 events per tab.
+      */
       if (this.logsState.handle_event(event)) {
           section = this.logsState.get_section(event.level);
           
@@ -165,6 +202,7 @@ LoggerApplication = function() {
   });
   
   this.start = function() {
+      /* Initializes controller, which processes tabs, socket.io client */
       var controller = new Controller({ logsState: this.logsState });
       Backbone.history.start();
 
