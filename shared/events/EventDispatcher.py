@@ -21,15 +21,18 @@ class EventDispatcher(object):
     This class is non thread safe.
     """
 
-    def __init__(self, server_host, server_port, tag):
-        self._receiver = EventReceiver(server_host, server_port, tag,
+    def __init__(self, server_host, server_port, tubes):
+        if not isinstance(tubes, tuple):
+            raise RuntimeError('"tubes" parameter must be tuple or list')
+
+        self._receiver = EventReceiver(server_host, server_port, tubes,
                                        self._dispatch_event)
         self._subscriptions = {}
 
     def _dispatch_event(self, event):
         events = get_base_classes(event.__class__)
         for event_cls in events:
-            for subscription in self._subscriptions[event_cls]:
+            for subscription in self._subscriptions.get(event_cls, []):
                 subscription(event)
 
     def dispatch(self):
@@ -46,6 +49,8 @@ class EventDispatcher(object):
         """
         # Subscribe given callback for certain events or event types.
         for event in events:
-            subscr = self._subscriptions.get(event, [])
-            subscr.append(callback)
+            if event in self._subscriptions:
+                self._subscriptions[event].append(callback)
+            else:
+                self._subscriptions[event] = [callback]
 
