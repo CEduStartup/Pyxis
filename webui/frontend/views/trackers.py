@@ -38,6 +38,7 @@ def private_trackers(request):
 @login_required
 @render_to('frontend/trackers/view.html')
 def view(request, tracker_id=None):
+    print 'TTTTTTTTTTTTTTTTTTTTTTTTTTTT', tracker_id
     today = date.today()
     yesterday = today - timedelta(days=1)
     options = OptionsForm({
@@ -52,6 +53,7 @@ def view(request, tracker_id=None):
     tracker_ids = [tracker_id]
 
     trackers_client = trackers_api()
+    print '1111111111111111111111111111', trackers_client.get_trackers(), tracker_id
     tracker = trackers_client.get_trackers(tracker_id=tracker_id)[0]
     values = tracker.get_values()
     values_id_name_list = []
