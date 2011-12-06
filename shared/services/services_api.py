@@ -18,7 +18,9 @@ import time
 class method_wrapper:
     """This class acts as a proxy which bypasses request to bjsonrpc server."""
     def __call__(self, *args, **kargs):
-        return self.deserialize(self.proxy_method(*args, **kargs))
+        result = self.proxy_method(*args, **kargs)
+        if result:
+            return self.deserialize(self.proxy_method(*args, **kargs))
 
     def deserialize(self, data):
         """Decompresses and de-serialises data received from bjsonrpc server."""
@@ -58,6 +60,7 @@ class launcher_api(service_api_base):
 class mongo_storage_api(service_api_base):
     """API for launcher."""
     config = mongo_storage_config
+
 
 if __name__ == '__main__':
     def get_trackers_test():
