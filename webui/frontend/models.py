@@ -58,6 +58,11 @@ This is how often you want your data to be updated.
         """This is temporary, in future URI will not be a Tracker property."""
         return util.seconds_to_time(self.refresh_interval)
 
+    def drop_all_trackers(self):
+        """Drop all trackers DJango command."""
+        for tracker in self.objects.all():
+            tracker.delete()
+
 
 class DataSourceModel(Model):
     """ Data Source model.
