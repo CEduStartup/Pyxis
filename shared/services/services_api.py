@@ -5,8 +5,6 @@
 # Usage: from services.aervices_api import trackers_api
 # trackers_api.method(<params>)
 
-from gevent import monkey
-monkey.patch_all()
 from config.services import trackers as trackers_config
 from config.services import launcher as launcher_config
 from config.services import mongo_storage as mongo_storage_config
@@ -97,5 +95,6 @@ if __name__ == '__main__':
 
     tapi = trackers_api()
     print tapi.get_trackers()
-#    get_trackers_test()
+    get_trackers_test()
+    tapi.connection.close()
     #save_trackers_test()
