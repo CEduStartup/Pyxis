@@ -5,6 +5,8 @@
 # Usage: from services.aervices_api import trackers_api
 # trackers_api.method(<params>)
 
+from gevent import monkey
+monkey.patch_all()
 from config.services import trackers as trackers_config
 from config.services import launcher as launcher_config
 from config.services import mongo_storage as mongo_storage_config
@@ -15,12 +17,13 @@ import cPickle
 import base64
 import time
 
+
 class method_wrapper:
     """This class acts as a proxy which bypasses request to bjsonrpc server."""
     def __call__(self, *args, **kargs):
         result = self.proxy_method(*args, **kargs)
         if result:
-            return self.deserialize(self.proxy_method(*args, **kargs))
+            return self.deserialize(result)
 
     def deserialize(self, data):
         """Decompresses and de-serialises data received from bjsonrpc server."""
@@ -47,6 +50,9 @@ class service_api_base:
         obj.connection = self.connection
         return obj
 
+    def __str__(self):
+        return 'STR'
+
 
 class trackers_api(service_api_base):
     """API for trackers stuff."""
@@ -64,11 +70,11 @@ class mongo_storage_api(service_api_base):
 
 if __name__ == '__main__':
     def get_trackers_test():
-        N = 100
+        N = 50
         start_time = time.time()
         for i in range(N):
-            data = trackers_api.get_trackers()
-            print len(data)
+            data = tapi.get_trackers()
+            print data
 
         end_time = time.time()
         print '%s calls executed; execution time: %0.1f seconds' %(N, end_time-start_time)
@@ -89,6 +95,7 @@ if __name__ == '__main__':
         end_time = time.time()
         print '%s calls executed; execution time: %0.1f seconds' %(N, end_time-start_time)
 
-    trackers_api = trackers_api()
-    get_trackers_test()
+    tapi = trackers_api()
+    print tapi.get_trackers()
+#    get_trackers_test()
     #save_trackers_test()
