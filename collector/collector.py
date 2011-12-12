@@ -53,6 +53,7 @@ def _start_srv(service, name):
     service.start()
     sender.fire(CollectorServiceStartedEvent, srv_name=name)
 
+
 def run():
     """Implement main logic.
     """
@@ -79,7 +80,9 @@ def initialize_backdoor():
     port = collector_config.backdoor_port
 
     sender.fire(CollectorServiceStartedEvent, srv_name='backdoor')
-    BackdoorServer((host, port)).serve_forever()
+    ## Temporarily commented, because backdoor thread locks everything.
+    #BackdoorServer((host, port)).serve_forever()
+
 
 if __name__ == '__main__':
     handle_command_line_args()
@@ -88,7 +91,6 @@ if __name__ == '__main__':
         initialize()
         run()
         initialize_backdoor()
-
     except Exception:
         # Here we need to handle all errors which are not handled by any
         # component above.
@@ -96,3 +98,6 @@ if __name__ == '__main__':
                     error_details=traceback.format_exc())
         sys.exit(-1)
 
+    ## Temporary, until problem with backdoor is solved.
+    while(1):
+        gevent.sleep(0)
