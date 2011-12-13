@@ -11,6 +11,8 @@ from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import get_object_or_404
 
 from frontend.models import *
+from shared.events.Event import NewTrackerAddedEvent, TrackerConfigChangedEvent
+from shared.Parser import get_parser, ParserSyntaxError
 from shared.trackers import HTTP_ACCESS_METHOD, XML_DATA_TYPE, HTML_DATA_TYPE
 from shared.trackers.datasources.Errors import ResponseHTTPError, ResponseURLError, ResponseGeventTimeout
 from shared.trackers.datasources.factory import get_datasource
@@ -53,10 +55,10 @@ URI of your data source, like http://mypyxis.com/sample_data
         data_type = cleaned_data.get('data_type', 0)
         have_errors = False
         if data_type not in (XML_DATA_TYPE,):
-            self._errors['data_type'] = ('Data type not supported yet.',)
+            self._errors['data_type'] = ('Data type is not supported yet.',)
             have_errors = True
         if access_method not in (HTTP_ACCESS_METHOD,):
-            self._errors['access_method'] = ('Access method not supported yet.',)
+            self._errors['access_method'] = ('Access method is not supported yet.',)
             have_errors = True
         if have_errors:
             return cleaned_data
@@ -69,17 +71,22 @@ URI of your data source, like http://mypyxis.com/sample_data
             datasource = get_datasource(cleaned_data)
             datasource.grab_data()
             grabbed_data = datasource.get_raw_data()
+            parser = get_parser(data_type, gevent_safe=False)
+            parser.initialize()
+            parser.parse(grabbed_data)
         except ResponseHTTPError:
             raise forms.ValidationError('Address "%s" cannot be opened due to server error.' % (query['URI'],))
         except ResponseURLError:
             raise forms.ValidationError('Address "%s" cannot be opened.' % (query['URI'],))
         except ResponseGeventTimeout:
             raise forms.ValidationError('Timeout on address "%s".' % (query['URI'],))
+        except ParserSyntaxError:
+            raise forms.ValidationError('Data source returns malformed document or data type is wrong.')
         except ValueError:
             raise forms.ValidationError('Wrong datasource configuration.')
         # Data for visualisation on next step.
-        grabbed_data = '<root><a x="qwe"></a><b>123</b></root>'
-        cleaned_data['grabbed_data'] = grabbed_data
+
+        cleaned_data['grabbed_data'] = parser
         return cleaned_data
 
 class ValueForm(ModelForm):
@@ -156,12 +163,12 @@ class TrackerWizard(FormWizard):
         value.save()
 
         if is_new_tracker:
-            eid = 'CONFIG.TRACKER.ADDED'
+            event_cls = NewTrackerAddedEvent
         else:
-            eid = 'CONFIG.TRACKER.CHANGED'
+            event_cls = TrackerConfigChangedEvent
 
         sender = EventSender()
-        sender.fire(eid, tracker_id=tracker.id)
+        sender.fire(event_cls, tracker_id=tracker.id)
 
         # Clean temporary data.
         del request.session['extra_cleaned_data']

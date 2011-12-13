@@ -25,6 +25,7 @@ while True:
 from gevent.queue import Queue
 
 from shared.events.EventDispatcher import EventDispatcher
+from shared.Utils import get_base_classes
 
 
 class GEventDispatcher(EventDispatcher):
@@ -37,13 +38,14 @@ class GEventDispatcher(EventDispatcher):
     This class is thread safe.
     """
 
-    def __init__(self, server_host, server_port, tag):
-        EventDispatcher.__init__(self, server_host, server_port, tag)
+    def __init__(self, server_host, server_port, tubes):
+        EventDispatcher.__init__(self, server_host, server_port, tubes)
         self._subscribers = []
 
     def _dispatch_event(self, event):
-        for tag in event.tags:
-            listeners = self._subscriptions.get(tag, [])
+        events = get_base_classes(event.__class__)
+        for event_cls in events:
+            listeners = self._subscriptions.get(event_cls, [])
             for listener in listeners:
                 if isinstance(listener, Queue):
                     listener.put(event)

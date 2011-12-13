@@ -10,5 +10,6 @@ queue_port = 11300
 _suffix = os.environ['LOGNAME']
 
 LOGGER_TUBE = 'LOGGER_TUBE_%s' % (_suffix,)
+LAUNCHER_TUBE = 'LAUNCHER_TUBE_%s' % (_suffix,)
 COLLECTOR_TUBE = 'COLLECTOR_TUBE_%s' % (_suffix,)
 

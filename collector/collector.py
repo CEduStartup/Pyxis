@@ -9,6 +9,7 @@ import config.storage as storage_config
 from config.init.trackers import sender
 from gevent.backdoor import BackdoorServer
 from Scheduler import Scheduler
+from shared.events.Event import CollectorServiceStartedEvent, CollectorFailureEvent
 from shared.signal import utils as signal_utils
 from storage import storage_types
 from TrackerCollection import TrackerCollection
@@ -50,8 +51,8 @@ def _start_srv(service, name):
     """Helper function to start service.
     """
     service.start()
-    sender.fire('COLLECTOR.SERVICE_STARTED.SUCCESS',
-                srv_name=name)
+    sender.fire(CollectorServiceStartedEvent, srv_name=name)
+
 
 def run():
     """Implement main logic.
@@ -78,9 +79,10 @@ def initialize_backdoor():
     host = collector_config.backdoor_host
     port = collector_config.backdoor_port
 
-    sender.fire('COLLECTOR.SERVICE_STARTED.SUCCESS',
-                srv_name='backdoor')
-    BackdoorServer((host, port)).serve_forever()
+    sender.fire(CollectorServiceStartedEvent, srv_name='backdoor')
+    ## Temporarily commented, because backdoor thread locks everything.
+    #BackdoorServer((host, port)).serve_forever()
+
 
 if __name__ == '__main__':
     handle_command_line_args()
@@ -89,11 +91,13 @@ if __name__ == '__main__':
         initialize()
         run()
         initialize_backdoor()
-
     except Exception:
         # Here we need to handle all errors which are not handled by any
         # component above.
-        sender.fire('COLLECTOR.FAILURE',
+        sender.fire(CollectorFailureEvent,
                     error_details=traceback.format_exc())
         sys.exit(-1)
 
+    ## Temporary, until problem with backdoor is solved.
+    while(1):
+        gevent.sleep(0)

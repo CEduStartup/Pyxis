@@ -11,6 +11,7 @@ import urllib2
 from .Common import DatasourceCommon
 from .Errors import ResponseHTTPError, ResponseURLError, \
                     ResponseGeventTimeout
+from shared.events.Event import LoggerWarningEvent, LoggerDebugEvent
 from shared.trackers.datasources.query_parsers import JSON
 from .query_parsers.JSON import QueryParserJSON
 
@@ -55,26 +56,29 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
         try:
             with gevent.Timeout(tracker_thread_timeout):
                 request = urllib2.Request(self._target)
+                request.add_header('User-agent', 'Mozilla/5.0')
                 response = urllib2.urlopen(request)
                 self.raw_data = response.read()
                 self.response_code = response.code
+        #TODO: Fire corresponding tracker and/or datasource events here
+        #instead of general logger events.
         except urllib2.HTTPError, err:
             self.response_code = err.code
-            sender.fire('LOGGER.WARNING', message='HTTPError for %s: %d' %
+            sender.fire(LoggerWarningEvent, message='HTTPError for %s: %d' %
                                                   (self._target, err.code))
             raise ResponseHTTPError(err)
         except urllib2.URLError, err:
-            sender.fire('LOGGER.WARNING', message='URLError for %s: %s' %
+            sender.fire(LoggerWarningEvent, message='URLError for %s: %s' %
                                                   (self._target, err.reason))
             raise ResponseURLError(err.reason)
         except gevent.Timeout, err:
-            sender.fire('LOGGER.WARNING', message='URL Gevent timeout - %s'
+            sender.fire(LoggerWarningEvent, message='URL Gevent timeout - %s'
                                                   % self._target)
             raise ResponseGeventTimeout()
 
         now = time.time()
         self.grab_spent_time = now - self.request_time
-        sender.fire('LOGGER.DEBUG', message='Processed "%s" with [%d] in %.2fsecs"' % (
+        sender.fire(LoggerDebugEvent, message='Processed "%s" with [%d] in %.2fsecs"' % (
             self._target, self.response_code, self.grab_spent_time))
 
     def get_raw_data(self):

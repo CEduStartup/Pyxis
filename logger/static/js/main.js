@@ -16,7 +16,7 @@ LoggerApplication = function() {
         'info': 'info',
         'other': 'other'
     },
-
+    
     /*
     for each level corresponding section element stored in MAP_SECTIONS
     */
@@ -32,7 +32,9 @@ LoggerApplication = function() {
       count_warning:  0,
       count_debug:    0,
       count_info:     0,
-      count_other:    0
+      count_other:    0,
+      console_show:   0, // 0 - disabled, 1 - show all, 2 - show checked for web-tabs
+      socket:         null,
     },
     initialize: function() {
         var that = this;
@@ -83,39 +85,58 @@ LoggerApplication = function() {
             this.set(o);
         }
         return result;
+    },
+    set_console_show: function(value) {
+	    var obj = {'console_show': value};
+	    this.set(obj); 
+	    this.get('socket').emit('console_config', {show_console_log: value});      
     }
   });
   
-  this.logsState = new this.LogsState();
-  
-  var PreferencesView = Backbone.View.extend({
+  this.PreferencesView = Backbone.View.extend({
     /* Implements preferences panel view. */
 	el: $("div#prefs"),
 	
 	events: {
-		"click input:checkbox": "check"
+		"click input:checkbox": "level_check",
+		"click input:radio": "console_check"
 	},
 	
 	initialize: function() {
 	    /* Activates view refreshing on model data change. */
 		this.model.bind('change', this.render, this);
 	},
-	check: function(e) {
+	level_check: function(e) {
 	    /* Updates model with new state according to checked checkbox. */
 	    var el = $(e.target);
-	    var obj = {}
+	    var obj = {};
 	    obj[el.attr('id')] = Boolean(el.attr('checked'));
 		this.model.set(obj);
 	},
+	console_check: function(e) {
+	    /* Updates model with console log configuration */
+	    this.model.set_console_show($(e.target).val());
+	},
 	render: function() {
 	    /* Renders view using model properties. */
+	    var that = this;
 	    _.each(this.model.get_states(), function(v, k) {
 		    $("input#show_"+k, this.el).attr('checked', v);
 	    });
+	    $("input:radio").each(function() {
+	        var el = $(this);
+	        if (that.model.get('console_show') == el.val()) {
+	            el.attr('checked', 'checked');
+	        } else {
+	            if (el.attr('checked')) {
+	                el.removeAttr('checked');
+                }
+	        }
+	    })
 	}
   });
 
-  var TabsView = Backbone.View.extend({
+  this.TabsView = Backbone.View.extend({
     /* Implements tabs view. Number of events in tabs should be updated if logsState changes */
     el: $('nav#tabs'),
     
@@ -135,10 +156,7 @@ LoggerApplication = function() {
     } 
   });
 	
-  var preferences = new PreferencesView({ model: this.logsState });
-  var tabs        = new TabsView({ model: this.logsState })
-
-  var Controller = Backbone.Router.extend({
+  this.Controller = Backbone.Router.extend({
     /* Setups routes: function routes, by accessing:
        - http://LOGMANAGER:PORT/#critical
        - http://LOGMANAGER:PORT/#debug
@@ -203,13 +221,18 @@ LoggerApplication = function() {
   
   this.start = function() {
       /* Initializes controller, which processes tabs, socket.io client */
-      var controller = new Controller({ logsState: this.logsState });
+      var socket = io.connect('/');
+      
+      this.logsState   = new this.LogsState({socket: socket});
+      this.preferences = new this.PreferencesView({ model: this.logsState });
+      this.tabs        = new this.TabsView({ model: this.logsState })
+      this.controller  = new this.Controller({ logsState: this.logsState });
+      
       Backbone.history.start();
 
       if (typeof window !== 'undefined'){
           window.WEB_SOCKET_SWF_LOCATION = '/static/js/vendor/WebSocketMain.swf';
       }
-      var socket = io.connect('/');
   
       socket.on('log', function(event) {
           controller.new_event(event);

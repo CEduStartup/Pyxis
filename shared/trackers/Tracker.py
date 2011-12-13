@@ -6,6 +6,8 @@ import time
 import traceback
 
 from config.init.trackers import sender
+from shared.events.Event import TrackerGrabSuccessEvent, TrackerGrabFailureEvent, \
+                                LoggerCriticalEvent, LoggerDebugEvent
 from shared.trackers import VALUE_TYPES
 from shared.trackers.datasources.factory import get_datasource
 from shared.trackers.datasources.Errors import BaseGrabError
@@ -130,7 +132,7 @@ class Tracker(object):
 
         for datasource in map(lambda x: x[0], self._datasources):
             datasource.grab_data()
-            sender.fire('TRACKER.GRAB.SUCCESS', tracker_id=self.tracker_id)
+            sender.fire(TrackerGrabSuccessEvent, tracker_id=self.tracker_id)
 
     def set_deleted(self):
         """Mark tracker as `deleted`, so scheduler will not process it.
@@ -167,8 +169,9 @@ class Tracker(object):
             except ParserError, e:
                 # TODO: we need to log this error and notify another components
                 # about it.
-                sender.fire('LOGGER.CRITICAL', message=
+                sender.fire(LoggerCriticalEvent, message=
                             'Parsing error for tracker %s' % self.tracker_id)
+                raise
 
     def _validate_data(self):
         """Check if the data stored in `values` attribute has the same type as
@@ -181,7 +184,7 @@ class Tracker(object):
     def _save_data(self):
         """Save data to storage.
         """
-        sender.fire('LOGGER.DEBUG', message='Save data: %s %s' %
+        sender.fire(LoggerDebugEvent, message='Save data: %s %s' %
                                     (self.tracker_id, self._clean_data))
         # Currently we process only first datasource.
         self.storage.put(self,
@@ -194,7 +197,7 @@ class Tracker(object):
         :Parameters:
             - `err`: an instance of execption.
         """
-        sender.fire('TRACKER.GRAB.FAILURE', tracker_id=self.tracker_id,
+        sender.fire(TrackerGrabFailureEvent, tracker_id=self.tracker_id,
                     error_details='** TO BE DONE **')#str(err.reason))
 
     def process(self):
@@ -211,7 +214,7 @@ class Tracker(object):
         except BaseGrabError, err:
             self._process_datasource_exception(err)
         except Exception, err:
-            sender.fire('LOGGER.CRITICAL', message=traceback.format_exc())
+            sender.fire(LoggerCriticalEvent, message=traceback.format_exc())
         finally:
             self.last_modified = time.time()
 
