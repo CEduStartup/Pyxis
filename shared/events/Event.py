@@ -5,7 +5,7 @@ import pickle
 import time
 
 from config.context import context
-from config.mq import LOGGER_TUBE, COLLECTOR_TUBE
+from config.mq import LOGGER_TUBE, COLLECTOR_TUBE, LAUNCHER_TUBE
 
 
 class EventError(Exception):
@@ -316,9 +316,17 @@ class TrackerDeletedEvent(TrackerConfigEvent):
     msg = 'Tracker %(tracker_id)s was deleted.'
 
 
+class ServiceChangedStateEvent(BaseLogEvent):
+    REQUIRED_ATTRS = ['service_id', 'state']
+    msg = 'Service %(service_id)s %(state)s'
+    level = 'info'
+
+
+
 # Defines a list of suitable tubes for each event. You need to update this
 _EVENT_TUBE_MAPPING = {
     # Tracker config changes events.
+    BaseEvent: (COLLECTOR_TUBE, LOGGER_TUBE),
     NewTrackerAddedEvent: (COLLECTOR_TUBE, LOGGER_TUBE),
     TrackerConfigChangedEvent: (COLLECTOR_TUBE, LOGGER_TUBE),
     TrackerDeletedEvent: (COLLECTOR_TUBE, LOGGER_TUBE),
@@ -338,6 +346,7 @@ _EVENT_TUBE_MAPPING = {
     LoggerWarningEvent: (LOGGER_TUBE,),
     LoggerDebugEvent: (LOGGER_TUBE,),
     LoggerCriticalEvent: (LOGGER_TUBE,),
+    ServiceChangedStateEvent: (LAUNCHER_TUBE,),
 }
 
 def get_tubes(event_cls):

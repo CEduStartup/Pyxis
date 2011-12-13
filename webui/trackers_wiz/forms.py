@@ -79,7 +79,7 @@ URI of your data source, like http://mypyxis.com/sample_data
         except ValueError:
             raise forms.ValidationError('Wrong datasource configuration.')
         # Data for visualisation on next step.
-        grabbed_data = '<root><a x="qwe"></a><b>123</b></root>'
+
         cleaned_data['grabbed_data'] = grabbed_data
         return cleaned_data
 

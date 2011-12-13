@@ -171,6 +171,7 @@ class Tracker(object):
                 # about it.
                 sender.fire(LoggerCriticalEvent, message=
                             'Parsing error for tracker %s' % self.tracker_id)
+                raise
 
     def _validate_data(self):
         """Check if the data stored in `values` attribute has the same type as

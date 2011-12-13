@@ -25,8 +25,16 @@ DATA_TYPES = {
 INT_VALUE_TYPE   = 1
 FLOAT_VALUE_TYPE = 2
 
+def _cast_int(value):
+    return int(value.replace(',', '').replace('.', ''))
+
+
+def _cast_float(value):
+    return int(float(value.replace(',', '.')))
+
+
 # This constant describes available value types.
 VALUE_TYPES = {
-   INT_VALUE_TYPE:   {'pretty': u'Integer', 'name': 'int', 'cast': lambda x: int(float(x)) },
-   FLOAT_VALUE_TYPE: {'pretty': u'Float', 'name': 'float', 'cast': float},
+   INT_VALUE_TYPE:   {'pretty': u'Integer', 'name': 'int', 'cast': _cast_int },
+   FLOAT_VALUE_TYPE: {'pretty': u'Float', 'name': 'float', 'cast': _cast_float},
 }

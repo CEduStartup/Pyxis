@@ -38,8 +38,8 @@ class GEventDispatcher(EventDispatcher):
     This class is thread safe.
     """
 
-    def __init__(self, server_host, server_port, tag):
-        EventDispatcher.__init__(self, server_host, server_port, tag)
+    def __init__(self, server_host, server_port, tubes):
+        EventDispatcher.__init__(self, server_host, server_port, tubes)
         self._subscribers = []
 
     def _dispatch_event(self, event):

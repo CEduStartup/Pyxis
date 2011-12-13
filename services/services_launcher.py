@@ -6,6 +6,8 @@ import types
 import gevent
 from gevent import monkey
 from shared.services.services_api import launcher_api
+from shared.events.Event import ServiceChangedStateEvent
+from config.init.trackers import sender as event_sender
 
 
 def start_service(service_config):
@@ -43,12 +45,7 @@ def launch_services():
             else:
                 print 'Service disabled by administrator: %s' %service_config.description
 
-
-    try:
-        launcher_api().connection.notify.process_ready('services')
-    except Exception, e:
-        # This is not critical error and we should just log it.
-        print 'Cannot send READY signal.'
+    event_sender.fire(ServiceChangedStateEvent, service_id='services', state='started')
     gevent.joinall(threads)
 
 

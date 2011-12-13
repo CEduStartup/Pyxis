@@ -4,7 +4,7 @@ import config.webui as webui_config
 
 # Django settings for webuiproject.
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (

@@ -2,6 +2,8 @@
 # Services logic are defined in services dir.
 
 from shared.Utils import port_randomizer
+from config.context import create_context
+
 
 class SharedServiceConfig:
     # Service description.
@@ -56,3 +58,8 @@ class test(SharedServiceConfig):
     bind_port = 8003 + port_randomizer()
     module = 'service_test'
     handler = 'TestService'
+
+
+component_name = 'shared_services'
+
+create_context(component_name)

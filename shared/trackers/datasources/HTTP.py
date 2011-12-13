@@ -56,6 +56,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
         try:
             with gevent.Timeout(tracker_thread_timeout):
                 request = urllib2.Request(self._target)
+                request.add_header('User-agent', 'Mozilla/5.0')
                 response = urllib2.urlopen(request)
                 self.raw_data = response.read()
                 self.response_code = response.code
