@@ -11,6 +11,7 @@ from shared.events.Event import TrackerGrabSuccessEvent, TrackerGrabFailureEvent
 from shared.trackers import VALUE_TYPES
 from shared.trackers.datasources.factory import get_datasource
 from shared.trackers.datasources.Errors import BaseGrabError
+from shared.trackers.value_extractor import ValueExtractor
 from shared.Parser import get_parser, ParserError
 
 class Tracker(object):
@@ -78,6 +79,7 @@ class Tracker(object):
         self._raw_data = None
         self._clean_data = None
         self._deleted = False
+        self._value_extractor = ValueExtractor()
 
 
     def get_id(self):
@@ -161,10 +163,11 @@ class Tracker(object):
                 for extract_value in settings['values']:
                     value_result = parser.xpath(
                        extract_value['extraction_rule'])
-                    cast_func = VALUE_TYPES[extract_value['type']]['cast']
                     if value_result and len(value_result):
-                        self._clean_data[extract_value['value_id']] = \
-                           cast_func(value_result[0])
+                        clean_value = \
+                            self._value_extractor.extract_number(value_result[0],
+                                VALUE_TYPES[extract_value['type']]['name'])
+                        self._clean_data[extract_value['value_id']] = clean_value
 
             except ParserError, e:
                 # TODO: we need to log this error and notify another components
@@ -173,11 +176,22 @@ class Tracker(object):
                             'Parsing error for tracker %s' % self.tracker_id)
                 raise
 
+    def _extract_value(self, value, value_type):
+        """Here we cast numercial value from what we extracted from document
+        grabbed.
+
+        Example:
+            - grabbed: "10$", after cast it's: 10.
+            - grabbed: "10,000,000", after cast it's: 10000000.
+        """
+        clean_value = self._value_extractor.extract_number(value, value_type)
+        return clean_value
+
     def _validate_data(self):
         """Check if the data stored in `values` attribute has the same type as
         it was requested by the user.
         """
-        # Currecntly we cannot implement this method correctly.
+        # Currently we cannot implement this method correctly.
         # TODO: validate self._clean_data
         pass
 
