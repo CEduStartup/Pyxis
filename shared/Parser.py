@@ -277,6 +277,59 @@ class GHTMLParser(HTMLParser):
         self._parser = GBeautifulSoupParser
 
 
+class CSVParser(BaseParser):
+
+    """This class is capable to parse CSV files.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """CSVParser constructor.
+        """
+        BaseParser.__init__(self, args, kwargs)
+        self._parser = None
+        self._dialect = None
+        self._parsed_data = None
+
+    def _initialize(self, raw_data):
+        """Detect CSV dialect and prepare data to parsing.
+        """
+        self._detect_dialect(raw_data.read(1024))
+        raw_data.seek(0)
+
+    def _create_parser(self):
+        """Not used.
+        """
+        pass
+
+    def _detect_dialect(self, raw_data_simple):
+        """Try to automatically detect the dialect of CSV data.
+
+        :Parameters:
+            - `raw_data` a string which contains very first.
+
+        """
+        self._dialect = CSV.Sniffer().sniff(raw_data_simple)
+
+    def initialize(self, raw_data):
+        """Initialize CSV parser.
+
+        :Parameters:
+            - `raw_data`: a file-like object (probably StringIO) which provides
+              `read()` and `seek()` methods and contains raw CSV data.
+        """
+        self._create_parser()
+        self._initialize(raw_data)
+
+    def parse(self, raw_data):
+        """Main method for parsing.
+        """
+        self._parsed_data = self._parse(raw_data)
+
+    def _parse(self, raw_data):
+        """Inner parser implementation.
+        """
+
+
 # Maps datatype to parser class which can handle it.
 _PARSER_TYPES_MAPPING = {
     'plain': {
