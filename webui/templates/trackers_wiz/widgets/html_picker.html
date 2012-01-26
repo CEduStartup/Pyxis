@@ -1,0 +1,101 @@
+{% load value_picker %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
+
+<div id="value_picker">
+    {% autoescape off %}
+    <input {{ attrs }}>
+    {% endautoescape %}
+
+    <input id="test_xpath_btn" type="button" value="Test..."
+     onclick="test_value_extraction();">
+    <img id="test_progress_bar" src="{{STATIC_PREFIX}}images/ajax-loader.gif">
+    <span id="test_result"></span>
+
+    <br><br>
+    <b>Below you see the content of requested web page. Please click on number you
+    want to get from that page:</b>
+    <br><br>
+    <iframe id="target_site_iframe" style="width: 100%; height: 400px;"
+     src="{% url trackers_wiz.views.get_url URI|urlencode %}" onload="lock_page_elements();">
+    </iframe>
+</div>
+
+<script>
+
+function lock_page_elements() {
+  var iframe_doc = document.getElementById('target_site_iframe').contentWindow;
+  $(iframe_doc).click(get_extraction_rule);
+}
+
+
+function get_extraction_rule(event) {
+  event.stopPropagation();
+  var element = event.target;
+  var xpath = calculateElementXPath(element);
+  var xpath_str = '/' + xpath.join('/');
+  $("#id_2-extraction_rule").val(xpath_str);
+  return false;
+}
+
+
+function test_value_extraction() {
+  $('#test_progress_bar').show()
+  $('#test_result').hide()
+
+  $.get("{% url trackers_wiz.views.try_xpath %}",
+                  {'name': 'test_name',
+                   'value_type': $("#id_2-value_type").val(),
+                   'extraction_rule': $("#id_2-extraction_rule").val()},
+
+                   function display_result(data) {
+                      $('#test_progress_bar').hide();
+                      $('#test_result').show();
+                      var class_to_add = (data['status'] == 0) ? 'alert-message success' : 'alert-message error';
+                      var class_to_remove = (data['status'] == 0) ? 'alert-message error' : 'alert-message success';
+                      $('#test_result').removeClass(class_to_remove);
+                      $('#test_result').addClass(class_to_add);
+
+                      $("#test_result").text(data['data']);
+                   })
+
+}
+
+
+$('#test_progress_bar').hide()
+$('#test_result').hide()
+
+function calculateElementXPath(node, path) {
+  path = path || [];
+  if(node.parentNode) {
+    path = calculateElementXPath(node.parentNode, path);
+  }
+
+  if(node.previousSibling) {
+    var count = 1;
+    var sibling = node.previousSibling
+    do {
+      if(sibling.nodeType == 1 && sibling.nodeName == node.nodeName) {count++;}
+      sibling = sibling.previousSibling;
+    } while(sibling);
+    if(count == 1) {count = null;}
+  } else if(node.nextSibling) {
+    var sibling = node.nextSibling;
+    do {
+      if(sibling.nodeType == 1 && sibling.nodeName == node.nodeName) {
+        var count = 1;
+        sibling = null;
+      } else {
+        var count = null;
+        sibling = sibling.previousSibling;
+      }
+    } while(sibling);
+  }
+
+  if(node.nodeType == 1 && node.nodeName.toLowerCase() != 'tbody') {
+    path.push(node.nodeName.toLowerCase() + (node.id ? "[@id='"+node.id+"']" : count > 0 ? "["+count+"]" : ''));
+  }
+
+  return path;
+};
+
+</script>
