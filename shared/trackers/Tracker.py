@@ -161,11 +161,18 @@ class Tracker(object):
                 self._parsers.append(parser)
 
                 for extract_value in settings['values']:
-                    value_result = parser.xpath(
-                       extract_value['extraction_rule'])
-                    if value_result and len(value_result):
+                    xpath_result = parser.xpath(extract_value['extraction_rule'])
+
+                    value = None
+                    if isinstance(xpath_result, list) and len(xpath_result) > 0:
+                        if isinstance(xpath_result[0], str):
+                            value = xpath_result[0]
+                        else:
+                            value = xpath_result[0].text
+
+                    if not value is None:
                         clean_value = \
-                            self._value_extractor.extract_number(value_result[0],
+                            self._value_extractor.extract_number(value,
                                 VALUE_TYPES[extract_value['type']]['name'])
                         self._clean_data[extract_value['value_id']] = clean_value
 

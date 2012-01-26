@@ -98,7 +98,7 @@ Actually, this is what you'll see in your chart's Y axis label.""")
        choices=_make_pretty(VALUE_TYPES), default=1, verbose_name='Value type:',
        help_text="""\
 Type of your value (integer or fractional).""")
-    extraction_rule = CharField(max_length=200, verbose_name='Extraction rule:',
+    extraction_rule = CharField(max_length=400, verbose_name='Extraction rule:',
                                 help_text="""\
 Find the value you need in data below and click on it to get its path in data.""")
 

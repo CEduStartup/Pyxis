@@ -1,3 +1,6 @@
+# coding=utf-8
+import re
+
 ## Pyxis project, value extractor module.
 ##
 ##
@@ -14,33 +17,38 @@ class ValueExtractor:
     That's what this class is intended for.
     """
 
-    def extract_number(self, value, value_type):
+    def extract_number(self, text, value_type):
         """Extract number from parser results.
 
         :Parameters:
             - `value`: raw value
             - `value_type`: type of value (int, float, etc.)
         """
-        clean_value = None
-        print '00000000000000000000000000000', value, value_type
-        if value_type == 'int':
-            value = self._remove_delimiters(value)
-            clean_value = int(value)
-            print '111111111111111111111111', clean_value
-        elif value_type == 'float':
-            value = value.replace(',', '.')
-            clean_value = float(value)
-            print '222222222222222222222222', clean_value
+        try:
+            value = self._find_numeric_value(text)
+            if value_type == 'int':
+                value = self._remove_delimiters(value)
+                clean_value = int(value)
+            elif value_type == 'float':
+                value = value.replace(',', '.')
+                clean_value = float(value)
+        except (ValueError, UnicodeEncodeError):
+            raise ValueError('Cannot extract number')
+
         return clean_value
+
+    def _find_numeric_value(self, text):
+        regex = re.compile('-?(?:\d[,.]?)*\d')
+        found = regex.findall(r'%s' %text)
+        if found:
+            return found[-1]
+        return ''
 
     def _remove_delimiters(self, value):
         return value.replace(',', '').replace('.', '')
-
-    def _cast_float(value):
-        return int(float(value.replace(',', '.')))
 
 
 if __name__ == '__main__':
     ve = ValueExtractor()
     print ve.extract_number('8,01', 'float')
-    print ve.extract_number('1,000,000,000', 'int')
+    print ve.extract_number('24 338 специалистов', 'int')

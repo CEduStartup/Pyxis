@@ -17,6 +17,8 @@ from .query_parsers.JSON import QueryParserJSON
 
 from config.collector import tracker_thread_timeout
 from config.init.trackers import sender
+from shared.Utils import strip_comments
+
 
 class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
 
@@ -58,7 +60,7 @@ class DatasourceHTTP(DatasourceCommon, QueryParserJSON):
                 request = urllib2.Request(self._target)
                 request.add_header('User-agent', 'Mozilla/5.0')
                 response = urllib2.urlopen(request)
-                self.raw_data = response.read()
+                self.raw_data = strip_comments(response.read())
                 self.response_code = response.code
         #TODO: Fire corresponding tracker and/or datasource events here
         #instead of general logger events.
