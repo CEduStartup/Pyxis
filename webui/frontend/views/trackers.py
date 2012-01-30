@@ -38,7 +38,6 @@ def private_trackers(request):
 @login_required
 @render_to('frontend/trackers/view.html')
 def view(request, tracker_id=None):
-    print 'TTTTTTTTTTTTTTTTTTTTTTTTTTTT', tracker_id
     today = date.today()
     yesterday = today - timedelta(days=1)
     options = OptionsForm({
@@ -53,7 +52,6 @@ def view(request, tracker_id=None):
     tracker_ids = [tracker_id]
 
     trackers_client = trackers_api()
-    print '1111111111111111111111111111', trackers_client.get_trackers(), tracker_id
     tracker = trackers_client.get_trackers(tracker_id=tracker_id)[0]
     values = tracker.get_values()
     values_id_name_list = []
@@ -165,11 +163,12 @@ def get_data_to_display(request):
     return HttpResponse(simplejson.dumps(data_list), mimetype='application/javascript')
 
 @login_required
-def delete(request, id):
-    tracker = TrackerModel.objects.get(pk=id)
+def delete(request, tracker_id):
+    print '333333333333333', tracker_id
+    tracker = TrackerModel.objects.get(pk=tracker_id)
     view = ViewModel.objects.filter(trackers=tracker)
     view.delete()
     tracker.delete()
     sender = EventSender()
-    sender.fire(TrackerDeletedEvent, tracker_id=int(id))
+    sender.fire(TrackerDeletedEvent, tracker_id=int(tracker_id))
     return redirect('/trackers/')

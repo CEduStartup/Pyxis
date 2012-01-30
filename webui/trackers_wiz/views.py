@@ -1,11 +1,26 @@
 import simplejson
 from forms import *
+import urllib2
+import re
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 
 from frontend.models import *
 from trackers_wiz.forms import *
 
+from shared.Parser import get_parser
+from shared.trackers.value_extractor import ValueExtractor
+from shared.Utils import strip_javascript, strip_comments, get_root_url, \
+                         replace_relative_paths
+
+from lxml.etree import XPathEvalError
+
+TEST_STATUS_OK = 0
+TEST_STATUS_XPATH_ERROR = -1
+TEST_STATUS_CAST_ERROR = -2
+
 TRACKER_WIZARD_FORMS = [TrackerNameForm, DataSourceForm, ValueForm]
+
 
 def add(request):
     return TrackerWizard(TRACKER_WIZARD_FORMS, initial=_make_initial_add())(request)
@@ -53,3 +68,50 @@ def edit(request, tracker_id):
     tracker = get_object_or_404(TrackerModel, pk=tracker_id)
     return TrackerWizard(TRACKER_WIZARD_FORMS, initial=_make_initial(tracker))(request)
 
+
+def get_url(request, URL):
+    """Method gets retrieves data from given URL and passes it to template."""
+    url_request = urllib2.Request(URL)
+    url_request.add_header('User-agent', 'Mozilla/5.0')
+    response = urllib2.urlopen(url_request)
+    data = strip_javascript(response.read())
+    data = strip_comments(data)
+    data = replace_relative_paths(data, get_root_url(URL))
+    return HttpResponse(data, mimetype='text/html')
+
+
+@csrf_exempt
+def try_xpath(request):
+    status = TEST_STATUS_OK
+    data = ''
+    value_types_map = {1: 'int', 2: 'float'}
+    form = ValueForm(request.GET)
+    if form.is_valid():
+        try:
+            URL = request.session['extra_cleaned_data']['URI']
+            url_request = urllib2.Request(URL)
+            url_request.add_header('User-agent', 'Mozilla/5.0')
+            response = urllib2.urlopen(url_request)
+            data = response.read()
+            data = strip_javascript(data)
+            data = strip_comments(data)
+            data = replace_relative_paths(data, get_root_url(URL))
+            value_type = value_types_map[form.cleaned_data['value_type']]
+            data_type = request.session['extra_cleaned_data']['data_type']
+            parser = get_parser(data_type, gevent_safe=False)
+            parser.initialize()
+            parser.parse(data)
+            result = parser.xpath(form.cleaned_data['extraction_rule'])
+            data = ValueExtractor().extract_number(result[0].text, value_type)
+            data = 'Data successfully extracted: %s' %data
+        except (IndexError, XPathEvalError):
+            status = TEST_STATUS_XPATH_ERROR
+            data = 'Node Extraction Failed, try top correct extraction rule manually !'
+        except ValueError:
+            status = TEST_STATUS_CAST_ERROR
+            data = 'Cannot find number in text "%s" !' %result[0].text
+
+        return HttpResponse(simplejson.dumps({'status': status, 'data': data}),
+                            mimetype='application/json')
+    else:
+        return HttpResponse('Please set extraction rule', mimetype='text/html')
