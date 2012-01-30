@@ -161,8 +161,8 @@ class Tracker(object):
                 self._parsers.append(parser)
 
                 for extract_value in settings['values']:
-                    xpath_result = parser.xpath(extract_value['extraction_rule'])
-
+                    xpath_result = \
+                       parser.get_value(extract_value['extraction_rule'])
                     value = None
                     if isinstance(xpath_result, list) and len(xpath_result) > 0:
                         if isinstance(xpath_result[0], str):

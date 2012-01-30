@@ -6,13 +6,15 @@ method.
 
 import abc
 import BeautifulSoup
+import csv
 import gevent
 import StringIO
 
 from lxml import etree
 from lxml.html import soupparser
 
-from shared.trackers import XML_DATA_TYPE, HTML_DATA_TYPE, JSON_DATA_TYPE
+from shared.trackers import (XML_DATA_TYPE, HTML_DATA_TYPE, JSON_DATA_TYPE,
+                             CSV_DATA_TYPE)
 
 # Determine how many tags will be parser before return control to gevent()
 ELEMENTS_IN_ROUND = 50
@@ -137,6 +139,26 @@ class BaseParser(object):
         """Getter for parsed data.
         """
 
+    def _cast_value(self, raw_value, cast=None):
+        """Cast the value using `cast` callable object.
+        """
+        if cast is None:
+            return raw_value
+
+        return cast(raw_value)
+
+    @abc.abstractmethod
+    def get_value(self, query, cast=None):
+        """Return single value from parsed data, using some query to find it.
+
+        :Parameters:
+            - `query`: a query which will be used to find some value e.g. xpath
+              for XML and HTML, or column and row numbers for CSV.
+            - `cast`: a callable objects which will be used to cast the value
+              (or None to skip casting).
+        """
+        some_data = self.get_parsed()
+        return self._cast_value(some_data)
 
 class GBeautifulSoupParser(BeautifulSoup.BeautifulSoup):
 
@@ -214,24 +236,32 @@ class XMLParser(BaseParser):
         """
         return self._etree_dom
 
-    def xpath(self, xpath_str, cast=None):
+    def xpath(self, xpath_str):
         """Return information from XML using XPath.
 
         :Parameters:
             - `xpath_str`: string which contains xpath path to the data.
-            - `cast`: callable object which will be used to convert information
-              to the required type.
 
         :Return:
             - Return a list of strings. Each string represent 1 element from
               XML document.
         """
-        data = self._etree_dom.xpath(xpath_str)
+        return self._etree_dom.xpath(xpath_str)
+
+
+    def get_value(self, xpath_str, cast=None):
+        """Return the value of element defined by xpath.
+
+        :Parameters:
+            - `xpath_str`: string which contains xpath.
+        """
+        data = self.xpath(xpath_str)
 
         if cast is not None:
             return cast(data)
 
         return data
+
 
 
 class GXMLParser(XMLParser):
@@ -277,16 +307,99 @@ class GHTMLParser(HTMLParser):
         self._parser = GBeautifulSoupParser
 
 
+class CSVParser(BaseParser):
+
+    """This class is capable to parse CSV files.
+
+    NOTE:
+    http://chartapi.finance.yahoo.com/instrument/1.0/ACC.NS/chartdata;type=quote;range=1d/csv/
+    """
+
+    def __init__(self):
+        """CSVParser constructor.
+        """
+        BaseParser.__init__(self)
+        self._parser = None
+        self._dialect = None
+        self._parsed_data = None
+        self._has_header = None
+
+    def _initialize(self, raw_data):
+        """Detect CSV dialect and prepare data to parsing.
+        """
+        self._detect_dialect(raw_data.read(1024))
+        raw_data.seek(0)
+
+    def _create_parser(self):
+        """This is a fake method. We need it only to be able to instantiate an
+        instance of this class, because in parent class this method marked as
+        abstract.
+        """
+
+    def _detect_dialect(self, raw_data_sample):
+        """Try to automatically detect the dialect of CSV data.
+
+        :Parameters:
+            - `raw_data_sample` a string which contains very first.
+
+        """
+        sniffer = csv.Sniffer()
+        self._dialect = sniffer.sniff(raw_data_sample)
+        self._has_header = sniffer.has_header
+
+    def initialize(self, raw_data):
+        """Initialize CSV parser.
+
+        :Parameters:
+            - `raw_data`: a file-like object (probably StringIO) which provides
+              `read()` and `seek()` methods and contains raw CSV data.
+        """
+        self._initialize(raw_data)
+
+    def parse(self, raw_data):
+        """Main method for parsing.
+        """
+        self._parsed_data = self._parse(raw_data)
+
+    def _parse(self, raw_data):
+        """Inner parser implementation.
+        """
+        self._parser = csv.reader(raw_data, self._dialect)
+        return [row for row in self._parser]
+
+    def get_value(self, position, cast=None):
+        """Return a data from cell.
+
+        :Parameters:
+            - `position`: tuple of the following structure: ::
+
+                (
+                  row_number: row number starting from 0,
+                  col_number: column number starting from 0
+                )
+        """
+        row_no, col_no = position
+        data = self._parsed_data[row_no][col_no]
+        return self._cast_value(data, cast=cast)
+
+    def get_parsed(self):
+        """Return parsed data.
+        """
+        return self._parsed_data
+
+
 # Maps datatype to parser class which can handle it.
 _PARSER_TYPES_MAPPING = {
     'plain': {
         XML_DATA_TYPE: XMLParser,
         HTML_DATA_TYPE: HTMLParser,
+        CSV_DATA_TYPE: CSVParser,
     },
 
     'gevent_safe': {
         XML_DATA_TYPE: GXMLParser,
         HTML_DATA_TYPE: GHTMLParser,
+        CSV_DATA_TYPE: CSVParser,
     }
 }
 

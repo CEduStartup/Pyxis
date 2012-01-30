@@ -164,7 +164,6 @@ def get_data_to_display(request):
 
 @login_required
 def delete(request, tracker_id):
-    print '333333333333333', tracker_id
     tracker = TrackerModel.objects.get(pk=tracker_id)
     view = ViewModel.objects.filter(trackers=tracker)
     view.delete()
