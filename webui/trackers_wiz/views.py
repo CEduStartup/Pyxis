@@ -101,7 +101,9 @@ def try_xpath(request):
             parser = get_parser(data_type, gevent_safe=False)
             parser.initialize()
             parser.parse(data)
-            result = parser.xpath(form.cleaned_data['extraction_rule'])
+            result = parser.get_value(form.cleaned_data['extraction_rule'])
+            # TODO: Parser has an interface to clear/cast data. We need to use
+            # it instead of the following method.
             data = ValueExtractor().extract_number(result[0].text, value_type)
             data = 'Data successfully extracted: %s' %data
         except (IndexError, XPathEvalError):
