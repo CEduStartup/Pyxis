@@ -6,6 +6,7 @@ method.
 
 import abc
 import BeautifulSoup
+import csv
 import gevent
 import StringIO
 
@@ -282,10 +283,10 @@ class CSVParser(BaseParser):
     """This class is capable to parse CSV files.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """CSVParser constructor.
         """
-        BaseParser.__init__(self, args, kwargs)
+        BaseParser.__init__(self)
         self._parser = None
         self._dialect = None
         self._parsed_data = None
@@ -297,18 +298,21 @@ class CSVParser(BaseParser):
         raw_data.seek(0)
 
     def _create_parser(self):
-        """Not used.
+        """This is a fake method. We need it only to be able to instantiate an
+        instance of this class, because in parent class this method marked as
+        abstract.
         """
-        pass
 
-    def _detect_dialect(self, raw_data_simple):
+    def _detect_dialect(self, raw_data_sample):
         """Try to automatically detect the dialect of CSV data.
 
         :Parameters:
-            - `raw_data` a string which contains very first.
+            - `raw_data_sample` a string which contains very first.
 
         """
-        self._dialect = CSV.Sniffer().sniff(raw_data_simple)
+        sniffer = csv.Sniffer()
+        self._dialect = sniffer.sniff(raw_data_sample)
+        self._has_header = sniffer.has_header
 
     def initialize(self, raw_data):
         """Initialize CSV parser.
@@ -317,7 +321,6 @@ class CSVParser(BaseParser):
             - `raw_data`: a file-like object (probably StringIO) which provides
               `read()` and `seek()` methods and contains raw CSV data.
         """
-        self._create_parser()
         self._initialize(raw_data)
 
     def parse(self, raw_data):
@@ -328,6 +331,18 @@ class CSVParser(BaseParser):
     def _parse(self, raw_data):
         """Inner parser implementation.
         """
+        self._parser = csv.reader(raw_data, self._dialect)
+        return [row for row in self._parser]
+
+    def get_data(self, row_no, col_no):
+        """Return a data from cell.
+        """
+        return self._parsed_data[row_no][col_no]
+
+    def get_parsed(self):
+        """Return parsed data.
+        """
+        return self._parsed_data
 
 
 # Maps datatype to parser class which can handle it.
