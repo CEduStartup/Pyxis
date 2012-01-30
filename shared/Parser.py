@@ -281,6 +281,9 @@ class GHTMLParser(HTMLParser):
 class CSVParser(BaseParser):
 
     """This class is capable to parse CSV files.
+
+    NOTE:
+    http://chartapi.finance.yahoo.com/instrument/1.0/ACC.NS/chartdata;type=quote;range=1d/csv/
     """
 
     def __init__(self):
