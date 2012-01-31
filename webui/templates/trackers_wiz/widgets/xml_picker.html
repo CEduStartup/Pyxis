@@ -1,7 +1,48 @@
 {% load value_picker %}
+{% load static %}{% get_static_prefix as STATIC_PREFIX %}
 <div id="value_picker">
     {% autoescape off %}
     <input {{ attrs }}>
     {% endautoescape %}
+
+    <input id="test_xpath_btn" type="button" value="Test..."
+           onclick="test_value_extraction();">
+    <img id="test_progress_bar" src="{{STATIC_PREFIX}}images/ajax-loader.gif">
+    <span id="test_result"></span>
+
     {% xml_picker_node node %}
 </div>
+
+<script>
+  $(document).ready(function() {
+    $('#test_progress_bar').hide();
+    $('#test_result').hide();
+  });
+
+  function display_result(data) {
+    $('#test_progress_bar').hide();
+    $('#test_result').show();
+    var class_to_add = (data['status'] == 0) ? 'alert-message success' : 'alert-message error';
+    var class_to_remove = (data['status'] == 0) ? 'alert-message error' : 'alert-message success';
+    $('#test_result').removeClass(class_to_remove);
+    $('#test_result').addClass(class_to_add);
+    $("#test_result").text(data['data']);
+  };
+
+  function test_value_extraction() {
+    //TODO: rewrite this validation.
+    if (!$('#id_2-extraction_rule').val()) {
+      alert('You must enter extraction rule first.');
+      return;
+    }
+    $('#test_progress_bar').show();
+    $('#test_result').hide();
+
+    $.get("{% url trackers_wiz.views.try_xpath %}",
+          {'name': 'test_name',
+           'value_type': $("#id_2-value_type").val(),
+           'extraction_rule': $("#id_2-extraction_rule").val()},
+           display_result);
+  }
+
+</script>
