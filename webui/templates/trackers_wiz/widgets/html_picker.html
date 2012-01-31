@@ -39,8 +39,8 @@ function get_extraction_rule(event) {
 
 
 function test_value_extraction() {
-  $('#test_progress_bar').show()
-  $('#test_result').hide()
+  $('#test_progress_bar').show();
+  $('#test_result').hide();
 
   $.get("{% url trackers_wiz.views.try_xpath %}",
                   {'name': 'test_name',
@@ -60,9 +60,10 @@ function test_value_extraction() {
 
 }
 
-
-$('#test_progress_bar').hide()
-$('#test_result').hide()
+$(document).ready(function(){
+  $('#test_progress_bar').hide();
+  $('#test_result').hide();
+});
 
 function calculateElementXPath(node, path) {
   path = path || [];
