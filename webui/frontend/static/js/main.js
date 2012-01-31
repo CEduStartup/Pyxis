@@ -139,3 +139,11 @@ function alert_message(data, success_message, error_message) {
     }
     alert_message.fadeIn(300).delay(3000).fadeOut(500);
 }
+
+function disable_element(selector) {
+  $(selector).attr('disabled', 'disabled');
+}
+
+function enable_element(selector) {
+  $(selector).removeAttr('disabled');
+}
