@@ -162,19 +162,9 @@ class Tracker(object):
 
                 for extract_value in settings['values']:
                     xpath_result = \
-                       parser.get_value(extract_value['extraction_rule'])
-                    value = None
-                    if isinstance(xpath_result, list) and len(xpath_result) > 0:
-                        if isinstance(xpath_result[0], str):
-                            value = xpath_result[0]
-                        else:
-                            value = xpath_result[0].text
-
-                    if not value is None:
-                        clean_value = \
-                            self._value_extractor.extract_number(value,
-                                VALUE_TYPES[extract_value['type']]['name'])
-                        self._clean_data[extract_value['value_id']] = clean_value
+                       parser.get_value(extract_value['extraction_rule'],
+                                        value_type=extract_value['type'])
+                    self._clean_data[extract_value['value_id']] = xpath_result[0]
 
             except ParserError, e:
                 # TODO: we need to log this error and notify another components
@@ -191,7 +181,7 @@ class Tracker(object):
             - grabbed: "10$", after cast it's: 10.
             - grabbed: "10,000,000", after cast it's: 10000000.
         """
-        clean_value = self._value_extractor.extract_number(value, value_type)
+        clean_value = self._value_extractor.extract_value(value, value_type)
         return clean_value
 
     def _validate_data(self):
