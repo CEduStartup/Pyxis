@@ -18,7 +18,7 @@
     {% for tracker in trackers %}
 <tr>
     <td><a href="/trackerwiz/edit/{{ tracker.id }}">{{tracker.name}}</a></td>
-    <td>{{ tracker.URI }}</td>
+    <td>{{ tracker.URI|urlizetrunc:20}}</td>
     <td>{{ tracker.refresh_interval_pretty }}</td>
     <td>{{ tracker.status|yesno:"Active,Inactive" }}</td>
     <td><a href="/trackers/view/{{ tracker.id }}/">View Graph</a></td>

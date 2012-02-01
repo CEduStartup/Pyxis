@@ -16,7 +16,7 @@ function valuePickerOnChange(value)
 }
 </script>
 <div class="clearfix"><h1>{{ form.step_name }}</h1></div>
-<form action='' method='POST'>
+<form action='' method='POST' id="wizard_form">
 {% csrf_token %}
 <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
     {{ previous_fields|safe }}

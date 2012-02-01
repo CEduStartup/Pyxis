@@ -21,8 +21,6 @@ class ValuePickerWidget(Widget):
         parser = self.attrs['grabbed_data']
         # Here we need to delete attributes that which should not be rendered as is.
         del self.attrs['data_type']
-        del self.attrs['grabbed_data']
-
         # Attributes that would be rendered to form's input.
         render_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
         if value is None:
@@ -36,6 +34,8 @@ class ValuePickerWidget(Widget):
             output = render_to_string(
                self.templates_name % (DATA_TYPES[data_type]['name'],),
                {'node': parser.get_parsed(), 'attrs': flatatt(render_attrs),
-                'input_type': attrs['id']})
+                'input_type': attrs['id'],
+                'URI': self.attrs['URI']
+                })
         return output
 

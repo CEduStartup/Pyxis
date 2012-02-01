@@ -4,7 +4,7 @@ $(document).ready(function () {
     });
 
     $('.value_picker_selectable').live('click', function () {
-        $('#value_picker input').attr('value', $(this).attr('xpath'));
+        $('#value_picker input:text').attr('value', $(this).attr('xpath'));
         if(typeof(valuePickerOnChange) == 'function'){
             valuePickerOnChange($(this).text());
         }

@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import dateutil.parser
 from random import randint
@@ -207,3 +208,33 @@ def get_base_classes(cls, include_cls=True, include_object=False):
             cls.__bases__)
         ret_hrc = list(set(cur_hrc))
     return ret_hrc
+
+
+def strip_javascript(data):
+    """Function strips <script>...</script> from web page content."""
+    regex = re.compile(r'<script.*?>.*?</script>', re.M|re.S)
+    return regex.sub('', data)
+
+
+def strip_comments(data):
+    """Function strips <!--...--> from web page content."""
+    regex = re.compile(r'<!--.*?-->', re.M|re.S)
+    return regex.sub('', data)
+
+
+def get_root_url(url):
+    """Function gets root URL from given full URL."""
+    regex = re.compile(r'^(.*://.*?)(?:/.*)?$')
+    mo = regex.search(url)
+
+    if mo:
+        return mo.group(1)
+    return ''
+
+
+def replace_relative_paths(data, root_url):
+    """Find relative paths in document content and replace it with given
+    absolute path."""
+    regex = re.compile(r'((?:src|href)="?(?=/[^/]))', re.I)
+    data = regex.sub(r'\1%s' %str(root_url), data)
+    return re.sub(r'url\((.*?\))', r'url(\1%s)' %str(root_url), data)

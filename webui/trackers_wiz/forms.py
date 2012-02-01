@@ -31,8 +31,6 @@ class TrackerNameForm(ModelForm):
 
 
 class DataSourceForm(ModelForm):
-    #method_name = forms.CharField(max_length=100, required=False)
-    #parms = forms.CharField(max_length=100, required=False)
     URI = forms.URLField(required=True, label='URI:', help_text="""\
 URI of your data source, like http://mypyxis.com/sample_data
 """)
@@ -50,11 +48,12 @@ URI of your data source, like http://mypyxis.com/sample_data
         """Method for preparing input data for storing and passing to next steps.
         """
         cleaned_data = super(DataSourceForm, self).clean()
-        #Temporary check for unsupported values.
         access_method = cleaned_data.get('access_method', 0)
         data_type = cleaned_data.get('data_type', 0)
         have_errors = False
-        if data_type not in (XML_DATA_TYPE,):
+
+        # Temporary check for unsupported values.
+        if data_type not in (XML_DATA_TYPE, HTML_DATA_TYPE,):
             self._errors['data_type'] = ('Data type is not supported yet.',)
             have_errors = True
         if access_method not in (HTTP_ACCESS_METHOD,):
@@ -74,6 +73,7 @@ URI of your data source, like http://mypyxis.com/sample_data
             parser = get_parser(data_type, gevent_safe=False)
             parser.initialize()
             parser.parse(grabbed_data)
+
         except ResponseHTTPError:
             raise forms.ValidationError('Address "%s" cannot be opened due to server error.' % (query['URI'],))
         except ResponseURLError:
@@ -87,6 +87,7 @@ URI of your data source, like http://mypyxis.com/sample_data
         # Data for visualisation on next step.
 
         cleaned_data['grabbed_data'] = parser
+        cleaned_data['raw_data'] = grabbed_data
         return cleaned_data
 
 class ValueForm(ModelForm):
@@ -187,6 +188,8 @@ class TrackerWizard(FormWizard):
                self.extra_cleaned_data.get('grabbed_data')
             form.fields['extraction_rule'].widget.attrs['data_type'] = \
                self.extra_cleaned_data.get('data_type')
+            form.fields['extraction_rule'].widget.attrs['URI'] = \
+               self.extra_cleaned_data.get('URI')
         return form
 
     def parse_params(self, request, *args, **kwargs):
@@ -199,5 +202,5 @@ class TrackerWizard(FormWizard):
             if form.is_valid():
                 self.extra_cleaned_data['grabbed_data'] = form.cleaned_data['grabbed_data']
                 self.extra_cleaned_data['data_type'] = form.cleaned_data['data_type']
+                self.extra_cleaned_data['URI'] = form.cleaned_data['URI']
                 request.session['extra_cleaned_data'] = self.extra_cleaned_data
-

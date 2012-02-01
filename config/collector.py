@@ -5,7 +5,7 @@ from config.context import create_context
 ##
 
 parallel_threads_num = 1000
-tracker_thread_timeout = 5
+tracker_thread_timeout = 10
 trackers_refresh_interval = 300
 scheduler_maximum_sleep = 15
 
