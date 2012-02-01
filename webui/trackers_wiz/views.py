@@ -8,8 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from frontend.models import *
 from trackers_wiz.forms import *
 
-from shared.Parser import get_parser
-from shared.trackers.value_extractor import ValueExtractor
+from shared.Parser import get_parser, ParserCastError, ParserError
+from shared.trackers import VALUE_TYPES
 from shared.Utils import strip_javascript, strip_comments, get_root_url, \
                          replace_relative_paths
 
@@ -20,7 +20,6 @@ TEST_STATUS_XPATH_ERROR = -1
 TEST_STATUS_CAST_ERROR = -2
 
 TRACKER_WIZARD_FORMS = [TrackerNameForm, DataSourceForm, ValueForm]
-
 
 def add(request):
     return TrackerWizard(TRACKER_WIZARD_FORMS, initial=_make_initial_add())(request)
@@ -84,40 +83,44 @@ def get_url(request, URL):
 def try_xpath(request):
     status = TEST_STATUS_OK
     data = ''
-    value_types_map = {1: 'int', 2: 'float'}
+    # TODO: we have a constants for these in shared/trackers/datasources
     form = ValueForm(request.GET)
     if form.is_valid():
+        # TODO: We can try to create Tracker or at least datasource object
+        # to fetch data.
+        URL = request.session['extra_cleaned_data']['URI']
+        url_request = urllib2.Request(URL)
+        url_request.add_header('User-agent', 'Mozilla/5.0')
+        response = urllib2.urlopen(url_request)
+        data = response.read()
+        data = strip_javascript(data)
+        data = strip_comments(data)
+        data = replace_relative_paths(data, get_root_url(URL))
+        value_type = form.cleaned_data['value_type']
+        data_type = request.session['extra_cleaned_data']['data_type']
+        parser = get_parser(data_type, gevent_safe=False)
+        parser.initialize()
+        parser.parse(data)
         try:
-            URL = request.session['extra_cleaned_data']['URI']
-            url_request = urllib2.Request(URL)
-            url_request.add_header('User-agent', 'Mozilla/5.0')
-            response = urllib2.urlopen(url_request)
-            data = response.read()
-            data = strip_javascript(data)
-            data = strip_comments(data)
-            data = replace_relative_paths(data, get_root_url(URL))
-            value_type = value_types_map[form.cleaned_data['value_type']]
-            data_type = request.session['extra_cleaned_data']['data_type']
-            parser = get_parser(data_type, gevent_safe=False)
-            parser.initialize()
-            parser.parse(data)
-
-            def cast_value(val):
-                extractor_obj = ValueExtractor()
-                return extractor_obj.extract_number(val, value_type)
             data = parser.get_value(form.cleaned_data['extraction_rule'],
-                                    cast=cast_value)
-            print data
-
-            data = 'Data successfully extracted: %s' % (data,)
-        except (IndexError, XPathEvalError):
+                                    value_type=value_type)
+            data = 'Data successfully extracted: %s' % (data[0],)
+            status = TEST_STATUS_OK
+        except ParserCastError, err:
+            status = TEST_STATUS_CAST_ERROR
+            data = str(err)
+        except ParserError:
             status = TEST_STATUS_XPATH_ERROR
             data = 'Node Extraction Failed, try top correct extraction rule manually !'
-        except ValueError:
-            status = TEST_STATUS_CAST_ERROR
-            data = 'Cannot find number in text "%s" !' %result[0].text
+        except Exception:
+            # TODO: errors handling
+            import traceback as tb
+            data = tb.format_exc()
+        finally:
+            return HttpResponse(simplejson.dumps({'status': status,
+                                                  'data': data}),
+                                                  mimetype='application/json')
 
-        return HttpResponse(simplejson.dumps({'status': status, 'data': data}),
-                            mimetype='application/json')
     else:
         return HttpResponse('Please set extraction rule', mimetype='text/html')
+

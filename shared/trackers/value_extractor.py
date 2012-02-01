@@ -1,9 +1,13 @@
 # coding=utf-8
+
+"""This module contains functionality for extracting values from data received
+from parsers.
+"""
+
 import re
 
-## Pyxis project, value extractor module.
-##
-##
+from shared.trackers import INT_VALUE_TYPE, FLOAT_VALUE_TYPE
+
 
 class ValueExtractionError(Exception):
     pass
@@ -17,7 +21,7 @@ class ValueExtractor:
     That's what this class is intended for.
     """
 
-    def extract_number(self, text, value_type):
+    def extract_value(self, text, value_type):
         """Extract number from parser results.
 
         :Parameters:
@@ -26,21 +30,27 @@ class ValueExtractor:
         """
         try:
             value = self._find_numeric_value(text)
-            if value_type == 'int':
+            if value_type == INT_VALUE_TYPE:
                 value = self._remove_delimiters(value)
                 clean_value = int(value)
-            elif value_type == 'float':
+            elif value_type == FLOAT_VALUE_TYPE:
                 value = value.replace(',', '.')
                 clean_value = float(value)
+            else:
+                raise ValueExtractionError('Unknown value type %s' %
+                                           (value_type,))
         except (ValueError, UnicodeEncodeError):
-            raise ValueError('Cannot extract number')
+            raise ValueExtractionError('Cannot extract number from: %s' %
+                                       (text,))
 
         return clean_value
 
     def _find_numeric_value(self, text):
-        regex = re.compile('-?(?:\d[,.]?)*\d')
-        found = regex.findall(r'%s' %text)
+        regex = re.compile(r'-?(?:\d[,.]?)*\d')
+        found = regex.findall(text)
         if found:
+            # TODO: probably in some cases we need to return all numbers which
+            # we found and let the user to decide which is desirable.
             return found[-1]
         return ''
 
@@ -50,5 +60,5 @@ class ValueExtractor:
 
 if __name__ == '__main__':
     ve = ValueExtractor()
-    print ve.extract_number('8,01', 'float')
-    print ve.extract_number('24 338 специалистов', 'int')
+    print ve.extract_value('8,01', 'float')
+    print ve.extract_value('24 338 специалистов', 'int')

@@ -13,6 +13,8 @@ import StringIO
 from lxml import etree
 from lxml.html import soupparser
 
+from shared.trackers.value_extractor import (ValueExtractor,
+                                             ValueExtractionError)
 from shared.trackers import (XML_DATA_TYPE, HTML_DATA_TYPE, JSON_DATA_TYPE,
                              CSV_DATA_TYPE)
 
@@ -44,6 +46,11 @@ class ParserSyntaxError(ParserError):
     def __init__(self, details=''):
         ParserError.__init__(self),
         self.description = details
+
+class ParserCastError(ParserError):
+
+    """Indicates that gathered value cannot be casted to desirable type.
+    """
 
 
 class GTreeBuilder(etree.TreeBuilder):
@@ -139,26 +146,59 @@ class BaseParser(object):
         """Getter for parsed data.
         """
 
-    def _cast_value(self, raw_value, cast=None):
-        """Cast the value using `cast` callable object.
-        """
-        if cast is None:
-            return raw_value
+    def _cast_value(self, raw_value, value_type=None, cast=None, **kwargs):
+        """Cast the value using predefined datatypes and/or custom `cast`
+        method callable object.
 
-        return cast(raw_value)
+        :Parameters:
+            - `raw_value`: raw value returned by parser.
+            - `value_type`: predefined value type defined in `shared.trackers`
+              module e.g.: INT_VALUE_TYPE, FLOAT_VALUE_TYPE, or `None` to skip
+              casting to predefined type or you need custom casting.
+            - `cast`: callable object which will be used for casting. Must
+              accept at least 1 non-keyword argument: raw value, and returns
+              cleaned data. Also it can accept keyword arguments which needs to
+              be passed as `kwargs`. In case when it's impossible to cast that
+              value `cast` method must raise
+              `shared.trackers.value_extractor.ValueExtractionError` exception.
+            - `**kwargs`: keyword arguments which will be passed to `cast` object.
+        """
+        extractor = ValueExtractor()
+
+        def _process_value(val):
+            clean_value = val
+            if value_type is not None:
+                clean_value = extractor.extract_value(val, value_type)
+
+            if cast is not None:
+                clean_value = cast(clean_value, **kwargs)
+
+            return clean_value
+
+        try:
+            if isinstance(raw_value, (list, tuple)):
+                return [_process_value(v) for v in raw_value]
+
+            return _process_value(raw_value)
+        except ValueExtractionError, err:
+            raise ParserCastError(err)
 
     @abc.abstractmethod
-    def get_value(self, query, cast=None):
+    def get_value(self, query, value_type=None, cast=None, **kwargs):
         """Return single value from parsed data, using some query to find it.
 
         :Parameters:
             - `query`: a query which will be used to find some value e.g. xpath
               for XML and HTML, or column and row numbers for CSV.
+            - `datatype`: one of datatypes defined in `shared.trackers` e.g.
+              INT_VALUE_TYPE, FLOAT_VALUE_TYPE, or `None`.
             - `cast`: a callable objects which will be used to cast the value
               (or None to skip casting).
+            - `kwargs`: arguments required by `cast` function.
         """
-        some_data = self.get_parsed()
-        return self._cast_value(some_data)
+##        raw_value = self.get_parsed()
+##        return self._cast_value(raw_value, value_type=value_type,
+##                                cast=cast, **kwargs)
 
 class GBeautifulSoupParser(BeautifulSoup.BeautifulSoup):
 
@@ -248,21 +288,15 @@ class XMLParser(BaseParser):
         """
         return self._etree_dom.xpath(xpath_str)
 
-
-    def get_value(self, xpath_str, cast=None):
+    def get_value(self, xpath_str, value_type=None, cast=None, **kwargs):
         """Return the value of element defined by xpath.
 
         :Parameters:
             - `xpath_str`: string which contains xpath.
         """
         data = self.xpath(xpath_str)
-
-        if cast is not None:
-            return cast(data)
-
-        return data
-
-
+        return self._cast_value(data, value_type=value_type,
+                                cast=cast, **kwargs)
 
 class GXMLParser(XMLParser):
 
@@ -296,6 +330,19 @@ class HTMLParser(XMLParser):
         """
         # TODO: Add errors handling.
         self._etree_dom = self._parse(StringIO.StringIO(data))
+
+    def _cast_value(self, raw_value, value_type=None, cast=None, **kwargs):
+        """Cast BeautifulSoup elements to text.
+        """
+        if isinstance(raw_value, (tuple, list)):
+            dir(raw_value[0])
+            raw_value = [x.text for x in raw_value]
+        else:
+            dir(raw_value)
+            raw_value = raw_value.text
+
+        return XMLParser._cast_value(self, raw_value, value_type=value_type,
+                                     cast=cast, **kwargs)
 
 
 class GHTMLParser(HTMLParser):

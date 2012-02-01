@@ -28,6 +28,12 @@ FLOAT_VALUE_TYPE = 2
 
 # This constant describes available value types.
 VALUE_TYPES = {
-   INT_VALUE_TYPE:   {'pretty': u'Integer', 'name': 'int'},
-   FLOAT_VALUE_TYPE: {'pretty': u'Float', 'name': 'float'},
+   INT_VALUE_TYPE:   {
+       'type_id': INT_VALUE_TYPE,
+       'pretty': u'Integer',
+       'name': 'int'},
+   FLOAT_VALUE_TYPE: {
+       'type_id': FLOAT_VALUE_TYPE,
+       'pretty': u'Float',
+       'name': 'float'},
 }
