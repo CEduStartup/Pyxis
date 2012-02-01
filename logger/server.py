@@ -126,13 +126,13 @@ class EventReceiverThread(mp.Process):
         self.check_control_queue()
         self.log_queue.put_nowait(event)
         log_msg = '[ %s ] - %s [ %s ] %s' % (
-           event.tags[1].upper(), # Component name.
+           '_tag_', # Component name.
            datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
            event.level.upper(),
            event.format_message())
-        self.log_file.push(log_msg)
-        if self.config['show_console_log']:
-            print log_msg
+        #self.log_file.push(log_msg)
+        #if self.config['show_console_log']:
+        print log_msg
 
     def check_control_queue(self):
         """Checks control queue for new commands from parent process and process them."""
@@ -190,8 +190,8 @@ def main():
         port = DEFAULT_WEB_LOGGER_PORT
     
     receiver_config = {}
-    if '--console' in sys.argv:
-        receiver_config['show_console_log'] = True
+    #if '--console' in sys.argv:
+    receiver_config['show_console_log'] = True
     
     print 'Starting Web-based Logger manager on port %s' % port
     log_queue     = mp.Queue()

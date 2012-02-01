@@ -55,7 +55,7 @@ class webui(process):
         self.params.append('--settings=settings_debug')
 
 
-logger = _logger_console_manager
+logger = _logger_web_manager
 
 processes = (
     services(),
