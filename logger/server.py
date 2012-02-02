@@ -72,10 +72,10 @@ class EventCallback(object):
                                      type=event.component)
         except Queue.Empty:
             pass
-    
+
 class LogFile(object):
     """This class implements log file behavior with log aggregation by date."""
-    
+
     def __init__(self, filename):
         if os.path.isfile(filename):
             (_filename, _ext) = os.path.splitext(filename)
@@ -91,7 +91,7 @@ class LogFile(object):
             else:
                 shutil.move(filename, aggr_filename)
         self.f = open(filename, 'w')
-        
+
     def push(self, log_message):
         self.f.write("%s\n" % (log_message,))
         self.f.flush()
@@ -99,15 +99,15 @@ class LogFile(object):
 class EventReceiverThread(mp.Process):
     """This thread is runned as a process, and interacts with tornado server using queue.
     It starts EventReceiver, which puts new events to the queue."""
-    
+
     # Queue to pass log events to
     log_queue = None
-    
-    # Queue to receive commands from parent process 
+
+    # Queue to receive commands from parent process
     control_queue = None
-    
+
     config = None
-    
+
     def __init__(self, log_queue = None, control_queue = None, log_file=None, config={}):
 
         mp.Process.__init__(self, target=self._run)
@@ -116,7 +116,7 @@ class EventReceiverThread(mp.Process):
         self.log_file = log_file
         self.config = {'show_console_log': 0}
         self.config.update(config)
-        
+
         self.receiver = EventReceiver(server_host=queue_host,
                                       server_port=queue_port,
                                       tubes=(LOGGER_TUBE,),
@@ -126,11 +126,11 @@ class EventReceiverThread(mp.Process):
         self.check_control_queue()
         self.log_queue.put_nowait(event)
         log_msg = '[ %s ] - %s [ %s ] %s' % (
-           '_tag_', # Component name.
+           event.component, # Component name.
            datetime.fromtimestamp(event.time).strftime('%Y-%m-%d %H:%M:%S'),
            event.level.upper(),
            event.format_message())
-        #self.log_file.push(log_msg)
+        self.log_file.push(log_msg)
         #if self.config['show_console_log']:
         print log_msg
 
@@ -188,11 +188,11 @@ def main():
         port = int(sys.argv[1])
     except (IndexError, ValueError):
         port = DEFAULT_WEB_LOGGER_PORT
-    
+
     receiver_config = {}
     #if '--console' in sys.argv:
     receiver_config['show_console_log'] = True
-    
+
     print 'Starting Web-based Logger manager on port %s' % port
     log_queue     = mp.Queue()
     control_queue = mp.Queue()
