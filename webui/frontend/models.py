@@ -52,7 +52,11 @@ This is how often you want your data to be updated.
 
     def URI(self):
         """This is temporary, in future URI will not be a Tracker property."""
-        return json.loads(self.datasourcemodel_set.get().query)['URI']
+        # TODO: needs more check
+        try:
+            return json.loads(self.datasourcemodel_set.get().query)['URI']
+        except ValueError:
+            return 'None Specified'
 
     def refresh_interval_pretty(self):
         """This is temporary, in future URI will not be a Tracker property."""

@@ -23,7 +23,7 @@
     <td>{{ tracker.status|yesno:"Active,Inactive" }}</td>
     <td><a href="/trackers/view/{{ tracker.id }}/">View Graph</a></td>
     <td>
-        <a href="/trackers/delete/{{ tracker.id }}" class='btn small'>Delete</a>
+        <a href="/trackers/delete/{{ tracker.id }}" onclick="return confirm('Do you really want to delete tracker: {{tracker.name}}?')" class='btn small'>Delete</a>
     </td>
 </tr>
     {% endfor %}
